@@ -1,0 +1,35 @@
+name: Validate Release Assets
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build plugin skills
+        run: ./install.sh build
+
+      - name: Validate generated structure
+        run: |
+          test -d plugins/codepatrol/skills
+          test -f plugins/codepatrol/skills/code-review/SKILL.md
+          test -f plugins/codepatrol/skills/code-review/architecture-reviewer.md
+          test -f plugins/codepatrol/skills/code-review/codestyle-reviewer.md
+          test -f plugins/codepatrol/skills/code-review/security-reviewer.md
+          test -f plugins/codepatrol/skills/code-review/testing-reviewer.md
+          test -f plugins/codepatrol/skills/code-review-fix/SKILL.md
+          test -f plugins/codepatrol/skills/code-review-fix/fix-agent-prompt.md
+
+      - name: Validate placeholders are fully substituted
+        run: |
+          if grep -R -nE '\{\{[A-Z0-9_]+\}\}' plugins/codepatrol/skills; then
+            echo 'Found unsubstituted placeholders in generated skills.'
+            exit 1
+          fi

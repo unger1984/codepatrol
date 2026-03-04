@@ -1,0 +1,15 @@
+.DS_Store
+*.swp
+*.swo
+*~
+*.tar.gz
+
+# Environment
+.env*
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+.vscode/

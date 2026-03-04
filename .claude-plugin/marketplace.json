@@ -1,0 +1,13 @@
+{
+  "name": "unger1984/codepatrol",
+  "owner": {
+    "name": "unger1984"
+  },
+  "plugins": [
+    {
+      "name": "codepatrol",
+      "source": "./plugins/codepatrol",
+      "description": "Code review skills — parallel multi-agent review with interactive fix workflow"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild skills from templates
+        run: ./install.sh build
+
+      - name: Check skills/ is up to date
+        run: |
+          if ! git diff --quiet plugins/codepatrol/skills/; then
+            echo "::error::plugins/codepatrol/skills/ is out of date. Run './install.sh build' and commit the result."
+            git diff plugins/codepatrol/skills/
+            exit 1
+          fi
