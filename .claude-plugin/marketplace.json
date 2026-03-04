@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "codepatrol",
-      "source": "./plugins/codepatrol",
+      "source": "./",
       "description": "Code review skills — parallel multi-agent review with interactive fix workflow"
     }
   ]

@@ -3,14 +3,14 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
-SKILLS_DIR="$SCRIPT_DIR/plugins/codepatrol/skills"
+SKILLS_DIR="$SCRIPT_DIR/skills"
 PLATFORMS_DIR="$SCRIPT_DIR/platforms"
 
 usage() {
     echo "Usage: $0 <command>"
     echo ""
     echo "Commands:"
-    echo "  build    Generate plugins/codepatrol/skills from templates using Claude platform values"
+    echo "  build    Generate skills/ from templates using Claude platform values"
     echo "  claude   Generate and install skills to ~/.claude/skills/"
     echo "  codex    Generate and install skills to ~/.codex/skills/"
     echo ""

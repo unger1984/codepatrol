@@ -86,7 +86,7 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install-r
 ### Claude Code (как плагин через marketplace)
 
 ```
-/plugin marketplace add codepatrol-marketplace
+/plugin marketplace add unger1984/codepatrol
 /plugin install codepatrol@codepatrol-marketplace
 ```
 
@@ -113,15 +113,14 @@ cd codepatrol
 ```
 templates/                        # Исходные шаблоны с {{PLACEHOLDER}}-ами
 platforms/                        # Файлы переменных для каждой платформы
-plugins/codepatrol/               # Плагин (устанавливается через marketplace)
-  skills/                         # Сгенерированные файлы скиллов (plugins/codepatrol/skills/)
-  .claude-plugin/plugin.json      # Манифест плагина
+skills/                           # Сгенерированные файлы скиллов (via ./install.sh build)
 .claude-plugin/marketplace.json   # Манифест marketplace
+.claude-plugin/plugin.json        # Манифест плагина
 install.sh                        # Скрипт сборки и установки
 ```
 
 ```bash
-./install.sh build   # Пересобрать скиллы плагина из шаблонов
+./install.sh build   # Пересобрать скиллы из шаблонов
 ./install.sh codex   # Сгенерировать и установить для Codex
 ./install.sh claude  # Сгенерировать и установить локально для Claude
 ```

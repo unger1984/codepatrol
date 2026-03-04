@@ -5,14 +5,14 @@ CodePatrol is template-driven. Keep source-of-truth content in templates, then g
 
 - `templates/` — skill templates with `{{PLACEHOLDER}}` variables (edit here first)
 - `platforms/` — platform values (`claude.env`, `codex.env`)
-- `plugins/codepatrol/skills/` — generated plugin skill output (do not hand-edit)
-- `.claude-plugin/` — Claude plugin manifest
+- `skills/` — generated plugin skill output (do not hand-edit)
+- `.claude-plugin/` — Claude plugin manifests (marketplace.json, plugin.json)
 - `install.sh` — build/install entrypoint
 
-Example flow: edit `templates/code-review/*` -> run `./install.sh build` -> verify changes in `plugins/codepatrol/skills/`.
+Example flow: edit `templates/code-review/*` -> run `./install.sh build` -> verify changes in `skills/`.
 
 ## Build, Test, and Development Commands
-- `./install.sh build` — regenerate `plugins/codepatrol/skills/` from templates.
+- `./install.sh build` — regenerate `skills/` from templates.
 - `./install.sh claude` — generate and install skills to `~/.claude/skills/`.
 - `./install.sh codex` — generate and install skills to `~/.codex/skills/`.
 
@@ -33,7 +33,7 @@ Naming patterns:
 There is no dedicated automated test suite yet. Validation is command-based:
 
 1. Run `./install.sh build` with no errors.
-2. Inspect generated `plugins/codepatrol/skills/` output for expected substitutions.
+2. Inspect generated `skills/` output for expected substitutions.
 3. Run `./install.sh claude` or `./install.sh codex` to verify installation flow.
 
 When changing templates, include a quick manual verification note in the PR.

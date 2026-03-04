@@ -17,8 +17,8 @@ jobs:
 
       - name: Check skills/ is up to date
         run: |
-          if ! git diff --quiet plugins/codepatrol/skills/; then
-            echo "::error::plugins/codepatrol/skills/ is out of date. Run './install.sh build' and commit the result."
-            git diff plugins/codepatrol/skills/
+          if ! git diff --quiet skills/; then
+            echo "::error::skills/ is out of date. Run './install.sh build' and commit the result."
+            git diff skills/
             exit 1
           fi
