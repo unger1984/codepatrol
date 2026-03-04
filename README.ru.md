@@ -86,8 +86,8 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install-r
 ### Claude Code (как плагин через marketplace)
 
 ```
-/plugin marketplace add unger1984/codepatrol
-/plugin install codepatrol@unger1984/codepatrol
+/plugin marketplace add codepatrol-marketplace
+/plugin install codepatrol@codepatrol-marketplace
 ```
 
 Скиллы будут доступны как `/codepatrol:code-review` и `/codepatrol:code-review-fix`.

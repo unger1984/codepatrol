@@ -1,6 +1,6 @@
 {
   "name": "codepatrol",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Code review skills — parallel multi-agent review with interactive fix workflow",
   "keywords": ["code-review", "review", "fix", "quality"]
 }
