@@ -1,6 +1,6 @@
 ---
 name: cpatrol
-description: Workflow-first entry command for research, clarification, design, and plan setup
+description: Use for any new task: brainstorming ideas, exploring approaches, designing solutions, and creating implementation plans
 ---
 
 # /cpatrol

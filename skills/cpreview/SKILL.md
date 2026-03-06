@@ -1,6 +1,6 @@
 ---
 name: cpreview
-description: Orchestrated code review with mandatory compliance pass before quality pass
+description: Use to review code changes for compliance and quality before merging
 ---
 
 # /cpreview

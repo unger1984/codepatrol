@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
 SKILLS_DIR="$SCRIPT_DIR/skills"
 PLATFORMS_DIR="$SCRIPT_DIR/platforms"
-MANAGED_SKILLS="cpatrol cpresume cpexecute cpplanreview cpplanfix cpreview cpfix cpdocs cprules"
+MANAGED_SKILLS="using-codepatrol cpatrol cpresume cpexecute cpplanreview cpplanfix cpreview cpfix cpdocs cprules"
 LEGACY_SKILL_A="code""-review"
 LEGACY_SKILL_B="code""-review""-fix"
 

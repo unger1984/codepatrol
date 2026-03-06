@@ -1,6 +1,6 @@
 ---
 name: cpplanreview
-description: Review a plan against project rules, design intent, execution readiness, and docs impact
+description: Review an implementation plan for correctness, compliance, and readiness
 ---
 
 # /cpplanreview

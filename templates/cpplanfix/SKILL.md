@@ -1,6 +1,6 @@
 ---
 name: cpplanfix
-description: Fix open plan review findings, mutate tracking fields, and run bounded revalidation
+description: Fix issues found during plan review
 ---
 
 # /cpplanfix

@@ -1,6 +1,6 @@
 ---
 name: cpdocs
-description: Update AI-oriented project docs from README-based navigation with validation and handoff support
+description: Use to create or update project documentation, add diagrams, or describe architecture
 ---
 
 # /cpdocs

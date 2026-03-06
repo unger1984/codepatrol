@@ -1,6 +1,6 @@
 ---
 name: cpfix
-description: Fix open code review findings from cpreview with priority for compliance before quality
+description: Fix issues found during code review
 ---
 
 # /cpfix

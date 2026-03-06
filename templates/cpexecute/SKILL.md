@@ -1,6 +1,6 @@
 ---
 name: cpexecute
-description: Execute implementation from an approved plan with checkpoints and review handoff
+description: Use to implement features, changes, or fixes from a plan with verification checkpoints
 ---
 
 # /cpexecute
