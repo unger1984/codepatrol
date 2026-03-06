@@ -7,6 +7,21 @@ description: Workflow-first entry command for research, clarification, design, a
 
 Use this command as the default entry point for a new workflow run.
 
+## Progress Tracking (mandatory)
+
+Before starting work, you MUST create TodoWrite items for each workflow stage.
+Mark each as `in_progress` when entering a stage and `completed` when stage criteria are met.
+This provides visual progress to the user.
+
+Required items:
+- [ ] Research
+- [ ] Clarification
+- [ ] Approach options
+- [ ] Solution outline
+- [ ] Research refresh
+- [ ] Design
+- [ ] Plan
+
 ## Goals
 
 - Check for unfinished workflow tasks before creating a new one
@@ -14,6 +29,8 @@ Use this command as the default entry point for a new workflow run.
 - Drive the flow: research -> clarification -> approach options -> design -> plan ready
 - Keep internal stage identifiers and internal agent names hidden from users
 - Follow active client or agent language rules for user-facing communication
+- Do not take actions the user did not request. Do not guess intent when multiple interpretations exist
+- Ask first, act second. A clarifying question is always cheaper than a wrong action
 
 ## Required Behavior
 
@@ -36,9 +53,12 @@ When starting a new task, create the task directory and workflow file:
 - `.ai/tasks/<YYYY-MM-DD-HHMM-task-slug>/`
 - `<task-slug>.workflow.md` inside it
 
+Example: `.ai/tasks/2026-03-06-1420-auth-refactor/auth-refactor.workflow.md`
+
 If `.ai/tasks/` does not exist, create it.
 
 The task slug should be short, descriptive, and derived from the user's request.
+Use real creation date and time (HHMM) in the folder name.
 Design and plan files are created later when those stages are reached.
 
 ### 1c. Workflow File Format
@@ -63,6 +83,7 @@ Research is mandatory.
 If `.ai/docs/README.md` exists, begin context discovery from it, then read only the docs and code needed for the current task.
 If it does not exist, begin research directly from project rules, CLAUDE.md/AGENTS.md, and the actual codebase. Do not require `.ai/` to exist.
 Do not bulk-read the repository.
+For file discovery, use Glob, Grep, or MCP filesystem tools if available. Do not fall back to shell commands (find, grep) unless no dedicated tool is available.
 
 Research must produce usable output:
 - key findings
@@ -228,22 +249,6 @@ The chosen strategy affects plan structure, checkpoints, execution safety, paral
 - Show command names as `/cpatrol`, `/cpresume`, `/cpplanreview`, `/cpexecute`, `/cpdocs`
 - Use display names such as `research`, `clarification`, `plan review`, `execution`, `AI docs update`
 - Do not expose internal technical stage ids, prompt file names, or hidden agent role names unless technically necessary
-
-## Progress Tracking
-
-Use TodoWrite to track workflow progress:
-- create a todo for each workflow stage
-- mark as in_progress when entering a stage
-- mark as completed when stage criteria are met
-
-Example:
-- [ ] Research
-- [ ] Clarification
-- [ ] Approach options
-- [ ] Solution outline
-- [ ] Research refresh
-- [ ] Design
-- [ ] Plan
 
 ### Session Mode Heuristic
 

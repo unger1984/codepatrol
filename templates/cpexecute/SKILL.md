@@ -7,6 +7,19 @@ description: Execute implementation from an approved plan with checkpoints and r
 
 Run implementation from the approved `plan.md`.
 
+## Progress Tracking (mandatory)
+
+Before starting execution, you MUST create {{PROGRESS_TOOL}} items for each plan stage.
+Mark each as `in_progress` when a stage begins and `completed` when verification passes.
+This provides visual progress to the user.
+
+Example:
+- [ ] Preflight checks
+- [ ] Stage 1: <objective>
+- [ ] Stage 2: <objective>
+- [ ] Final verification
+- [ ] Handoff to /cpreview
+
 ## Preconditions
 
 Execution requires:
@@ -27,6 +40,7 @@ Before editing code:
 - if `.ai/docs/README.md` exists, read it and only the relevant docs
 - confirm the target branch is safe for implementation
 - identify required verification commands for each plan segment
+- {{FILE_DISCOVERY}}
 
 If branch safety is unclear, stop and ask. Do not start implementation on `main` or `master` without explicit user approval.
 
@@ -113,24 +127,10 @@ Provide a reasoned recommendation, but leave the final choice to the user.
 When implementation is complete, do not silently launch review.
 
 Offer two paths:
-- review now with `/cpreview`
+- review now with `/cpreview` — {{INVOKE_SKILL}}
 - hand off to a new session with `/cpreview <task-artifact-path>`
 
 The review side must be able to restore context from task artifacts and reports.
-
-## Progress Tracking
-
-Use TodoWrite to track execution progress:
-- create a todo for each plan stage before starting execution
-- mark as in_progress when a stage begins
-- mark as completed when verification passes
-
-Example:
-- [ ] Preflight checks
-- [ ] Stage 1: <objective>
-- [ ] Stage 2: <objective>
-- [ ] Final verification
-- [ ] Handoff to /cpreview
 
 ## Blocker Policy
 
@@ -141,6 +141,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `{{ASK_USER}}` if available on the current platform.
 

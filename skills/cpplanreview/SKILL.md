@@ -7,6 +7,12 @@ description: Review a plan against project rules, design intent, execution readi
 
 Review the plan artifact before implementation begins.
 
+## Progress Tracking (mandatory)
+
+Before starting review, you MUST create TodoWrite items for each checklist item.
+Mark each as `completed` when the check is done.
+This provides visual progress to the user.
+
 ## Scope
 
 Review the current `plan.md` against:
@@ -40,7 +46,10 @@ This is a plan review, not code review.
 ## Output
 
 Save workflow-task reports under:
-- `.ai/tasks/<task>/reports/<timestamp>-<task-slug>.plan-review.report.md`
+- `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<task-slug>.plan-review.report.md`
+
+Use real creation time in the filename.
+Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.plan-review.report.md`
 
 If the review is ad hoc and not task-scoped, save under `.ai/reports/`.
 
@@ -84,12 +93,6 @@ Rules:
 - Use only new command names in user-facing examples, such as `/cpplanreview` and `/cpplanfix`
 - If scope or artifact selection is ambiguous, ask before proceeding
 
-## Progress Tracking
-
-Use TodoWrite to track review progress:
-- create a todo for each checklist item
-- mark as completed when the check is done
-
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -99,6 +102,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `AskUserQuestion` if available on the current platform.
 

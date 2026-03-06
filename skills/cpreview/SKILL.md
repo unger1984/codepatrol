@@ -7,6 +7,20 @@ description: Orchestrated code review with mandatory compliance pass before qual
 
 Review implementation with a workflow-first review model.
 
+## Progress Tracking (mandatory)
+
+Before dispatching reviewers, you MUST create TodoWrite items for all review passes.
+Mark each as `in_progress` when dispatching and `completed` when results are collected.
+This provides visual progress to the user.
+
+Required items:
+- [ ] Compliance pass
+- [ ] Architecture review
+- [ ] Security review
+- [ ] Testing review
+- [ ] Conventions review
+- [ ] Report generation
+
 ## Supported Scope Modes
 
 - current workflow task
@@ -19,6 +33,27 @@ Review implementation with a workflow-first review model.
 - explicit file or directory paths
 
 If scope is ambiguous or empty, ask before reviewing.
+
+## Scope Interpretation
+
+### Natural language mapping
+
+| User says | Interpreted as |
+|-----------|---------------|
+| "весь проект", "all code", "entire project", "everything" | all source files in project |
+| "current branch", "branch vs main" | committed diff vs main |
+| "uncommitted", "working changes" | uncommitted changes |
+| "branch X vs Y" | diff between branches |
+| "PR", "pull request" | PR diff |
+| specific file or directory paths | those paths only |
+| no argument, active workflow task | task-scoped review |
+
+### When in doubt — ask, do not guess
+
+If you cannot confidently determine scope, OR if the determined scope is empty — stop and ask with concrete options. Use `AskUserQuestion` if available.
+
+Never guess scope. Never review 0 files silently. Wrong scope = wasted review.
+Do not run diffs, merge branches, or take any destructive action unless explicitly requested.
 
 ## Research Before Review
 
@@ -65,6 +100,7 @@ Review engineering quality after compliance is acceptable:
 - **medium and large scopes** — the orchestrator may:
   - dispatch a dedicated compliance reviewer subagent
   - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions)
+- Launch reviewers in parallel using Agent tool with `subagent_type="code-reviewer"` and `run_in_background=true`. Send all Agent calls in a single message for true parallelism.
 - all findings from subagents must be normalized into one report
 
 The orchestrator must not:
@@ -75,10 +111,13 @@ The orchestrator must not:
 ## Reports
 
 Workflow-task code review reports are always saved under:
-- `.ai/tasks/<task>/reports/<timestamp>-<task-slug>.review.report.md`
+- `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<task-slug>.review.report.md`
 
 Ad hoc reviews save under:
-- `.ai/reports/<timestamp>-<scope>.review.report.md`
+- `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.report.md`
+
+Use real creation time in the filename.
+Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.review.report.md`
 
 A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
 
@@ -122,22 +161,26 @@ Rules:
 
 ## Handoff
 
-After the report is saved, the next fix command is `/cpfix`.
+After the report is saved, the next fix command is `/cpfix`. Use the Skill tool to invoke the target skill directly.
 
-## Progress Tracking
+## Scope Detection Commands
 
-Use TodoWrite to track review progress:
-- create a todo for each review pass or reviewer subagent before dispatching
-- mark as in_progress when work starts
-- mark as completed when results are collected
+Default (no args) — committed diff vs main:
+```bash
+MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
+git diff --name-only ${MAIN_BRANCH}...HEAD
+```
 
-Example:
-- [ ] Compliance pass
-- [ ] Architecture review
-- [ ] Security review
-- [ ] Testing review
-- [ ] Conventions review
-- [ ] Report generation
+Uncommitted changes:
+```bash
+(git diff --name-only HEAD; git ls-files --others --exclude-standard) | sort -u
+```
+
+Entire project — detect primary language(s) from existing files, collect all source files. Exclude: build output, dependencies, generated files, lock files.
+
+Specific paths — use as-is. If a directory — find all source files inside it.
+
+For file discovery, use Glob, Grep, or MCP filesystem tools if available. Do not fall back to shell commands (find, grep) unless no dedicated tool is available.
 
 ## Blocker Policy
 
@@ -148,6 +191,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `AskUserQuestion` if available on the current platform.
 

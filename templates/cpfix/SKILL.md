@@ -7,6 +7,12 @@ description: Fix open code review findings from cpreview with priority for compl
 
 Process open findings from `/cpreview`.
 
+## Progress Tracking (mandatory)
+
+Before starting fixes, you MUST create {{PROGRESS_TOOL}} items for each open finding.
+Mark each as `in_progress` when working on it and `completed` when bounded revalidation confirms the fix.
+This provides visual progress to the user.
+
 ## Source
 
 Accept either:
@@ -70,13 +76,6 @@ For each processed finding, update:
 
 The report remains resumable across future `/cpfix` runs.
 
-## Progress Tracking
-
-Use TodoWrite to track fix progress:
-- create a todo for each open finding before starting fixes
-- mark as in_progress when working on a finding
-- mark as completed when bounded revalidation confirms the fix
-
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -86,6 +85,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `{{ASK_USER}}` if available on the current platform.
 
@@ -99,6 +100,6 @@ No stage can be marked `done` without fresh verification evidence. No workflow s
 
 After `/cpfix` and final verification, the code path is complete but the workflow task is not.
 
-Next mandatory step: `/cpdocs` — either in the current session or a new one.
+Next mandatory step: `/cpdocs` — either in the current session or a new one. {{INVOKE_SKILL}}
 Do not automatically clean up branches, worktrees, or execution environment.
 Cleanup is allowed only as an explicit decision considering the next workflow step.

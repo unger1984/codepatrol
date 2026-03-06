@@ -7,6 +7,12 @@ description: Update AI-oriented project docs from README-based navigation with v
 
 Update AI-facing project documentation without turning docs into a dump of temporary task context.
 
+## Progress Tracking (mandatory)
+
+Before starting work, you MUST create TodoWrite items for each runtime flow step.
+Mark each as `in_progress` when working on it and `completed` when done.
+This provides visual progress to the user.
+
 ## Role
 
 Act as AI project memory maintainer and documentation orchestrator.
@@ -126,13 +132,6 @@ Before completion, verify:
 - docs match the final code and task outcome
 - the result remains suitable for targeted reading
 
-## Progress Tracking
-
-Use TodoWrite to track documentation progress:
-- create a todo for each runtime flow step
-- mark as in_progress when working on it
-- mark as completed when done
-
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -141,6 +140,8 @@ Stop and ask the user when:
 - the intent behind a docs change is ambiguous after inference
 
 Do not continue on assumptions when the risk of documenting wrong information is high.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `AskUserQuestion` if available on the current platform.
 

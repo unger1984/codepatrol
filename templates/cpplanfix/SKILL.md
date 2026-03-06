@@ -7,6 +7,12 @@ description: Fix open plan review findings, mutate tracking fields, and run boun
 
 Process open findings from `/cpplanreview`.
 
+## Progress Tracking (mandatory)
+
+Before starting fixes, you MUST create {{PROGRESS_TOOL}} items for each open finding.
+Mark each as `in_progress` when working on it and `completed` when revalidation confirms the fix.
+This provides visual progress to the user.
+
 ## Workflow
 
 1. Load the current plan review report
@@ -52,13 +58,6 @@ Preserve the report as the resumable source of truth for subsequent `/cpplanfix`
 - `/cpplanfix`
 - `/cpplanfix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
 
-## Progress Tracking
-
-Use TodoWrite to track fix progress:
-- create a todo for each open finding
-- mark as in_progress when working on a finding
-- mark as completed when revalidation confirms the fix
-
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -68,6 +67,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 ## Completion Criteria
 
