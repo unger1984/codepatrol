@@ -147,10 +147,16 @@ When asking the user, use `{{ASK_USER}}` if available on the current platform.
 
 ## Completion Criteria
 
-This stage is complete only after the docs validation pass succeeds and workflow state is updated.
+This stage is complete only after the docs validation pass succeeds.
 
-After `/cpdocs` completes, the workflow task is fully complete.
+### Within a workflow task
+
+After `/cpdocs` completes, the workflow task is fully complete. Update workflow state accordingly.
 Do not automatically clean up branches, worktrees, or execution environment unless explicitly decided.
 Post-workflow actions (merge, PR, branch retention, cleanup) should be either already resolved or left as an explicit post-workflow decision.
+
+### Ad hoc docs update (no active workflow task)
+
+After docs validation pass succeeds, the work is complete. Present the user with a summary of what was updated.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

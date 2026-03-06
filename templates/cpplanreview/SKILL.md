@@ -107,6 +107,21 @@ Ask first, act second. A clarifying question is always cheaper than a wrong acti
 
 When asking the user, use `{{ASK_USER}}` if available on the current platform.
 
+## Handoff
+
+### Within a workflow task
+
+After the report is saved, the next fix command is `/cpplanfix`. {{INVOKE_SKILL}}
+
+### Ad hoc review (no active workflow task)
+
+After generating the report, ask the user (use `{{ASK_USER}}` if available) which action to take:
+
+1. **Save report to file** — save to `.ai/reports/` as described above
+2. **Run /cpplanfix now** — invoke `/cpplanfix` directly, passing the review results through conversation context without saving to file
+
+Do not save the report silently — always present the options and wait for the user's choice.
+
 ## Completion Criteria
 
 This stage is complete when the plan review report exists and all findings are recorded with actionable resolutions.

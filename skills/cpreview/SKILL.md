@@ -161,7 +161,18 @@ Rules:
 
 ## Handoff
 
+### Within a workflow task
+
 After the report is saved, the next fix command is `/cpfix`. Use the Skill tool to invoke the target skill directly.
+
+### Ad hoc review (no active workflow task)
+
+After generating the report, ask the user (use `AskUserQuestion` if available) which action to take:
+
+1. **Save report to file** — save to `.ai/reports/` as described above
+2. **Run /cpfix now** — invoke `/cpfix` directly, passing the review results through conversation context without saving to file
+
+Do not save the report silently — always present the options and wait for the user's choice.
 
 ## Scope Detection Commands
 

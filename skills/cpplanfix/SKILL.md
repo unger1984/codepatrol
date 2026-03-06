@@ -72,6 +72,21 @@ Ask first, act second. A clarifying question is always cheaper than a wrong acti
 
 ## Completion Criteria
 
+### Within a workflow task
+
 This stage is complete when open findings are resolved or explicitly deferred, and bounded revalidation shows the plan is ready for `/cpexecute`.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
+
+### Ad hoc fix (no active workflow task)
+
+After all fixes and bounded revalidation, the work is complete. No `/cpexecute` handoff is required.
+
+If the source report was a saved file, update its tracking fields as usual.
+
+If findings were passed through conversation context (no saved file), ask the user (use `AskUserQuestion` if available) after all fixes are done:
+
+1. **Save report to file** — save the completed report with all resolution tracking fields to `.ai/reports/`
+2. **Do not save** — findings and their resolutions stay only in the current conversation
+
+Do not save silently — always present the options and wait for the user's choice.

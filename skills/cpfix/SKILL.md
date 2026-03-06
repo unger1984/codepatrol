@@ -98,8 +98,23 @@ No stage can be marked `done` without fresh verification evidence. No workflow s
 
 ## Code Path Complete
 
+### Within a workflow task
+
 After `/cpfix` and final verification, the code path is complete but the workflow task is not.
 
 Next mandatory step: `/cpdocs` — either in the current session or a new one. Use the Skill tool to invoke the target skill directly.
 Do not automatically clean up branches, worktrees, or execution environment.
 Cleanup is allowed only as an explicit decision considering the next workflow step.
+
+### Ad hoc fix (no active workflow task)
+
+After all fixes and final verification, the work is complete. No `/cpdocs` handoff is required.
+
+If the source report was a saved file, update its tracking fields as usual.
+
+If findings were passed through conversation context (no saved file), ask the user (use `AskUserQuestion` if available) after all fixes are done:
+
+1. **Save report to file** — save the completed report with all resolution tracking fields to `.ai/reports/`
+2. **Do not save** — findings and their resolutions stay only in the current conversation
+
+Do not save silently — always present the options and wait for the user's choice.
