@@ -30,14 +30,21 @@ Must not:
 
 ## Runtime Flow
 
+The flow is split into two phases: **analysis** (heavy reasoning) and **writing** (mechanical file I/O).
+
+### Analysis phase (requires reasoning)
 1. Determine intent and scope
 2. Decide whether to continue in the current session or hand off to a new one
 3. Run docs research from `.ai/docs/README.md` if it exists
 4. Read relevant task artifacts and final code state
-5. Plan documentation updates
-6. Apply changes to docs
+5. Plan documentation updates — for each target doc, prepare a **precise draft**: what to add, update, or restructure, with exact content
+
+### Writing phase (mechanical)
+6. Apply the prepared drafts to doc files — no new reasoning, just write what was decided in step 5
 7. Run docs validation pass
 8. Update workflow state if inside a task flow
+
+Do not mix phases. Complete all analysis and draft preparation before writing any file. This separation ensures that expensive reasoning happens once, and writing is a straightforward apply step.
 
 ## Research Entry
 

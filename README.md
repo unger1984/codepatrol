@@ -41,6 +41,7 @@ Both projects are MIT-licensed. They can coexist — Superpowers covers general 
 - [Session Example](#session-example)
 - [Install](#install)
 - [Rules And Context](#rules-and-context)
+  - [Model Selection For Subagents](#model-selection-for-subagents)
 - [Development](#development)
 - [CI/CD](#cicd)
 - [Known Limitations](#known-limitations)
@@ -354,6 +355,35 @@ CodePatrol automatically adapts language to the project:
 3. **Fallback** — if no language is specified anywhere, artifacts are created in English.
 
 Exception: `workflow.md` is always kept in English — it is a state file for agents, not documentation.
+
+### Model Selection For Subagents
+
+Commands that dispatch subagents (`/cpreview`, `/cpexecute`) use a three-tier model system:
+
+| Tier | Description | Examples |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available | Conventions review, single-file edits, boilerplate |
+| **default** | Mid-range | Architecture/security/testing review, multi-file implementation |
+| **powerful** | Most capable available | Compliance review, cross-cutting refactors, failed tasks |
+
+**How it works:**
+- The orchestrator picks the cheapest tier that fits the task complexity.
+- **Ceiling rule:** subagents never use a more capable model than the orchestrator session. If you run on Sonnet, subagents cannot escalate above Sonnet.
+- **Escalation:** if a subagent fails (error, empty output, failed self-check), it is re-dispatched one tier up. Maximum one escalation. If the ceiling tier fails, it becomes a blocker.
+- `/cpatrol` (research, design, planning) is recommended to run on the most capable model — it will warn if the current model may be too weak.
+
+**Custom model mapping:**
+
+Add to your `CLAUDE.md` or `AGENTS.md`:
+
+```markdown
+## CodePatrol model tiers
+- fast: claude-haiku-4-5-20251001
+- default: claude-sonnet-4-6
+- powerful: claude-opus-4-6
+```
+
+When a mapping is defined in project rules, it takes priority over automatic selection.
 
 ### Context And `.ai/docs/`
 

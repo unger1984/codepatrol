@@ -56,6 +56,36 @@ Before starting implementation:
 Prefer minimal sufficient context for each implementation unit.
 Do not silently change the design or plan intent during execution.
 
+## Subagent Model Policy
+
+Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
+
+### Model Tiers
+
+| Tier | Description | Use when |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available model | Simple, well-scoped steps: config changes, single-file edits, boilerplate |
+| **default** | Mid-range model | Most implementation work: multi-file changes, logic, tests |
+| **powerful** | Most capable available model | Complex reasoning: cross-cutting refactors, ambiguous requirements, steps that failed at a lower tier |
+
+Assess each plan step's complexity and assign the starting tier accordingly.
+
+### Ceiling Rule
+
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator. If the orchestrator runs on a mid-range model, the powerful tier equals that model.
+
+### User Override
+
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+
+### Escalation on Failure
+
+If a subagent returns an error, produces empty or unusable output, or fails its self-check:
+1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
+2. Re-dispatch the same task with the higher-tier model.
+3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
+4. Log the escalation in the checkpoint report so the user sees it.
+
 ## Implementer Subagent Contract
 
 Each implementing subagent must:

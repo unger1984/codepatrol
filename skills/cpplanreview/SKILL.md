@@ -32,6 +32,41 @@ This is a plan review, not code review.
 - relevant project rules from ``.claude/rules/*.md` and `CLAUDE.md``
 - targeted project docs starting from `.ai/docs/README.md` if it exists
 
+## Execution Model
+
+- **simple plans** (few checklist items, narrow scope) — the orchestrator runs all checks directly
+- **medium and large plans** — the orchestrator may dispatch checklist groups to subagents:
+  - design consistency and scope → default tier
+  - execution readiness and verification → default tier
+  - docs/operational impact → fast tier
+- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
+- all findings from subagents must be normalized into one report
+
+## Subagent Model Policy
+
+Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
+
+| Tier | Description | Use when |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available | Simple checks: docs impact, scope creep |
+| **default** | Mid-range | Design consistency, execution readiness, verification adequacy |
+| **powerful** | Most capable available | Ambiguous constraints, tasks that failed at a lower tier |
+
+### Ceiling Rule
+
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
+
+### User Override
+
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers, use it. User-defined mapping takes priority over automatic selection.
+
+### Escalation on Failure
+
+If a subagent returns an error, produces empty or unusable output, or fails its task:
+1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
+2. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
+3. Log the escalation in the progress update.
+
 ## Review Checklist
 
 - Is the plan consistent with the approved design?

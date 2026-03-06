@@ -7,20 +7,21 @@ description: Fix open code review findings from cpreview with priority for compl
 
 Process open findings from `/cpreview`.
 
-## Progress Tracking (mandatory)
-
-Before starting fixes, you MUST create {{PROGRESS_TOOL}} items for each open finding.
-Mark each as `in_progress` when working on it and `completed` when bounded revalidation confirms the fix.
-This provides visual progress to the user.
-
 ## Source
 
 Accept either:
-- a saved review report path
+- a saved review report path (explicit argument)
 - the latest review report from the current workflow task
 - the current conversation context if review just finished
 
-If the source is ambiguous, ask before proceeding.
+### No-argument behavior
+
+When invoked without arguments:
+1. Check for an active workflow task — if it has a single report with `open` findings, use it.
+2. If multiple reports with `open` findings exist (across `.ai/tasks/` and `.ai/reports/`), list them and ask the user which one to work with. Use `{{ASK_USER}}` if available.
+3. If the current conversation contains review results that were not saved to file, use those.
+
+Do not guess which report to use when multiple candidates exist.
 
 ## Processing Order
 
@@ -31,6 +32,30 @@ Default priority:
 2. `quality`
 
 Do not move to quality findings while unresolved compliance findings remain, unless one combined change is clearly safer and still keeps the review trail understandable.
+
+Within each group, preserve the original order from the report. Do not reorder findings by your own judgment.
+
+## Progress Tracking (mandatory)
+
+Before starting fixes, you MUST create {{PROGRESS_TOOL}} items **only for `open` findings**, in report order. Skip findings that are already `resolved`, `skipped`, or `deferred`.
+
+**Naming format:** each item MUST start with the finding number and severity from the report:
+```
+#1 [Critical] file:line — short description
+#2 [Important] file:line — short description
+#3 [Minor] file:line — short description
+```
+
+Mark each as `in_progress` when working on it and `completed` when bounded revalidation confirms the fix.
+
+### Parallelization approval
+
+After creating the full task list, if some findings are independent and can be fixed in parallel:
+1. Present the proposed parallel groups to the user.
+2. Wait for explicit approval before parallelizing.
+3. If not approved, process all findings sequentially in report order.
+
+Sequential processing is the default. Parallel processing requires user confirmation.
 
 ## Fix Policy
 
@@ -50,7 +75,7 @@ If policy is not already clear, ask the user.
 
 ## Execution Rules
 
-- parallelize only independent fixes
+- process findings in report order (see Parallelization approval for exceptions)
 - update report tracking fields after each fix
 - allow alternative fixes when there are real trade-offs
 - run bounded revalidation before closing each finding

@@ -100,8 +100,41 @@ Review engineering quality after compliance is acceptable:
 - **medium and large scopes** — the orchestrator may:
   - dispatch a dedicated compliance reviewer subagent
   - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions)
-- Launch reviewers in parallel using Agent tool with `subagent_type="code-reviewer"` and `run_in_background=true`. Send all Agent calls in a single message for true parallelism.
+- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
 - all findings from subagents must be normalized into one report
+
+## Subagent Model Policy
+
+Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
+
+### Model Tiers
+
+| Tier | Description | Use when |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available model | Simple, well-scoped tasks: conventions review, single-file checks |
+| **default** | Mid-range model | Most subagent work: architecture, security, testing review |
+| **powerful** | Most capable available model | Complex reasoning: compliance review with ambiguous constraints, tasks that failed at a lower tier |
+
+Starting tier by reviewer role:
+- **Conventions** → fast
+- **Architecture / Security / Testing** → default
+- **Compliance** → powerful (most critical pass — design/plan/rules alignment)
+
+### Ceiling Rule
+
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator. If the orchestrator runs on a mid-range model, the powerful tier equals that model.
+
+### User Override
+
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+
+### Escalation on Failure
+
+If a subagent returns an error, produces empty or unusable output, or fails its task:
+1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
+2. Re-dispatch the same task with the higher-tier model.
+3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
+4. Log the escalation in the progress update so the user sees it.
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint

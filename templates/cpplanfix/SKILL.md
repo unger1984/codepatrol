@@ -7,19 +7,52 @@ description: Fix open plan review findings, mutate tracking fields, and run boun
 
 Process open findings from `/cpplanreview`.
 
-## Progress Tracking (mandatory)
+## Source
 
-Before starting fixes, you MUST create {{PROGRESS_TOOL}} items for each open finding.
-Mark each as `in_progress` when working on it and `completed` when revalidation confirms the fix.
-This provides visual progress to the user.
+Accept either:
+- a saved plan review report path (explicit argument)
+- the latest plan review report from the current workflow task
+- the current conversation context if plan review just finished
+
+### No-argument behavior
+
+When invoked without arguments:
+1. Check for an active workflow task — if it has a single plan review report with `open` findings, use it.
+2. If multiple plan review reports with `open` findings exist (across `.ai/tasks/` and `.ai/reports/`), list them and ask the user which one to work with. Use `{{ASK_USER}}` if available.
+3. If the current conversation contains plan review results that were not saved to file, use those.
+
+Do not guess which report to use when multiple candidates exist.
 
 ## Workflow
 
 1. Load the current plan review report
-2. Select only `open` findings
-3. Decide whether each finding can be auto-fix or needs ask-user guidance
-4. Update the plan and report tracking fields
-5. Run bounded revalidation on the changed parts
+2. Select only `open` findings in report order
+3. Create progress tracking items (see below)
+4. Decide whether each finding can be auto-fix or needs ask-user guidance
+5. Process findings in order, updating the plan and report tracking fields after each
+6. Run bounded revalidation on the changed parts
+
+## Progress Tracking (mandatory)
+
+Before starting fixes, you MUST create {{PROGRESS_TOOL}} items **only for `open` findings**, in report order. Skip findings that are already `resolved`, `skipped`, or `deferred`.
+
+**Naming format:** each item MUST start with the finding number and severity from the report:
+```
+#1 [Critical] — short description
+#2 [Important] — short description
+#3 [Minor] — short description
+```
+
+Mark each as `in_progress` when working on it and `completed` when revalidation confirms the fix.
+
+### Parallelization approval
+
+After creating the full task list, if some findings are independent and can be fixed in parallel:
+1. Present the proposed parallel groups to the user.
+2. Wait for explicit approval before parallelizing.
+3. If not approved, process all findings sequentially in report order.
+
+Sequential processing is the default. Parallel processing requires user confirmation.
 
 ## Fix Policy
 
