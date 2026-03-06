@@ -117,6 +117,27 @@ The report remains the resumable source of truth across `/cpplanfix` runs.
 - `/cpplanfix`
 - `/cpplanfix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
 
+## Workflow Log
+
+### Workflow Log (mandatory within a workflow task)
+
+When working within a workflow task, append entries to the `## Log` section of `workflow.md` at these points:
+- **skill invoked** — which skill started and how (auto-invoked, user-invoked, resumed)
+- **subagent dispatched** — role and brief result (e.g. "research subagent → 5 findings, 2 open questions")
+- **question asked** — brief question and user's answer
+- **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
+- **blocker hit** — what blocked and how it was resolved
+
+Log format — append one line per event:
+```
+- `HH:MM` **/skill** — action → result
+```
+
+Keep entries to one line each. Do not log internal reasoning, full agent context, or file contents.
+Use `date +%H%M` for the timestamp. Do not guess the time.
+
+Skip logging when there is no active workflow task (ad hoc mode).
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -134,6 +155,12 @@ Ask first, act second. A clarifying question is always cheaper than a wrong acti
 ### Within a workflow task
 
 This stage is complete when open findings are resolved or explicitly deferred, and bounded revalidation shows the plan is ready for `/cpexecute`.
+
+After completion, offer two paths:
+- **continue now** — invoke `/cpexecute` directly (Use the Skill tool to invoke the target skill directly.)
+- **hand off to a new session** — provide `/cpexecute <task-artifact-path>` for the user to run later
+
+When the user chooses to continue, invoke `/cpexecute` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
 

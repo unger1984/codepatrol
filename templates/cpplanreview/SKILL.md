@@ -132,6 +132,10 @@ Rules:
 - Use only new command names in user-facing examples, such as `/cpplanreview` and `/cpplanfix`
 - If scope or artifact selection is ambiguous, ask before proceeding
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Blocker Policy
 
 Stop and ask the user when:

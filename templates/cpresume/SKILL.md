@@ -61,6 +61,14 @@ Summarize:
 
 Use artifact evidence, not assumptions.
 
+### 4. Continue The Workflow
+
+After presenting the handoff state, offer two paths:
+- **continue now** — invoke the recommended next command directly ({{INVOKE_SKILL}})
+- **hand off to a new session** — provide the command with the task artifact path for the user to run later
+
+When the user chooses to continue, invoke the command immediately. Do not tell the user to run it manually.
+
 ## Resumability Rules
 
 - Reports are audit artifacts and remain append-only except for tracking fields that the workflow explicitly mutates
@@ -73,6 +81,10 @@ Use artifact evidence, not assumptions.
 - `/cpresume .ai/tasks/2026-03-06-1420-ai-workflow/ai-workflow.workflow.md`
 - `/cpresume .ai/tasks/.../reports/2026-03-06-1540-ai-workflow.plan-review.report.md`
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Completion Criteria
 
-This command is complete when the user can continue from the correct stage without rereading the whole repository.
+This command is complete when the recommended next command has been invoked or the user has received a handoff command for a new session.

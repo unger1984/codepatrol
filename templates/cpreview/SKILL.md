@@ -223,6 +223,10 @@ Specific paths — use as-is. If a directory — find all source files inside it
 
 {{FILE_DISCOVERY}}
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Blocker Policy
 
 Stop and ask the user when:

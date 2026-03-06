@@ -127,6 +127,10 @@ If no report file was created during the process, the ad hoc save gate at the en
 
 The report remains the resumable source of truth across `/cpfix` runs.
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -153,7 +157,12 @@ No stage can be marked `done` without fresh verification evidence. No workflow s
 
 After `/cpfix` and final verification, the code path is complete but the workflow task is not.
 
-Next mandatory step: `/cpdocs` — either in the current session or a new one. {{INVOKE_SKILL}}
+Next mandatory step: `/cpdocs`. Offer two paths:
+- **continue now** — invoke `/cpdocs` directly ({{INVOKE_SKILL}})
+- **hand off to a new session** — provide `/cpdocs <task-artifact-path>` for the user to run later
+
+When the user chooses to continue, invoke `/cpdocs` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.
+
 Do not automatically clean up branches, worktrees, or execution environment.
 Cleanup is allowed only as an explicit decision considering the next workflow step.
 

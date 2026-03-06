@@ -68,8 +68,10 @@ If unfinished tasks exist:
 - show a warning
 - list task id, current stage display name, and overall status
 - offer exactly two paths:
-  - resume one of the unfinished tasks with `/cpresume`
+  - resume one of the unfinished tasks — invoke `/cpresume` directly (Use the Skill tool to invoke the target skill directly.)
   - ignore the warning and create a new workflow task
+
+When the user chooses to resume, invoke `/cpresume` immediately. Do not tell the user to run it manually.
 
 Do not silently create a new task when unfinished work already exists.
 
@@ -101,6 +103,7 @@ Required sections:
   - Execute, Review code, Fix review code, Update AI docs
 - **Decisions** — key execution decisions
 - **Notes** — minimal notes sufficient to resume in a new session
+- **Log** — chronological activity log (see Workflow Log below)
 
 ### 2. Start With Research
 
@@ -286,6 +289,16 @@ Role: act as senior technical lead / delivery architect.
 The plan defines delivery structure. The executor defines execution structure.
 The plan is a draft for mandatory `/cpplanreview` — it is not execution-ready until reviewed, fixed, and revalidated.
 
+### 5d-gate. Rules Compliance Pre-check
+
+Before considering the plan ready, verify it against project rules:
+- read all project rules from `.claude/rules/*.md` and `CLAUDE.md`
+- check that the plan does not contradict any rule (e.g. migration strategy, test commands, code style constraints, commit policy)
+- check that verification commands match what project rules prescribe
+- check that constraints in the plan header reflect actual project constraints
+
+If conflicts are found, fix them in the plan before proceeding. This pre-check reduces the number of findings in `/cpplanreview` and prevents critical rule violations from reaching the review stage.
+
 ### 5e. Commit Strategy
 
 Before writing the plan, determine the commit strategy.
@@ -301,6 +314,27 @@ Supported strategies:
 
 The chosen strategy affects plan structure, checkpoints, execution safety, parallelization, and rollback safety.
 
+## Workflow Log
+
+### Workflow Log (mandatory within a workflow task)
+
+When working within a workflow task, append entries to the `## Log` section of `workflow.md` at these points:
+- **skill invoked** — which skill started and how (auto-invoked, user-invoked, resumed)
+- **subagent dispatched** — role and brief result (e.g. "research subagent → 5 findings, 2 open questions")
+- **question asked** — brief question and user's answer
+- **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
+- **blocker hit** — what blocked and how it was resolved
+
+Log format — append one line per event:
+```
+- `HH:MM` **/skill** — action → result
+```
+
+Keep entries to one line each. Do not log internal reasoning, full agent context, or file contents.
+Use `date +%H%M` for the timestamp. Do not guess the time.
+
+Skip logging when there is no active workflow task (ad hoc mode).
+
 ## Language Policy
 
 - Internal reusable instructions remain in English
@@ -314,9 +348,20 @@ The chosen strategy affects plan structure, checkpoints, execution safety, paral
 - Use display names such as `research`, `clarification`, `plan review`, `execution`, `AI docs update`
 - Do not expose internal technical stage ids, prompt file names, or hidden agent role names unless technically necessary
 
+### Automatic Workflow Continuation
+
+After the plan is written and the rules pre-check passes, automatically invoke `/cpplanreview` (Use the Skill tool to invoke the target skill directly.). Do not ask the user to run it manually.
+
+The full auto-continuation chain within a workflow task is:
+1. plan ready → invoke `/cpplanreview`
+2. `/cpplanreview` saves report → invoke `/cpplanfix` (already configured in cpplanreview handoff)
+3. `/cpplanfix` completes → handoff decision (see Session Mode Heuristic below)
+
+Manual invocation is only suggested when handing off to a new session.
+
 ### Session Mode Heuristic
 
-After plan is ready, recommend whether to continue execution in the current session or hand off to a new one.
+After plan review and fix cycle completes, recommend whether to continue execution in the current session or hand off to a new one.
 
 Prefer current session when:
 - context is still fresh and compact
@@ -328,8 +373,9 @@ Prefer new session when:
 - upcoming work is long or multi-stage
 - current context is already heavy
 
-Provide a reasoned recommendation, but leave the final choice to the user.
-For a new session, provide a short handoff command referencing the task artifact path.
+If current session is recommended, invoke the next command directly (Use the Skill tool to invoke the target skill directly.).
+If new session is recommended, provide a short handoff command referencing the task artifact path.
+Present both options to the user. When the user chooses, act accordingly — invoke or provide the handoff command.
 
 ## Dialogue Principles
 
@@ -346,6 +392,7 @@ This command is complete for the current stage when:
 - the workflow task exists
 - research and clarification are captured
 - the current design state is approved or explicitly accepted for continuation
-- the plan is ready to enter `/cpplanreview`
+- the plan has passed rules compliance pre-check
+- `/cpplanreview` has been invoked (or handed off to a new session)
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

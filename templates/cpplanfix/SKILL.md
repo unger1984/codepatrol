@@ -117,6 +117,10 @@ The report remains the resumable source of truth across `/cpplanfix` runs.
 - `/cpplanfix`
 - `/cpplanfix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -134,6 +138,12 @@ Ask first, act second. A clarifying question is always cheaper than a wrong acti
 ### Within a workflow task
 
 This stage is complete when open findings are resolved or explicitly deferred, and bounded revalidation shows the plan is ready for `/cpexecute`.
+
+After completion, offer two paths:
+- **continue now** — invoke `/cpexecute` directly ({{INVOKE_SKILL}})
+- **hand off to a new session** — provide `/cpexecute <task-artifact-path>` for the user to run later
+
+When the user chooses to continue, invoke `/cpexecute` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
 
