@@ -17,6 +17,14 @@ jobs:
       - name: Build skills
         run: ./install.sh build
 
+      - name: Validate generated workflow skills
+        run: |
+          test -f skills/cpatrol/SKILL.md
+          test -f skills/cpreview/SKILL.md
+          test -f skills/cpfix/SKILL.md
+          test -f skills/cpdocs/SKILL.md
+          test -f skills/cprules/SKILL.md
+
       - name: Create release archive
         run: |
           VERSION="${GITHUB_REF_NAME#v}"

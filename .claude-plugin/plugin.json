@@ -1,6 +1,6 @@
 {
   "name": "codepatrol",
   "version": "0.1.3",
-  "description": "Code review skills — parallel multi-agent review with interactive fix workflow",
-  "keywords": ["code-review", "review", "fix", "quality"]
+  "description": "Workflow-first AI skills for planning, execution, review, fixes, docs, and project rules",
+  "keywords": ["workflow", "planning", "review", "docs", "rules"]
 }

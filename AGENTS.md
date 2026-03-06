@@ -9,7 +9,7 @@ CodePatrol is template-driven. Keep source-of-truth content in templates, then g
 - `.claude-plugin/` — Claude plugin manifests (marketplace.json, plugin.json)
 - `install.sh` — build/install entrypoint
 
-Example flow: edit `templates/code-review/*` -> run `./install.sh build` -> verify changes in `skills/`.
+Example flow: edit `templates/cpreview/*` or other `templates/cp*/` directories -> run `./install.sh build` -> verify changes in `skills/`.
 
 ## Build, Test, and Development Commands
 - `./install.sh build` — regenerate `skills/` from templates.
@@ -26,7 +26,7 @@ Run from repo root: `cd codepatrol && ./install.sh build`.
 - Shell scripts should be POSIX-friendly where practical; keep executable scripts in `chmod +x` state.
 
 Naming patterns:
-- Templates and generated skill directories use kebab-case (for example, `code-review-fix`).
+- Templates and generated skill directories use the approved lowercase command-aligned names (for example, `cpplanreview` or `cpfix`).
 - Environment variable placeholders use `UPPER_SNAKE_CASE` (for example, `{{AGENT_NAME}}`).
 
 ## Testing Guidelines

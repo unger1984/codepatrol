@@ -35,4 +35,4 @@ echo "Installing for ${PLATFORM}..."
 cd "$TMPDIR" && bash install.sh "$PLATFORM"
 
 echo ""
-echo "CodePatrol ${TAG} installed for ${PLATFORM}."
+echo "CodePatrol ${TAG} workflow skills installed for ${PLATFORM}."

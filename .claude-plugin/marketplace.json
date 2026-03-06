@@ -7,7 +7,7 @@
     {
       "name": "codepatrol",
       "source": "./",
-      "description": "Code review skills — parallel multi-agent review with interactive fix workflow"
+      "description": "Workflow-first AI skills for planning, execution, review, fixes, docs, and project rules"
     }
   ]
 }

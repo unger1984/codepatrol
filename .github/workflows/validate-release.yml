@@ -19,13 +19,28 @@ jobs:
       - name: Validate generated structure
         run: |
           test -d skills
-          test -f skills/code-review/SKILL.md
-          test -f skills/code-review/architecture-reviewer.md
-          test -f skills/code-review/codestyle-reviewer.md
-          test -f skills/code-review/security-reviewer.md
-          test -f skills/code-review/testing-reviewer.md
-          test -f skills/code-review-fix/SKILL.md
-          test -f skills/code-review-fix/fix-agent-prompt.md
+          test -f skills/cpatrol/SKILL.md
+          test -f skills/cpresume/SKILL.md
+          test -f skills/cpexecute/SKILL.md
+          test -f skills/cpplanreview/SKILL.md
+          test -f skills/cpplanfix/SKILL.md
+          test -f skills/cpreview/SKILL.md
+          test -f skills/cpreview/architecture-reviewer.md
+          test -f skills/cpreview/codestyle-reviewer.md
+          test -f skills/cpreview/security-reviewer.md
+          test -f skills/cpreview/testing-reviewer.md
+          test -f skills/cpfix/SKILL.md
+          test -f skills/cpfix/fix-agent-prompt.md
+          test -f skills/cpdocs/SKILL.md
+          test -f skills/cprules/SKILL.md
+
+      - name: Reject legacy generated structure
+        run: |
+          if find skills -maxdepth 1 -type d \( -name 'code-review' -o -name 'code-review-fix' \) | grep -q .; then
+            echo 'Found legacy generated skill directories.'
+            find skills -maxdepth 1 -type d
+            exit 1
+          fi
 
       - name: Validate placeholders are fully substituted
         run: |

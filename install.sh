@@ -5,6 +5,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
 SKILLS_DIR="$SCRIPT_DIR/skills"
 PLATFORMS_DIR="$SCRIPT_DIR/platforms"
+MANAGED_SKILLS="cpatrol cpresume cpexecute cpplanreview cpplanfix cpreview cpfix cpdocs cprules"
+LEGACY_SKILL_A="code""-review"
+LEGACY_SKILL_B="code""-review""-fix"
 
 usage() {
     echo "Usage: $0 <command>"
@@ -15,6 +18,15 @@ usage() {
     echo "  codex    Generate and install skills to ~/.codex/skills/"
     echo ""
     exit 1
+}
+
+clean_installed_skills() {
+    local target_dir="$1"
+    mkdir -p "$target_dir"
+
+    for skill_name in $MANAGED_SKILLS "$LEGACY_SKILL_A" "$LEGACY_SKILL_B"; do
+        rm -rf "$target_dir/$skill_name"
+    done
 }
 
 # Substitute placeholders in a template file using values from an env file
@@ -59,7 +71,9 @@ generate() {
 
     echo "Generating skills for $platform..."
 
-    # Process each template directory (code-review, code-review-fix, etc.)
+    mkdir -p "$output_dir"
+
+    # Process each template directory
     for skill_dir in "$TEMPLATES_DIR"/*/; do
         local skill_name=$(basename "$skill_dir")
         local out_skill_dir="$output_dir/$skill_name"
@@ -88,11 +102,11 @@ case "${1:-}" in
         local_dir="$HOME/.claude/skills"
         rm -rf "$SKILLS_DIR"
         generate "claude" "$SKILLS_DIR"
+        clean_installed_skills "$local_dir"
         # Copy to Claude skills directory
         for skill_dir in "$SKILLS_DIR"/*/; do
             skill_name=$(basename "$skill_dir")
             target="$local_dir/$skill_name"
-            rm -rf "$target"
             cp -r "$skill_dir" "$target"
             echo "Installed: $target"
         done
@@ -102,11 +116,10 @@ case "${1:-}" in
         tmp_dir=$(mktemp -d)
         generate "codex" "$tmp_dir"
         # Copy to Codex skills directory
-        mkdir -p "$local_dir"
+        clean_installed_skills "$local_dir"
         for skill_dir in "$tmp_dir"/*/; do
             skill_name=$(basename "$skill_dir")
             target="$local_dir/$skill_name"
-            rm -rf "$target"
             cp -r "$skill_dir" "$target"
             echo "Installed: $target"
         done
