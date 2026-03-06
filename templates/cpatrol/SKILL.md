@@ -137,24 +137,45 @@ After research, internally classify the task as small, medium, or large.
 
 Adapt workflow depth to complexity. Do not skip stages arbitrarily — base the decision on research, scope, and risk.
 
-### 3. Clarify Only What Matters
+**Dialogue depth by complexity:**
 
-Infer intent when safe. Ask the user only when ambiguity would change scope, architecture, or execution strategy.
+| Aspect | small | medium | large |
+|--------|-------|--------|-------|
+| Questions | 1-2 max, infer the rest | Full discipline, one at a time | Full discipline, one at a time |
+| Approaches | Single recommendation with brief rationale | 2-3 with trade-offs, lead with recommendation | 2-3 with structured comparison, lead with recommendation |
+| Outline | Few sentences, still requires confirmation | Section-by-section with validation | Section-by-section with validation + diagrams |
 
-When asking, prefer concrete options over vague questions. If `{{ASK_USER}}` is available in the current platform, use it. Otherwise ask in chat.
+### 3. Clarify Through Dialogue
+
+Ask one question at a time. Wait for the response before asking the next one.
+
+Rules:
+- Prefer multiple choice questions — easier for the user to answer and keeps scope focused
+- Always include an "other" option {{ASK_USER_OTHER_NOTE}}
+- Open-ended questions are fine when the answer space is genuinely unknown
+- Build questions on research findings — do not ask what research already answered
+- Infer obvious intent, but ask when ambiguity would change scope, architecture, or execution strategy
+- For small tasks: 1-2 questions max, then move on
+
+When asking, use `{{ASK_USER}}` if available. Otherwise ask in chat.
 
 ### 4. Offer Realistic Approaches
 
 If multiple viable approaches exist:
-- present 2-3 options
-- explain trade-offs briefly
-- recommend one approach
+- Lead with your recommended option and explain WHY
+- Then present 1-2 alternatives with trade-offs
+- Be explicit about what you'd lose and gain with each option
 
-For small tasks, keep this lightweight. For medium and large tasks, make the trade-off discussion explicit.
+For small tasks: a single recommendation with brief rationale is sufficient.
+For medium and large tasks: make the trade-off comparison structured and explicit.
+
+Do not present options without a recommendation. The user needs your architectural judgment, not just a menu.
 
 ### 4b. Iterative Solution Outline
 
 After the user chooses a direction, form an initial solution outline.
+
+Present the outline in logical sections. After each section, ask whether it looks right before moving on. Scale section depth to complexity: a few sentences if straightforward, up to a paragraph if nuanced.
 
 The user may refine scope, approach, constraints, or request additional options multiple times.
 After each refinement:
@@ -162,7 +183,9 @@ After each refinement:
 - show what changed
 - update trade-offs if needed
 
-Only suggest moving to design after the user confirms the solution outline.
+<HARD-GATE>
+Do NOT suggest moving to design until the user explicitly confirms the full solution outline. This applies to ALL tasks regardless of complexity. For small tasks, the outline may be compact, but explicit confirmation is still required.
+</HARD-GATE>
 
 ### 5. Drive Design And Plan Readiness
 
@@ -307,6 +330,15 @@ Prefer new session when:
 
 Provide a reasoned recommendation, but leave the final choice to the user.
 For a new session, provide a short handoff command referencing the task artifact path.
+
+## Dialogue Principles
+
+- **One question at a time** — do not overwhelm with multiple questions in one message
+- **Multiple choice preferred** — easier to answer, keeps scope tight
+- **Recommend, don't just list** — always lead with your recommendation and reasoning
+- **Incremental validation** — present outline in sections, confirm each before moving on
+- **YAGNI** — actively remove unnecessary complexity from all designs
+- **Ask first, act second** — a clarifying question is always cheaper than a wrong action
 
 ## Completion Criteria
 
