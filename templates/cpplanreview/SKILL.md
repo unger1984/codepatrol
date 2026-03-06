@@ -48,10 +48,10 @@ This is a plan review, not code review.
 Save workflow-task reports under:
 - `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<task-slug>.plan-review.report.md`
 
-Use real creation time in the filename.
+Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.plan-review.report.md`
 
-If the review is ad hoc and not task-scoped, save under `.ai/reports/`.
+Ad hoc reviews (no active workflow task) — do NOT save the report automatically. Follow the ad hoc handoff process below.
 
 ## Report Format
 

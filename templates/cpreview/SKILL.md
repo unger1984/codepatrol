@@ -116,7 +116,7 @@ Workflow-task code review reports are always saved under:
 Ad hoc reviews save under:
 - `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.report.md`
 
-Use real creation time in the filename.
+Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.review.report.md`
 
 A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
@@ -206,6 +206,11 @@ Do not take actions the user did not request. Do not guess intent when multiple 
 Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `{{ASK_USER}}` if available on the current platform.
+
+## Saving Policy
+
+- **Workflow task** — save the report automatically to the task reports directory. No need to ask.
+- **Ad hoc review** — **NEVER save the report without asking the user first.** Present the options from the Handoff section and wait for the user's explicit choice before writing any file.
 
 ## Completion Criteria
 
