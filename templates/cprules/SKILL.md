@@ -1,6 +1,6 @@
 ---
 name: cprules
-description: Analyze recurring workflow results and propose project rule improvements with user approval before apply
+description: Improve project rules based on recurring patterns from workflow results
 ---
 
 # /cprules

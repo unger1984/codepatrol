@@ -1,11 +1,37 @@
 ---
 name: cpatrol
-description: Workflow-first entry command for research, clarification, design, and plan setup
+description: Use for any new task: brainstorming ideas, exploring approaches, designing solutions, and creating implementation plans
 ---
 
 # /cpatrol
 
 Use this command as the default entry point for a new workflow run.
+
+## Model Policy
+
+This command performs research, design, and planning. The stages have different reasoning demands:
+
+| Stage | Reasoning load | Execution |
+|-------|---------------|-----------|
+| **Research** | Reading + summarizing | Dispatch to subagent (default tier) |
+| **Research refresh** | Targeted re-check | Dispatch to subagent (default tier) |
+| **Clarification** | Understanding gaps, formulating questions | Orchestrator (needs user dialog) |
+| **Approach options** | Architecture reasoning, trade-offs | Orchestrator (heavy reasoning) |
+| **Solution outline** | Iterative refinement with user | Orchestrator |
+| **Design** | Producing design.md | Orchestrator (heavy reasoning) |
+| **Plan** | Decomposition, dependencies, verification | Orchestrator (heavy reasoning) |
+
+**Research as subagent:** dispatch research to a subagent at the default tier. The subagent reads `.ai/docs/`, code, and project rules, then returns a structured summary (key findings, confirmed facts, assumptions, open questions). The orchestrator uses this summary for all subsequent stages — no need to re-read the codebase.
+
+Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
+
+**Ceiling rule:** subagents cannot use a more capable model than the orchestrator session.
+
+**User override:** if project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers, use it.
+
+**Escalation:** if the research subagent fails, re-dispatch at the next tier up. Maximum one escalation. If the ceiling tier fails, the orchestrator runs research directly.
+
+**Recommendation:** clarification, approach, design, and plan stages require strong reasoning. It is recommended to run `/cpatrol` on the most capable available model. If the current model may be too weak for quality design work, warn the user and suggest switching before proceeding.
 
 ## Progress Tracking (mandatory)
 
@@ -55,7 +81,7 @@ When starting a new task, create the task directory and workflow file:
 
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/auth-refactor.workflow.md`
 
-If `.ai/tasks/` does not exist, create it.
+Use `mkdir -p` to create the directory. This is idempotent — do not check existence separately or ask for permission to create `.ai/` directories.
 
 The task slug should be short, descriptive, and derived from the user's request.
 Before generating the folder name, run `date +%H%M` to get the current time. Use the real output in the HHMM part. Never hardcode or guess the time.
@@ -78,18 +104,28 @@ Required sections:
 
 ### 2. Start With Research
 
-Research is mandatory.
+Research is mandatory. Dispatch it to a subagent at the default model tier (see Model Policy).
 
-If `.ai/docs/README.md` exists, begin context discovery from it, then read only the docs and code needed for the current task.
-If it does not exist, begin research directly from project rules, CLAUDE.md/AGENTS.md, and the actual codebase. Do not require `.ai/` to exist.
-Do not bulk-read the repository.
-For file discovery, use Glob, Grep, or MCP filesystem tools if available. Do not fall back to shell commands (find, grep) unless no dedicated tool is available.
+**Research subagent contract:**
 
-Research must produce usable output:
-- key findings
-- confirmed facts
-- assumptions
-- open questions
+Input provided by orchestrator:
+- user's task description
+- project rules summary
+- entry point: `.ai/docs/README.md` path (if exists) or instruction to start from project rules and codebase
+
+The subagent must:
+- if `.ai/docs/README.md` exists, begin context discovery from it, then read only the docs and code needed for the current task
+- if it does not exist, begin research directly from project rules, CLAUDE.md/AGENTS.md, and the actual codebase
+- not bulk-read the repository
+- For file discovery, use Glob, Grep, or MCP filesystem tools if available. Do not fall back to shell commands (find, grep) unless no dedicated tool is available.
+
+The subagent must return a structured summary:
+- **key findings** — what exists, how it works, relevant patterns
+- **confirmed facts** — verified from code, not assumed
+- **assumptions** — what could not be verified
+- **open questions** — ambiguities that need user clarification
+
+The orchestrator uses this summary for all subsequent stages without re-reading the codebase.
 
 ### 2b. Classify Task Complexity
 
@@ -145,20 +181,25 @@ Only suggest moving to design when research and discussion are sufficient. Only 
 
 ### 5b. Research Refresh
 
-Research refresh is mandatory before design generation.
+Research refresh is mandatory before design generation. Dispatch it to a subagent at the default model tier (see Model Policy).
 
-It is required after:
-- initial research
-- clarification
-- approach discussion
-- direction choice
-- solution outline iterations
+**Research refresh subagent contract:**
 
-It must:
+Input provided by orchestrator:
+- chosen approach and rationale
+- confirmed scope
+- specific areas to re-check
+
+The subagent must:
 - re-check the chosen approach against the actual codebase
 - confirm final scope
 - verify no conflicts with docs and project rules
 - gather details that became important only after the approach was chosen
+
+The subagent must return:
+- **confirmed** — what holds true
+- **conflicts** — what contradicts the chosen approach
+- **new details** — what was discovered that affects design
 
 This is not a full repeat of research — it is a targeted re-sync before design.
 

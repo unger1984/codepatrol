@@ -1,6 +1,6 @@
 ---
 name: cpexecute
-description: Execute implementation from an approved plan with checkpoints and review handoff
+description: Use to implement features, changes, or fixes from a plan with verification checkpoints
 ---
 
 # /cpexecute
@@ -55,6 +55,12 @@ Before starting implementation:
 
 Prefer minimal sufficient context for each implementation unit.
 Do not silently change the design or plan intent during execution.
+
+## Subagent Model Policy
+
+{{@include:_shared/model-policy.md}}
+
+Assess each plan step's complexity and assign the starting tier accordingly.
 
 ## Implementer Subagent Contract
 

@@ -1,6 +1,6 @@
 ---
 name: cpreview
-description: Orchestrated code review with mandatory compliance pass before quality pass
+description: Use to review code changes for compliance and quality before merging
 ---
 
 # /cpreview
@@ -103,6 +103,15 @@ Review engineering quality after compliance is acceptable:
 - {{DISPATCH_AGENT}}
 - all findings from subagents must be normalized into one report
 
+## Subagent Model Policy
+
+{{@include:_shared/model-policy.md}}
+
+Starting tier by reviewer role:
+- **Conventions** → fast
+- **Architecture / Security / Testing** → default
+- **Compliance** → powerful (most critical pass — design/plan/rules alignment)
+
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
 - run a broad noisy review without proper scoping
@@ -140,6 +149,8 @@ Saved ONLY after user confirms via the save gate above, under:
 
 Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.review.report.md`
+
+Use `mkdir -p` when creating report directories. This is idempotent — do not check existence separately or ask the user for permission to create `.ai/` directories.
 
 A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
 

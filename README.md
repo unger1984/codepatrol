@@ -23,7 +23,7 @@ CodePatrol takes this idea further by adding structured artifact storage, sessio
 | **Plan validation** | No dedicated step | `/cpplanreview` → `/cpplanfix` cycle before implementation |
 | **Documentation** | No dedicated step | `/cpdocs` — AI-oriented docs in `.ai/docs/` with navigation and validation |
 | **Rule evolution** | No dedicated step | `/cprules` — proposes project rule improvements from accumulated findings |
-| **Ad hoc mode** | N/A | Any review/fix command works outside workflow tasks |
+| **Ad hoc mode** | N/A | Any command works outside workflow tasks; `/cpdocs` accepts natural-language requests |
 | **Audit trail** | No | Append-only reports, workflow.md decision history |
 | **Platform support** | Claude Code, Codex, Cursor, OpenCode | Claude Code, Codex CLI |
 
@@ -41,6 +41,7 @@ Both projects are MIT-licensed. They can coexist — Superpowers covers general 
 - [Session Example](#session-example)
 - [Install](#install)
 - [Rules And Context](#rules-and-context)
+  - [Model Selection For Subagents](#model-selection-for-subagents)
 - [Development](#development)
 - [CI/CD](#cicd)
 - [Known Limitations](#known-limitations)
@@ -178,7 +179,7 @@ Persistent AI-oriented documentation. This is not a duplicate of regular docs bu
 
 `README.md` inside is the mandatory entry point. Every CodePatrol command starts context discovery from it, follows navigation to find relevant docs, and reads only what is needed. This prevents aimless repository scanning.
 
-Created and updated by `/cpdocs` based on completed task results.
+Created and updated by `/cpdocs` — both as a workflow step after task completion and via ad hoc natural-language requests.
 
 ### `.ai/tasks/` — Task Artifacts
 
@@ -236,6 +237,8 @@ Executes the approved plan step by step with checkpoint reports. Stops on blocke
 **5. Documentation — `/cpdocs`**
 
 Updates AI-oriented documentation in `.ai/docs/` based on the task results. Runs a validation pass: checks navigation, placement, and code alignment.
+
+Also works in ad hoc mode: `/cpdocs add a data flow diagram for the auth module` — parses the request, researches the codebase, and creates or updates the appropriate doc.
 
 ### Utility Commands
 
@@ -354,6 +357,35 @@ CodePatrol automatically adapts language to the project:
 3. **Fallback** — if no language is specified anywhere, artifacts are created in English.
 
 Exception: `workflow.md` is always kept in English — it is a state file for agents, not documentation.
+
+### Model Selection For Subagents
+
+Commands that dispatch subagents (`/cpreview`, `/cpexecute`) use a three-tier model system:
+
+| Tier | Description | Examples |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available | Conventions review, single-file edits, boilerplate |
+| **default** | Mid-range | Architecture/security/testing review, multi-file implementation |
+| **powerful** | Most capable available | Compliance review, cross-cutting refactors, failed tasks |
+
+**How it works:**
+- The orchestrator picks the cheapest tier that fits the task complexity.
+- **Ceiling rule:** subagents never use a more capable model than the orchestrator session. If you run on Sonnet, subagents cannot escalate above Sonnet.
+- **Escalation:** if a subagent fails (error, empty output, failed self-check), it is re-dispatched one tier up. Maximum one escalation. If the ceiling tier fails, it becomes a blocker.
+- `/cpatrol` (research, design, planning) is recommended to run on the most capable model — it will warn if the current model may be too weak.
+
+**Custom model mapping:**
+
+Add to your `CLAUDE.md` or `AGENTS.md`:
+
+```markdown
+## CodePatrol model tiers
+- fast: claude-haiku-4-5-20251001
+- default: claude-sonnet-4-6
+- powerful: claude-opus-4-6
+```
+
+When a mapping is defined in project rules, it takes priority over automatic selection.
 
 ### Context And `.ai/docs/`
 

@@ -1,6 +1,6 @@
 ---
 name: cpreview
-description: Orchestrated code review with mandatory compliance pass before quality pass
+description: Use to review code changes for compliance and quality before merging
 ---
 
 # /cpreview
@@ -100,8 +100,40 @@ Review engineering quality after compliance is acceptable:
 - **medium and large scopes** — the orchestrator may:
   - dispatch a dedicated compliance reviewer subagent
   - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions)
-- Launch reviewers in parallel using Agent tool with `subagent_type="code-reviewer"` and `run_in_background=true`. Send all Agent calls in a single message for true parallelism.
+- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
 - all findings from subagents must be normalized into one report
+
+## Subagent Model Policy
+
+Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
+
+### Model Tiers
+
+| Tier | Description | Use when |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available | Simple, well-scoped tasks with clear instructions |
+| **default** | Mid-range | Most subagent work requiring comprehension and judgment |
+| **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
+
+### Ceiling Rule
+
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
+
+### User Override
+
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+
+### Escalation on Failure
+
+If a subagent returns an error, produces empty or unusable output, or fails its task:
+1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
+2. Re-dispatch the same task with the higher-tier model.
+3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
+4. Log the escalation in the progress update so the user sees it.
+Starting tier by reviewer role:
+- **Conventions** → fast
+- **Architecture / Security / Testing** → default
+- **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
@@ -140,6 +172,8 @@ Saved ONLY after user confirms via the save gate above, under:
 
 Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.review.report.md`
+
+Use `mkdir -p` when creating report directories. This is idempotent — do not check existence separately or ask the user for permission to create `.ai/` directories.
 
 A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
 

@@ -1,6 +1,6 @@
 ---
 name: cpplanreview
-description: Review a plan against project rules, design intent, execution readiness, and docs impact
+description: Review an implementation plan for correctness, compliance, and readiness
 ---
 
 # /cpplanreview
@@ -32,6 +32,43 @@ This is a plan review, not code review.
 - relevant project rules from ``.claude/rules/*.md` and `CLAUDE.md``
 - targeted project docs starting from `.ai/docs/README.md` if it exists
 
+## Execution Model
+
+- **simple plans** (few checklist items, narrow scope) — the orchestrator runs all checks directly
+- **medium and large plans** — the orchestrator may dispatch checklist groups to subagents:
+  - design consistency and scope → default tier
+  - execution readiness and verification → default tier
+  - docs/operational impact → fast tier
+- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
+- all findings from subagents must be normalized into one report
+
+## Subagent Model Policy
+
+Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
+
+### Model Tiers
+
+| Tier | Description | Use when |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available | Simple, well-scoped tasks with clear instructions |
+| **default** | Mid-range | Most subagent work requiring comprehension and judgment |
+| **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
+
+### Ceiling Rule
+
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
+
+### User Override
+
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+
+### Escalation on Failure
+
+If a subagent returns an error, produces empty or unusable output, or fails its task:
+1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
+2. Re-dispatch the same task with the higher-tier model.
+3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
+4. Log the escalation in the progress update so the user sees it.
 ## Review Checklist
 
 - Is the plan consistent with the approved design?
@@ -75,6 +112,8 @@ Saved ONLY after user confirms via the save gate above, under:
 
 Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.plan-review.report.md`
+
+Use `mkdir -p` when creating report directories. This is idempotent — do not check existence separately or ask the user for permission to create `.ai/` directories.
 
 ## Report Format
 

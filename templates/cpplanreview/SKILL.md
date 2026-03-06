@@ -1,6 +1,6 @@
 ---
 name: cpplanreview
-description: Review a plan against project rules, design intent, execution readiness, and docs impact
+description: Review an implementation plan for correctness, compliance, and readiness
 ---
 
 # /cpplanreview
@@ -31,6 +31,20 @@ This is a plan review, not code review.
 - the approved `design.md` when present
 - relevant project rules from `{{RULES_SOURCE}}`
 - targeted project docs starting from `.ai/docs/README.md` if it exists
+
+## Execution Model
+
+- **simple plans** (few checklist items, narrow scope) — the orchestrator runs all checks directly
+- **medium and large plans** — the orchestrator may dispatch checklist groups to subagents:
+  - design consistency and scope → default tier
+  - execution readiness and verification → default tier
+  - docs/operational impact → fast tier
+- {{DISPATCH_AGENT}}
+- all findings from subagents must be normalized into one report
+
+## Subagent Model Policy
+
+{{@include:_shared/model-policy.md}}
 
 ## Review Checklist
 
@@ -75,6 +89,8 @@ Saved ONLY after user confirms via the save gate above, under:
 
 Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.plan-review.report.md`
+
+Use `mkdir -p` when creating report directories. This is idempotent — do not check existence separately or ask the user for permission to create `.ai/` directories.
 
 ## Report Format
 

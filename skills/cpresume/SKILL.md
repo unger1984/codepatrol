@@ -1,6 +1,6 @@
 ---
 name: cpresume
-description: Resume an existing workflow task from workflow artifacts and review reports
+description: Use to continue unfinished work from a previous session
 ---
 
 # /cpresume
