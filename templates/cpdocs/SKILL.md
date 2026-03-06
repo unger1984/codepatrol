@@ -5,7 +5,7 @@ description: Update AI-oriented project docs from README-based navigation with v
 
 # /cpdocs
 
-Update AI-facing project documentation without turning docs into a dump of temporary task context.
+Update AI-facing project documentation. Supports both workflow-driven updates and ad hoc requests in natural language.
 
 ## Progress Tracking (mandatory)
 
@@ -28,50 +28,99 @@ Must not:
 - read all `.ai/docs/` and all code by default
 - break README-based navigation
 
+## Mode Detection
+
+Determine the operating mode before any other work:
+
+- **Workflow mode** — an active workflow task exists with a completed code path. Brief is formed from task artifacts. The skill decides autonomously what and where to document — no clarification questions about scope or target.
+- **Ad hoc mode** — no active workflow task. Brief is formed via Intent Resolution from the user's phrase. Asks the user only when genuine ambiguity exists.
+
+When invoked without arguments:
+- if a workflow task is active and code path is complete → workflow mode
+- if `.ai/docs/` does not exist → offer to initialize it
+- if recent code changes exist but no active task → offer to update docs for those changes
+- otherwise → ask the user with concrete options
+
+## Ad Hoc Intent Resolution
+
+Applies only in ad hoc mode. Produces a brief for the unified flow.
+
+### Step 1 — Parse intent
+
+Understand from the user's phrase:
+- **action** — what to do: create, augment, restructure, or check
+- **subject** — what to document: project structure, data flow, specific module, API, etc.
+- **format hints** — if the phrase mentions diagrams, tables, or specific Mermaid types
+
+If the phrase is unclear, ask the user to clarify. Offer concrete interpretations, not open-ended questions.
+
+### Step 2 — Read docs structure
+
+Read `.ai/docs/README.md` to understand existing documentation and navigation structure. This is mandatory even for narrow-scope requests — the skill must know where the new content fits.
+
+If `.ai/docs/` does not exist, note that initialization is needed before writing.
+
+### Step 3 — Scope decomposition
+
+Evaluate whether the phrase describes one topic or several.
+
+If multiple topics and grouping is ambiguous, ask the user with concrete options:
+- one overview document covering all topics
+- separate documents per topic
+- grouped by theme (with suggested grouping)
+
+Single-topic requests skip this step.
+
+### Step 4 — Target resolution
+
+For each unit from step 3, determine:
+- augment an existing file, or create a new one?
+
+Decide autonomously when the answer is clear. Ask the user with options only when the topic partially overlaps an existing document and both augmenting and creating are reasonable.
+
+### Step 5 — Research decision
+
+- **Narrow scope** (single file, one topic) — research inline in the main context
+- **Broad scope** (multiple files, cross-cutting topic) — dispatch research to a subagent
+
+## Model Policy
+
+Applies only when dispatching a research subagent for broad-scope ad hoc requests.
+
+{{@include:_shared/model-policy.md}}
+
+{{DISPATCH_AGENT}}
+
+Research subagent contract:
+- receives: subject description, scope, list of relevant paths from docs structure
+- reads: project code, configs, and relevant `.ai/docs/` files — across the entire project
+- returns: structured summary (key findings, confirmed facts, assumptions, open questions)
+- must not: bulk-read the repository; {{FILE_DISCOVERY}}
+
 ## Runtime Flow
 
-The flow is split into two phases: **analysis** (heavy reasoning) and **writing** (mechanical file I/O).
+The flow has two phases: **analysis** (reasoning) and **writing** (mechanical I/O). Do not mix them.
 
-### Analysis phase (requires reasoning)
-1. Determine intent and scope
-2. Decide whether to continue in the current session or hand off to a new one
-3. Run docs research from `.ai/docs/README.md` if it exists
-4. Read relevant task artifacts and final code state
-5. Plan documentation updates — for each target doc, prepare a **precise draft**: what to add, update, or restructure, with exact content
+### Analysis phase
+1. **Mode detection** — workflow or ad hoc (see above)
+2. **Brief formation** — workflow: from task artifacts (autonomous); ad hoc: via Intent Resolution (interactive when ambiguous)
+3. **Research** — collect information from the project codebase; scope-aware: subagent for broad, inline for narrow
+4. **Read relevant code and configs** — targeted reading based on brief and research results
+5. **Prepare drafts** — for each target doc, prepare exact content: what to add, update, or restructure
 
-### Writing phase (mechanical)
-6. Apply the prepared drafts to doc files — no new reasoning, just write what was decided in step 5
-7. Run docs validation pass
-8. Update workflow state if inside a task flow
+### Writing phase
+6. **Apply drafts** — write prepared content to doc files; no new reasoning
+7. **Validate** — run scope-aware validation pass
+8. **Update workflow state** — only in workflow mode
 
-Do not mix phases. Complete all analysis and draft preparation before writing any file. This separation ensures that expensive reasoning happens once, and writing is a straightforward apply step.
+Complete all analysis and draft preparation before writing any file.
 
 ## Research Entry
 
 If `.ai/docs/README.md` exists, start from it to decide which docs are relevant.
 If it does not exist, skip docs-based research and work from project rules, CLAUDE.md/AGENTS.md, and the actual code.
 
-Read only the targeted docs, then the final task artifacts and the final code needed for the documentation change.
-
-## Supported Modes
-
-- **task workflow mode** — update docs after completing a workflow task; inferred when an active task with completed code path exists
-- **whole-project mode** — review and update docs for the entire project; inferred when user asks to "update all docs" or no specific scope is given and no active task exists
-- **scoped mode** — update docs for specific files, directories, or areas; inferred when user specifies a target
-- **check mode** — verify existing docs for accuracy without editing; inferred from intents like "check docs", "verify documentation"
-- **update mode** — update docs for uncommitted changes, branch diffs, or specific code changes; inferred from intents like "update docs for my changes", "document what changed between branches"
-
-Infer the mode from user intent and project state. Ask only when multiple modes fit equally well.
-
-## No-Argument Behavior
-
-When invoked without arguments, infer intent from context:
-- if a workflow task is active and code path is complete, update docs for that task
-- if `.ai/docs/` does not exist, offer to initialize it
-- if recent code changes exist but no active task, offer to update docs for those changes
-
-Ask only when intent remains ambiguous after inference.
-When asking, offer concrete options, not open-ended questions.
+Read only the targeted docs, then the relevant code needed for the documentation change.
 
 ## Documentation Rules
 
@@ -132,12 +181,18 @@ If handing off, provide a short `/cpdocs <artifact-path>` command and keep the w
 
 ## Docs Validation Pass
 
-Before completion, verify:
-- `.ai/docs/README.md` still routes readers correctly
-- new docs are linked from navigation when needed
-- doc placement is coherent
-- docs match the final code and task outcome
-- the result remains suitable for targeted reading
+Scope-aware validation before completion.
+
+**Always (any scope):**
+- `.ai/docs/README.md` correctly references changed and new files
+- content matches the actual code
+
+**Broad scope (new documents, multiple files):**
+- full navigation integrity — no orphan docs, no broken links
+- placement coherence — domain vs shared
+
+**Narrow scope (augmenting a single file):**
+- changed section is consistent with the rest of the file
 
 ## Blocker Policy
 
