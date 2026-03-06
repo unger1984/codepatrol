@@ -29,6 +29,31 @@ clean_installed_skills() {
     done
 }
 
+# Resolve {{@include:relative/path}} directives by inlining file contents
+# Usage: resolve_includes <file> <base_dir>
+resolve_includes() {
+    local file="$1"
+    local base_dir="$2"
+
+    while grep -q '{{@include:' "$file"; do
+        local include_path
+        include_path=$(grep -m1 -o '{{@include:[^}]*}}' "$file" | sed 's/{{@include://;s/}}//')
+        local full_path="$base_dir/$include_path"
+
+        if [ ! -f "$full_path" ]; then
+            echo "Error: include file not found: $full_path"
+            exit 1
+        fi
+
+        # Use sed to replace the include line with file contents
+        # The 'r' command reads a file, and 'd' deletes the matched line
+        sed -i '' "/{{@include:${include_path//\//\\/}}}/{
+r $full_path
+d
+}" "$file"
+    done
+}
+
 # Substitute placeholders in a template file using values from an env file
 # Usage: substitute <template_file> <env_file> <output_file>
 substitute() {
@@ -37,6 +62,9 @@ substitute() {
     local output="$3"
 
     cp "$template" "$output"
+
+    # Resolve includes before variable substitution
+    resolve_includes "$output" "$TEMPLATES_DIR"
 
     # Read env file line by line and substitute each variable
     while IFS='=' read -r key value; do
@@ -73,9 +101,10 @@ generate() {
 
     mkdir -p "$output_dir"
 
-    # Process each template directory
+    # Process each template directory (skip _shared — it contains include-only files)
     for skill_dir in "$TEMPLATES_DIR"/*/; do
         local skill_name=$(basename "$skill_dir")
+        [[ "$skill_name" == _* ]] && continue
         local out_skill_dir="$output_dir/$skill_name"
 
         mkdir -p "$out_skill_dir"

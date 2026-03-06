@@ -111,18 +111,13 @@ Choose the cheapest model that can handle the task. If the platform supports mod
 
 | Tier | Description | Use when |
 |------|-------------|----------|
-| **fast** | Cheapest/fastest available model | Simple, well-scoped tasks: conventions review, single-file checks |
-| **default** | Mid-range model | Most subagent work: architecture, security, testing review |
-| **powerful** | Most capable available model | Complex reasoning: compliance review with ambiguous constraints, tasks that failed at a lower tier |
-
-Starting tier by reviewer role:
-- **Conventions** → fast
-- **Architecture / Security / Testing** → default
-- **Compliance** → powerful (most critical pass — design/plan/rules alignment)
+| **fast** | Cheapest/fastest available | Simple, well-scoped tasks with clear instructions |
+| **default** | Mid-range | Most subagent work requiring comprehension and judgment |
+| **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
 
 ### Ceiling Rule
 
-The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator. If the orchestrator runs on a mid-range model, the powerful tier equals that model.
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
 
 ### User Override
 
@@ -135,6 +130,10 @@ If a subagent returns an error, produces empty or unusable output, or fails its 
 2. Re-dispatch the same task with the higher-tier model.
 3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
 4. Log the escalation in the progress update so the user sees it.
+Starting tier by reviewer role:
+- **Conventions** → fast
+- **Architecture / Security / Testing** → default
+- **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint

@@ -44,28 +44,7 @@ This is a plan review, not code review.
 
 ## Subagent Model Policy
 
-Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
-
-| Tier | Description | Use when |
-|------|-------------|----------|
-| **fast** | Cheapest/fastest available | Simple checks: docs impact, scope creep |
-| **default** | Mid-range | Design consistency, execution readiness, verification adequacy |
-| **powerful** | Most capable available | Ambiguous constraints, tasks that failed at a lower tier |
-
-### Ceiling Rule
-
-The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
-
-### User Override
-
-If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers, use it. User-defined mapping takes priority over automatic selection.
-
-### Escalation on Failure
-
-If a subagent returns an error, produces empty or unusable output, or fails its task:
-1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
-2. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
-3. Log the escalation in the progress update.
+{{@include:_shared/model-policy.md}}
 
 ## Review Checklist
 
