@@ -108,15 +108,37 @@ The orchestrator must not:
 - run a broad noisy review without proper scoping
 - treat every deviation from plan/design as an error without evaluating context
 
+## STOP — Ad Hoc Save Gate (mandatory)
+
+**If there is no active workflow task, you are in ad hoc mode.**
+
+In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to save. This is a hard gate — no exceptions, no "I'll ask after saving", no "saving as draft".
+
+Flow:
+1. Generate the report content **in conversation only** (do not call Write/Edit/create file).
+2. Present the report to the user inline.
+3. Ask the user (use `AskUserQuestion` if available) which action to take:
+   - **Save report to file** — only then write to `.ai/reports/`
+   - **Run /cpfix now** — pass results through conversation context, no file
+4. Wait for the user's explicit choice before any file I/O.
+
+Violating this gate (saving before asking) is a critical workflow error.
+
 ## Reports
 
-Workflow-task code review reports are always saved under:
+### Workflow-task reports
+
+Saved automatically (no need to ask) under:
 - `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<task-slug>.review.report.md`
 
-Ad hoc reviews save under:
+### Ad hoc reports
+
+Saved ONLY after user confirms via the save gate above, under:
 - `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.report.md`
 
-Use real creation time in the filename.
+### Filename rules
+
+Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.review.report.md`
 
 A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
@@ -167,12 +189,9 @@ After the report is saved, the next fix command is `/cpfix`. Use the Skill tool 
 
 ### Ad hoc review (no active workflow task)
 
-After generating the report, ask the user (use `AskUserQuestion` if available) which action to take:
-
-1. **Save report to file** — save to `.ai/reports/` as described above
-2. **Run /cpfix now** — invoke `/cpfix` directly, passing the review results through conversation context without saving to file
-
-Do not save the report silently — always present the options and wait for the user's choice.
+The save gate above already blocks file I/O. After the user makes their choice:
+- If **save** — write the file, then offer `/cpfix`.
+- If **run /cpfix now** — invoke `/cpfix` directly, passing findings through conversation context.
 
 ## Scope Detection Commands
 
@@ -206,6 +225,11 @@ Do not take actions the user did not request. Do not guess intent when multiple 
 Ask first, act second. A clarifying question is always cheaper than a wrong action.
 
 When asking the user, use `AskUserQuestion` if available on the current platform.
+
+## Saving Policy
+
+- **Workflow task** — save the report automatically to the task reports directory. No need to ask.
+- **Ad hoc review** — governed by the STOP — Ad Hoc Save Gate section. Never bypass it.
 
 ## Completion Criteria
 

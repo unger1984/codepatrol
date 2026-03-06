@@ -43,15 +43,38 @@ This is a plan review, not code review.
 - Does the plan account for docs, install, release, and operational impact when relevant?
 - Does the plan avoid scope creep?
 
+## STOP — Ad Hoc Save Gate (mandatory)
+
+**If there is no active workflow task, you are in ad hoc mode.**
+
+In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to save. This is a hard gate — no exceptions, no "I'll ask after saving", no "saving as draft".
+
+Flow:
+1. Generate the report content **in conversation only** (do not call Write/Edit/create file).
+2. Present the report to the user inline.
+3. Ask the user (use `{{ASK_USER}}` if available) which action to take:
+   - **Save report to file** — only then write to `.ai/reports/`
+   - **Run /cpplanfix now** — pass results through conversation context, no file
+4. Wait for the user's explicit choice before any file I/O.
+
+Violating this gate (saving before asking) is a critical workflow error.
+
 ## Output
 
-Save workflow-task reports under:
+### Workflow-task reports
+
+Saved automatically (no need to ask) under:
 - `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<task-slug>.plan-review.report.md`
+
+### Ad hoc reports
+
+Saved ONLY after user confirms via the save gate above, under:
+- `.ai/reports/YYYY-MM-DD-HHMM-<scope>.plan-review.report.md`
+
+### Filename rules
 
 Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.plan-review.report.md`
-
-Ad hoc reviews (no active workflow task) — do NOT save the report automatically. Follow the ad hoc handoff process below.
 
 ## Report Format
 
@@ -115,12 +138,9 @@ After the report is saved, the next fix command is `/cpplanfix`. {{INVOKE_SKILL}
 
 ### Ad hoc review (no active workflow task)
 
-After generating the report, ask the user (use `{{ASK_USER}}` if available) which action to take:
-
-1. **Save report to file** — save to `.ai/reports/` as described above
-2. **Run /cpplanfix now** — invoke `/cpplanfix` directly, passing the review results through conversation context without saving to file
-
-Do not save the report silently — always present the options and wait for the user's choice.
+The save gate above already blocks file I/O. After the user makes their choice:
+- If **save** — write the file, then offer `/cpplanfix`.
+- If **run /cpplanfix now** — invoke `/cpplanfix` directly, passing findings through conversation context.
 
 ## Completion Criteria
 

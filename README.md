@@ -4,9 +4,36 @@
 
 Workflow-first skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Codex CLI](https://github.com/openai/codex). CodePatrol replaces the old review-only interaction with a full lifecycle workflow that keeps templates in `templates/` and platform differences in `platforms/*.env`.
 
+## Inspiration
+
+CodePatrol was inspired by [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent — a pioneering skill-based workflow for coding agents. Superpowers showed that agents work dramatically better when guided by composable skills rather than ad-hoc prompts.
+
+CodePatrol takes this idea further by adding structured artifact storage, session resumability, compliance-first reviews, and a full task lifecycle with audit trail.
+
+## CodePatrol vs Superpowers
+
+| Area | Superpowers | CodePatrol |
+|------|------------|------------|
+| **Approach** | Composable general-purpose skills that trigger automatically | Full lifecycle workflow with structured stages and handoffs |
+| **Artifact storage** | No persistent structure — context lives in chat | `.ai/` directory: `workflow.md`, `design.md`, `plan.md`, reports |
+| **Session resumability** | Start over in new session | `/cpresume` restores exact stage from artifacts |
+| **Code review** | Single-pass review against plan | Two-pass: compliance first (design/plan/rules), then quality (arch/security/tests/conventions) |
+| **Review execution** | Single reviewer | Parallel specialized reviewers (architecture, security, testing, conventions) |
+| **Fix tracking** | Manual | Incremental report mutation — each finding tracked with status, resolution, and evidence |
+| **Plan validation** | No dedicated step | `/cpplanreview` → `/cpplanfix` cycle before implementation |
+| **Documentation** | No dedicated step | `/cpdocs` — AI-oriented docs in `.ai/docs/` with navigation and validation |
+| **Rule evolution** | No dedicated step | `/cprules` — proposes project rule improvements from accumulated findings |
+| **Ad hoc mode** | N/A | Any review/fix command works outside workflow tasks |
+| **Audit trail** | No | Append-only reports, workflow.md decision history |
+| **Platform support** | Claude Code, Codex, Cursor, OpenCode | Claude Code, Codex CLI |
+
+Both projects are MIT-licensed. They can coexist — Superpowers covers general development discipline (TDD, worktrees, brainstorming), while CodePatrol focuses on the structured task lifecycle with artifacts, reviews, and audit trail.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
+- [Inspiration](#inspiration)
+- [CodePatrol vs Superpowers](#codepatrol-vs-superpowers)
 - [What CodePatrol Solves](#what-codepatrol-solves)
 - [Workflow Overview](#workflow-overview)
 - [Data Storage And Organization](#data-storage-and-organization)

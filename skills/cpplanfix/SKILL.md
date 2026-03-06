@@ -44,14 +44,35 @@ Revalidation must confirm that:
 
 Do not rerun the entire workflow unless the change requires it. Keep revalidation bounded to the impacted surface.
 
-## Report Mutation
+## Report Mutation (incremental, mandatory)
 
-For each finding, update tracking fields such as:
-- status
-- resolved via
-- resolution notes
+Update the report file **immediately after each finding** is resolved, skipped, or deferred — not in a batch at the end. This is a hard requirement for resumability: the session may be interrupted at any point, and the next `/cpplanfix` run must see which findings are already handled.
 
-Preserve the report as the resumable source of truth for subsequent `/cpplanfix` runs.
+For each processed finding, update in the report file:
+- **Status:** `open` → `resolved` | `skipped` | `deferred`
+- **Resolved via:** what was changed
+- **Resolution notes:** brief explanation
+
+Order of operations per finding:
+1. Apply fix to the plan (or decide to skip/defer)
+2. Run bounded revalidation
+3. **Persist tracking update:**
+   - If a report file exists → write updated fields to the file immediately
+   - If no file (context-only mode) → record the update in conversation memory
+4. Mark the TodoWrite item as completed
+5. Move to the next finding
+
+### Mid-process save
+
+If the user asks to save the report at any point during the fix process, immediately:
+1. Write the report file to `.ai/reports/` with all current tracking state (already resolved + still open findings).
+2. From this point forward, the file exists — all subsequent findings use file-based persistence in step 3 above.
+
+### End of process (context-only mode)
+
+If no report file was created during the process, the ad hoc save gate at the end offers to write the final report.
+
+The report remains the resumable source of truth across `/cpplanfix` runs.
 
 ## User-Facing Examples
 
@@ -84,9 +105,15 @@ After all fixes and bounded revalidation, the work is complete. No `/cpexecute` 
 
 If the source report was a saved file, update its tracking fields as usual.
 
-If findings were passed through conversation context (no saved file), ask the user (use `AskUserQuestion` if available) after all fixes are done:
+#### STOP — Ad Hoc Save Gate (mandatory)
 
-1. **Save report to file** — save the completed report with all resolution tracking fields to `.ai/reports/`
-2. **Do not save** — findings and their resolutions stay only in the current conversation
+If findings were passed through conversation context (no saved file), you MUST NOT write any report file until the user explicitly chooses to save. This is a hard gate — no exceptions.
 
-Do not save silently — always present the options and wait for the user's choice.
+Flow:
+1. Present the completed report with all resolution tracking fields **in conversation only**.
+2. Ask the user (use `AskUserQuestion` if available):
+   - **Save report to file** — only then write to `.ai/reports/`
+   - **Do not save** — findings and resolutions stay in conversation only
+3. Wait for the user's explicit choice before any file I/O.
+
+Violating this gate (saving before asking) is a critical workflow error.

@@ -58,7 +58,7 @@ Example: `.ai/tasks/2026-03-06-1420-auth-refactor/auth-refactor.workflow.md`
 If `.ai/tasks/` does not exist, create it.
 
 The task slug should be short, descriptive, and derived from the user's request.
-Use real creation date and time (HHMM) in the folder name.
+Before generating the folder name, run `date +%H%M` to get the current time. Use the real output in the HHMM part. Never hardcode or guess the time.
 Design and plan files are created later when those stages are reached.
 
 ### 1c. Workflow File Format
