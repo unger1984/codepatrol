@@ -112,6 +112,7 @@ If a subagent returns an error, produces empty or unusable output, or fails its 
 2. Re-dispatch the same task with the higher-tier model.
 3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
 4. Log the escalation in the progress update so the user sees it.
+
 Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
 
 Research subagent contract:

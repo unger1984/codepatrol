@@ -45,12 +45,12 @@ resolve_includes() {
             exit 1
         fi
 
-        # Use sed to replace the include line with file contents
-        # The 'r' command reads a file, and 'd' deletes the matched line
-        sed -i '' "/{{@include:${include_path//\//\\/}}}/{
-r $full_path
-d
-}" "$file"
+        # Replace the include line with file contents (portable across GNU/BSD)
+        local tmp="$file.inc.tmp"
+        awk -v pattern="{{@include:${include_path}}}" -v inc="$full_path" '
+            $0 ~ pattern { while ((getline line < inc) > 0) print line; close(inc); next }
+            { print }
+        ' "$file" > "$tmp" && mv "$tmp" "$file"
     done
 }
 
@@ -78,9 +78,15 @@ substitute() {
             # Empty value — remove the entire line containing the placeholder
             grep -v "$placeholder" "$output" > "$output.tmp" && mv "$output.tmp" "$output"
         else
-            # Escape special characters for awk
-            escaped_value=$(printf '%s' "$value" | sed 's/[&/\]/\\&/g')
-            awk -v ph="$placeholder" -v val="$escaped_value" '{gsub(ph, val); print}' "$output" > "$output.tmp" && mv "$output.tmp" "$output"
+            # Replace placeholder with value (awk handles literal strings via variable)
+            awk -v ph="$placeholder" -v val="$value" '{
+                idx = index($0, ph)
+                while (idx > 0) {
+                    $0 = substr($0, 1, idx-1) val substr($0, idx+length(ph))
+                    idx = index($0, ph)
+                }
+                print
+            }' "$output" > "$output.tmp" && mv "$output.tmp" "$output"
         fi
     done < "$env_file"
 }

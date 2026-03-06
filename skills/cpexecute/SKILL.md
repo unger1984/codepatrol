@@ -83,6 +83,7 @@ If a subagent returns an error, produces empty or unusable output, or fails its 
 2. Re-dispatch the same task with the higher-tier model.
 3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
 4. Log the escalation in the progress update so the user sees it.
+
 Assess each plan step's complexity and assign the starting tier accordingly.
 
 ## Implementer Subagent Contract
