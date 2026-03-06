@@ -127,6 +127,27 @@ If no report file was created during the process, the ad hoc save gate at the en
 
 The report remains the resumable source of truth across `/cpfix` runs.
 
+## Workflow Log
+
+### Workflow Log (mandatory within a workflow task)
+
+When working within a workflow task, append entries to the `## Log` section of `workflow.md` at these points:
+- **skill invoked** — which skill started and how (auto-invoked, user-invoked, resumed)
+- **subagent dispatched** — role and brief result (e.g. "research subagent → 5 findings, 2 open questions")
+- **question asked** — brief question and user's answer
+- **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
+- **blocker hit** — what blocked and how it was resolved
+
+Log format — append one line per event:
+```
+- `HH:MM` **/skill** — action → result
+```
+
+Keep entries to one line each. Do not log internal reasoning, full agent context, or file contents.
+Use `date +%H%M` for the timestamp. Do not guess the time.
+
+Skip logging when there is no active workflow task (ad hoc mode).
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -153,7 +174,12 @@ No stage can be marked `done` without fresh verification evidence. No workflow s
 
 After `/cpfix` and final verification, the code path is complete but the workflow task is not.
 
-Next mandatory step: `/cpdocs` — either in the current session or a new one. Use the Skill tool to invoke the target skill directly.
+Next mandatory step: `/cpdocs`. Offer two paths:
+- **continue now** — invoke `/cpdocs` directly (Use the Skill tool to invoke the target skill directly.)
+- **hand off to a new session** — provide `/cpdocs <task-artifact-path>` for the user to run later
+
+When the user chooses to continue, invoke `/cpdocs` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.
+
 Do not automatically clean up branches, worktrees, or execution environment.
 Cleanup is allowed only as an explicit decision considering the next workflow step.
 

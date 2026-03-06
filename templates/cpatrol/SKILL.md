@@ -1,6 +1,6 @@
 ---
 name: cpatrol
-description: Use for any new task: brainstorming ideas, exploring approaches, designing solutions, and creating implementation plans
+description: "Use for any new task: brainstorming ideas, exploring approaches, designing solutions, and creating implementation plans"
 ---
 
 # /cpatrol
@@ -68,8 +68,10 @@ If unfinished tasks exist:
 - show a warning
 - list task id, current stage display name, and overall status
 - offer exactly two paths:
-  - resume one of the unfinished tasks with `/cpresume`
+  - resume one of the unfinished tasks — invoke `/cpresume` directly ({{INVOKE_SKILL}})
   - ignore the warning and create a new workflow task
+
+When the user chooses to resume, invoke `/cpresume` immediately. Do not tell the user to run it manually.
 
 Do not silently create a new task when unfinished work already exists.
 
@@ -101,6 +103,7 @@ Required sections:
   - Execute, Review code, Fix review code, Update AI docs
 - **Decisions** — key execution decisions
 - **Notes** — minimal notes sufficient to resume in a new session
+- **Log** — chronological activity log (see Workflow Log below)
 
 ### 2. Start With Research
 
@@ -137,24 +140,45 @@ After research, internally classify the task as small, medium, or large.
 
 Adapt workflow depth to complexity. Do not skip stages arbitrarily — base the decision on research, scope, and risk.
 
-### 3. Clarify Only What Matters
+**Dialogue depth by complexity:**
 
-Infer intent when safe. Ask the user only when ambiguity would change scope, architecture, or execution strategy.
+| Aspect | small | medium | large |
+|--------|-------|--------|-------|
+| Questions | 1-2 max, infer the rest | Full discipline, one at a time | Full discipline, one at a time |
+| Approaches | Single recommendation with brief rationale | 2-3 with trade-offs, lead with recommendation | 2-3 with structured comparison, lead with recommendation |
+| Outline | Few sentences, still requires confirmation | Section-by-section with validation | Section-by-section with validation + diagrams |
 
-When asking, prefer concrete options over vague questions. If `{{ASK_USER}}` is available in the current platform, use it. Otherwise ask in chat.
+### 3. Clarify Through Dialogue
+
+Ask one question at a time. Wait for the response before asking the next one.
+
+Rules:
+- Prefer multiple choice questions — easier for the user to answer and keeps scope focused
+- Always include an "other" option {{ASK_USER_OTHER_NOTE}}
+- Open-ended questions are fine when the answer space is genuinely unknown
+- Build questions on research findings — do not ask what research already answered
+- Infer obvious intent, but ask when ambiguity would change scope, architecture, or execution strategy
+- For small tasks: 1-2 questions max, then move on
+
+When asking, use `{{ASK_USER}}` if available. Otherwise ask in chat.
 
 ### 4. Offer Realistic Approaches
 
 If multiple viable approaches exist:
-- present 2-3 options
-- explain trade-offs briefly
-- recommend one approach
+- Lead with your recommended option and explain WHY
+- Then present 1-2 alternatives with trade-offs
+- Be explicit about what you'd lose and gain with each option
 
-For small tasks, keep this lightweight. For medium and large tasks, make the trade-off discussion explicit.
+For small tasks: a single recommendation with brief rationale is sufficient.
+For medium and large tasks: make the trade-off comparison structured and explicit.
+
+Do not present options without a recommendation. The user needs your architectural judgment, not just a menu.
 
 ### 4b. Iterative Solution Outline
 
 After the user chooses a direction, form an initial solution outline.
+
+Present the outline in logical sections. After each section, ask whether it looks right before moving on. Scale section depth to complexity: a few sentences if straightforward, up to a paragraph if nuanced.
 
 The user may refine scope, approach, constraints, or request additional options multiple times.
 After each refinement:
@@ -162,7 +186,9 @@ After each refinement:
 - show what changed
 - update trade-offs if needed
 
-Only suggest moving to design after the user confirms the solution outline.
+<HARD-GATE>
+Do NOT suggest moving to design until the user explicitly confirms the full solution outline. This applies to ALL tasks regardless of complexity. For small tasks, the outline may be compact, but explicit confirmation is still required.
+</HARD-GATE>
 
 ### 5. Drive Design And Plan Readiness
 
@@ -263,6 +289,16 @@ Role: act as senior technical lead / delivery architect.
 The plan defines delivery structure. The executor defines execution structure.
 The plan is a draft for mandatory `/cpplanreview` — it is not execution-ready until reviewed, fixed, and revalidated.
 
+### 5d-gate. Rules Compliance Pre-check
+
+Before considering the plan ready, verify it against project rules:
+- read all project rules from {{RULES_SOURCE}}
+- check that the plan does not contradict any rule (e.g. migration strategy, test commands, code style constraints, commit policy)
+- check that verification commands match what project rules prescribe
+- check that constraints in the plan header reflect actual project constraints
+
+If conflicts are found, fix them in the plan before proceeding. This pre-check reduces the number of findings in `/cpplanreview` and prevents critical rule violations from reaching the review stage.
+
 ### 5e. Commit Strategy
 
 Before writing the plan, determine the commit strategy.
@@ -278,6 +314,10 @@ Supported strategies:
 
 The chosen strategy affects plan structure, checkpoints, execution safety, parallelization, and rollback safety.
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Language Policy
 
 - Internal reusable instructions remain in English
@@ -291,9 +331,20 @@ The chosen strategy affects plan structure, checkpoints, execution safety, paral
 - Use display names such as `research`, `clarification`, `plan review`, `execution`, `AI docs update`
 - Do not expose internal technical stage ids, prompt file names, or hidden agent role names unless technically necessary
 
+### Automatic Workflow Continuation
+
+After the plan is written and the rules pre-check passes, automatically invoke `/cpplanreview` ({{INVOKE_SKILL}}). Do not ask the user to run it manually.
+
+The full auto-continuation chain within a workflow task is:
+1. plan ready → invoke `/cpplanreview`
+2. `/cpplanreview` saves report → invoke `/cpplanfix` (already configured in cpplanreview handoff)
+3. `/cpplanfix` completes → handoff decision (see Session Mode Heuristic below)
+
+Manual invocation is only suggested when handing off to a new session.
+
 ### Session Mode Heuristic
 
-After plan is ready, recommend whether to continue execution in the current session or hand off to a new one.
+After plan review and fix cycle completes, recommend whether to continue execution in the current session or hand off to a new one.
 
 Prefer current session when:
 - context is still fresh and compact
@@ -305,8 +356,18 @@ Prefer new session when:
 - upcoming work is long or multi-stage
 - current context is already heavy
 
-Provide a reasoned recommendation, but leave the final choice to the user.
-For a new session, provide a short handoff command referencing the task artifact path.
+If current session is recommended, invoke the next command directly ({{INVOKE_SKILL}}).
+If new session is recommended, provide a short handoff command referencing the task artifact path.
+Present both options to the user. When the user chooses, act accordingly — invoke or provide the handoff command.
+
+## Dialogue Principles
+
+- **One question at a time** — do not overwhelm with multiple questions in one message
+- **Multiple choice preferred** — easier to answer, keeps scope tight
+- **Recommend, don't just list** — always lead with your recommendation and reasoning
+- **Incremental validation** — present outline in sections, confirm each before moving on
+- **YAGNI** — actively remove unnecessary complexity from all designs
+- **Ask first, act second** — a clarifying question is always cheaper than a wrong action
 
 ## Completion Criteria
 
@@ -314,6 +375,7 @@ This command is complete for the current stage when:
 - the workflow task exists
 - research and clarification are captured
 - the current design state is approved or explicitly accepted for continuation
-- the plan is ready to enter `/cpplanreview`
+- the plan has passed rules compliance pre-check
+- `/cpplanreview` has been invoked (or handed off to a new session)
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

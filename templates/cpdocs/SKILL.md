@@ -194,6 +194,10 @@ Scope-aware validation before completion.
 **Narrow scope (augmenting a single file):**
 - changed section is consistent with the rest of the file
 
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
 ## Blocker Policy
 
 Stop and ask the user when:

@@ -130,13 +130,17 @@ Provide a reasoned recommendation, but leave the final choice to the user.
 
 ## Handoff To /cpreview
 
-When implementation is complete, do not silently launch review.
+When implementation is complete, offer two paths:
+- **continue now** — invoke `/cpreview` directly ({{INVOKE_SKILL}})
+- **hand off to a new session** — provide `/cpreview <task-artifact-path>` for the user to run later
 
-Offer two paths:
-- review now with `/cpreview` — {{INVOKE_SKILL}}
-- hand off to a new session with `/cpreview <task-artifact-path>`
+When the user chooses to continue, invoke `/cpreview` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.
 
 The review side must be able to restore context from task artifacts and reports.
+
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
 
 ## Blocker Policy
 

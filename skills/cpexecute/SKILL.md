@@ -154,13 +154,34 @@ Provide a reasoned recommendation, but leave the final choice to the user.
 
 ## Handoff To /cpreview
 
-When implementation is complete, do not silently launch review.
+When implementation is complete, offer two paths:
+- **continue now** — invoke `/cpreview` directly (Use the Skill tool to invoke the target skill directly.)
+- **hand off to a new session** — provide `/cpreview <task-artifact-path>` for the user to run later
 
-Offer two paths:
-- review now with `/cpreview` — Use the Skill tool to invoke the target skill directly.
-- hand off to a new session with `/cpreview <task-artifact-path>`
+When the user chooses to continue, invoke `/cpreview` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.
 
 The review side must be able to restore context from task artifacts and reports.
+
+## Workflow Log
+
+### Workflow Log (mandatory within a workflow task)
+
+When working within a workflow task, append entries to the `## Log` section of `workflow.md` at these points:
+- **skill invoked** — which skill started and how (auto-invoked, user-invoked, resumed)
+- **subagent dispatched** — role and brief result (e.g. "research subagent → 5 findings, 2 open questions")
+- **question asked** — brief question and user's answer
+- **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
+- **blocker hit** — what blocked and how it was resolved
+
+Log format — append one line per event:
+```
+- `HH:MM` **/skill** — action → result
+```
+
+Keep entries to one line each. Do not log internal reasoning, full agent context, or file contents.
+Use `date +%H%M` for the timestamp. Do not guess the time.
+
+Skip logging when there is no active workflow task (ad hoc mode).
 
 ## Blocker Policy
 
