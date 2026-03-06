@@ -23,7 +23,7 @@ CodePatrol takes this idea further by adding structured artifact storage, sessio
 | **Plan validation** | No dedicated step | `/cpplanreview` → `/cpplanfix` cycle before implementation |
 | **Documentation** | No dedicated step | `/cpdocs` — AI-oriented docs in `.ai/docs/` with navigation and validation |
 | **Rule evolution** | No dedicated step | `/cprules` — proposes project rule improvements from accumulated findings |
-| **Ad hoc mode** | N/A | Any review/fix command works outside workflow tasks |
+| **Ad hoc mode** | N/A | Any command works outside workflow tasks; `/cpdocs` accepts natural-language requests |
 | **Audit trail** | No | Append-only reports, workflow.md decision history |
 | **Platform support** | Claude Code, Codex, Cursor, OpenCode | Claude Code, Codex CLI |
 
@@ -179,7 +179,7 @@ Persistent AI-oriented documentation. This is not a duplicate of regular docs bu
 
 `README.md` inside is the mandatory entry point. Every CodePatrol command starts context discovery from it, follows navigation to find relevant docs, and reads only what is needed. This prevents aimless repository scanning.
 
-Created and updated by `/cpdocs` based on completed task results.
+Created and updated by `/cpdocs` — both as a workflow step after task completion and via ad hoc natural-language requests.
 
 ### `.ai/tasks/` — Task Artifacts
 
@@ -237,6 +237,8 @@ Executes the approved plan step by step with checkpoint reports. Stops on blocke
 **5. Documentation — `/cpdocs`**
 
 Updates AI-oriented documentation in `.ai/docs/` based on the task results. Runs a validation pass: checks navigation, placement, and code alignment.
+
+Also works in ad hoc mode: `/cpdocs add a data flow diagram for the auth module` — parses the request, researches the codebase, and creates or updates the appropriate doc.
 
 ### Utility Commands
 
