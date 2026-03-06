@@ -32,7 +32,7 @@ Review only the relevant evidence:
 - completed workflow artifacts
 - review reports
 - existing rule files
-- `.ai/docs/README.md` and related docs when they affect rule interpretation
+- `.ai/docs/README.md` and related docs when they exist and affect rule interpretation
 
 ## Output
 

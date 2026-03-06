@@ -52,6 +52,18 @@ Preserve the report as the resumable source of truth for subsequent `/cpplanfix`
 - `/cpplanfix`
 - `/cpplanfix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
 
+## Blocker Policy
+
+Stop and ask the user when:
+- a critical conflict exists between design, plan, code, rules, or repo state
+- intent or choice is ambiguous and affects implementation meaning
+- required tools, access, or dependencies are missing
+- verification or revalidation repeatedly fails after reasonable attempts
+
+Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+
 ## Completion Criteria
 
 This stage is complete when open findings are resolved or explicitly deferred, and bounded revalidation shows the plan is ready for `/cpexecute`.
+
+No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

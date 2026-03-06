@@ -28,12 +28,19 @@ Do not move to quality findings while unresolved compliance findings remain, unl
 
 ## Fix Policy
 
-Support:
-- manual per item
-- auto simple ask-user for complex cases
-- custom user policy
+Before starting fixes, determine:
 
-If policy is not already clear, ask.
+**Severity scope:**
+- critical only
+- critical + important
+- all
+
+**Processing style:**
+- manual per item
+- auto simple, ask-user for complex cases
+- custom user-defined policy
+
+If policy is not already clear, ask the user.
 
 ## Execution Rules
 
@@ -41,7 +48,18 @@ If policy is not already clear, ask.
 - update report tracking fields after each fix
 - allow alternative fixes when there are real trade-offs
 - run bounded revalidation before closing each finding
-- run final project checks before declaring the code path complete
+
+### Final Verification Pass
+
+After all fixes, run all relevant project checks:
+- lint
+- tests
+- build or typecheck if applicable
+- other mandatory checks from project rules
+
+Bounded revalidation after fixes must first confirm that compliance risks are actually closed, and only then consider the quality fix cycle complete.
+
+If fixes lead to conflicting findings, unclear fix policy, or repeated revalidation failure, treat it as a blocker and stop.
 
 ## Report Mutation
 
@@ -52,6 +70,18 @@ For each processed finding, update:
 
 The report remains resumable across future `/cpfix` runs.
 
+## Blocker Policy
+
+Stop and ask the user when:
+- a critical conflict exists between design, plan, code, rules, or repo state
+- intent or choice is ambiguous and affects implementation meaning
+- required tools, access, or dependencies are missing
+- verification or revalidation repeatedly fails after reasonable attempts
+
+Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+
 ## Completion Criteria
 
 This stage is complete when selected findings are resolved with evidence, compliance findings are handled first, and final verification is fresh.
+
+No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

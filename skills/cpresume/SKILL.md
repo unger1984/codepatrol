@@ -28,7 +28,7 @@ Collect the minimum set of artifacts needed to continue:
 - `<task-slug>.plan.md` if present
 - open review reports if present
 
-Start any additional docs research from `.ai/docs/README.md`.
+If `.ai/docs/README.md` exists, start additional docs research from it. If it does not exist, skip docs-based research.
 
 ### 2. Detect The Current Phase
 
