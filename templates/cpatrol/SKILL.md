@@ -1,6 +1,6 @@
 ---
 name: cpatrol
-description: Use for any new task: brainstorming ideas, exploring approaches, designing solutions, and creating implementation plans
+description: "Use for any new task: brainstorming ideas, exploring approaches, designing solutions, and creating implementation plans"
 ---
 
 # /cpatrol
