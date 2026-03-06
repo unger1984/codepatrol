@@ -56,16 +56,21 @@ For each processed finding, update in the report file:
 Order of operations per finding:
 1. Apply fix to the plan (or decide to skip/defer)
 2. Run bounded revalidation
-3. **Persist tracking update:**
-   - If a report file exists → write updated fields to the file immediately
+3. **Persist tracking update (mandatory — do this, not skip):**
+   - If a report file exists → **edit the report file right now** using the Edit tool. Find this finding's block and replace:
+     - `**Status:** open` → `**Status:** resolved` (or `skipped` / `deferred`)
+     - `**Resolved via:**` → `**Resolved via:** <what was changed>`
+     - `**Resolution notes:**` → `**Resolution notes:** <brief explanation>`
    - If no file (context-only mode) → record the update in conversation memory
 4. Mark the {{PROGRESS_TOOL}} item as completed
 5. Move to the next finding
 
+**Not updating the report file after each finding is a workflow violation.** The file is the source of truth for resumability.
+
 ### Mid-process save
 
 If the user asks to save the report at any point during the fix process, immediately:
-1. Write the report file to `.ai/reports/` with all current tracking state (already resolved + still open findings).
+1. Write the report file to `.ai/reports/` with all current tracking state (already resolved + still open findings). Use `mkdir -p` for the directory — do not check existence separately or ask permission.
 2. From this point forward, the file exists — all subsequent findings use file-based persistence in step 3 above.
 
 ### End of process (context-only mode)

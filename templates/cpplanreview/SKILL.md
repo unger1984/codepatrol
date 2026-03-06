@@ -76,6 +76,8 @@ Saved ONLY after user confirms via the save gate above, under:
 Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.plan-review.report.md`
 
+Use `mkdir -p` when creating report directories. This is idempotent — do not check existence separately or ask the user for permission to create `.ai/` directories.
+
 ## Report Format
 
 Structure the report as:

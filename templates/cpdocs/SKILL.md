@@ -79,7 +79,7 @@ When asking, offer concrete options, not open-ended questions.
 ## Initialization
 
 If `.ai/docs/` does not exist and the mode requires it:
-- create `.ai/docs/README.md`, `.ai/docs/domains/`, `.ai/docs/shared/`
+- create directories with `mkdir -p` (idempotent — do not check existence separately or ask permission): `.ai/docs/`, `.ai/docs/domains/`, `.ai/docs/shared/`
 - populate README.md as a navigation entry point
 - use project rules, CLAUDE.md/AGENTS.md, and actual code as sources for initial documentation
 

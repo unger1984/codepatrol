@@ -55,7 +55,7 @@ When starting a new task, create the task directory and workflow file:
 
 Example: `.ai/tasks/2026-03-06-1420-auth-refactor/auth-refactor.workflow.md`
 
-If `.ai/tasks/` does not exist, create it.
+Use `mkdir -p` to create the directory. This is idempotent — do not check existence separately or ask for permission to create `.ai/` directories.
 
 The task slug should be short, descriptive, and derived from the user's request.
 Before generating the folder name, run `date +%H%M` to get the current time. Use the real output in the HHMM part. Never hardcode or guess the time.
