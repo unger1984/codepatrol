@@ -80,19 +80,64 @@ Workflow-task code review reports are always saved under:
 Ad hoc reviews save under:
 - `.ai/reports/<timestamp>-<scope>.review.report.md`
 
-Each finding must include:
-- severity
-- finding type: `compliance` or `quality`
-- recommended resolution
-- status (`open`, `done`, `skipped`)
-- resolved via
-- resolution notes
-
 A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
+
+## Report Format
+
+Structure the report as:
+
+```markdown
+## Code Review Report
+
+### Summary
+- Scope: N files (scope description)
+- Critical: N | Important: N | Minor: N
+- Assessment: NEEDS_CHANGES | APPROVED | APPROVED_WITH_NOTES
+
+### Critical Issues
+1. [CATEGORY] `file:line` — description
+   **Finding type:** compliance | quality
+   **Fix:** concrete solution with code snippet where applicable
+   **Status:** open
+   **Resolved via:**
+   **Resolution notes:**
+
+### Important Issues
+(same format)
+
+### Minor Issues
+(same format)
+
+### Strengths
+What was done well.
+```
+
+Rules:
+- every issue MUST include a Fix field with a concrete solution — an issue without a Fix is useless
+- group by severity: Critical → Important → Minor
+- assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only Important/Minor quality findings, APPROVED if no issues
+- deduplicate: if two reviewers found the same issue, keep one with both tags
+- severity disagreement between reviewers: take the highest
+- when aggregating subagent results, always preserve Fix and code snippets from subagent output
 
 ## Handoff
 
 After the report is saved, the next fix command is `/cpfix`.
+
+## Progress Tracking
+
+Use TodoWrite to track review progress:
+- create a todo for each review pass or reviewer subagent before dispatching
+- mark as in_progress when work starts
+- mark as completed when results are collected
+
+Example:
+- [ ] Compliance pass
+- [ ] Architecture review
+- [ ] Security review
+- [ ] Testing review
+- [ ] Conventions review
+- [ ] Report generation
 
 ## Blocker Policy
 
@@ -103,6 +148,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+
+When asking the user, use `AskUserQuestion` if available on the current platform.
 
 ## Completion Criteria
 

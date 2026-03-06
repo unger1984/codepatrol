@@ -70,6 +70,13 @@ When asking, offer concrete options, not open-ended questions.
   - then active agent or client language rules
   - English fallback
 
+## Initialization
+
+If `.ai/docs/` does not exist and the mode requires it:
+- create `.ai/docs/README.md`, `.ai/docs/domains/`, `.ai/docs/shared/`
+- populate README.md as a navigation entry point
+- use project rules, CLAUDE.md/AGENTS.md, and actual code as sources for initial documentation
+
 ## Doc File Format
 
 Each doc file in `.ai/docs/` should be AI-friendly and include:
@@ -119,6 +126,13 @@ Before completion, verify:
 - docs match the final code and task outcome
 - the result remains suitable for targeted reading
 
+## Progress Tracking
+
+Use TodoWrite to track documentation progress:
+- create a todo for each runtime flow step
+- mark as in_progress when working on it
+- mark as completed when done
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -128,8 +142,14 @@ Stop and ask the user when:
 
 Do not continue on assumptions when the risk of documenting wrong information is high.
 
+When asking the user, use `AskUserQuestion` if available on the current platform.
+
 ## Completion Criteria
 
 This stage is complete only after the docs validation pass succeeds and workflow state is updated.
+
+After `/cpdocs` completes, the workflow task is fully complete.
+Do not automatically clean up branches, worktrees, or execution environment unless explicitly decided.
+Post-workflow actions (merge, PR, branch retention, cleanup) should be either already resolved or left as an explicit post-workflow decision.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

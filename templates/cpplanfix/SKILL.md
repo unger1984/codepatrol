@@ -52,6 +52,13 @@ Preserve the report as the resumable source of truth for subsequent `/cpplanfix`
 - `/cpplanfix`
 - `/cpplanfix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
 
+## Progress Tracking
+
+Use TodoWrite to track fix progress:
+- create a todo for each open finding
+- mark as in_progress when working on a finding
+- mark as completed when revalidation confirms the fix
+
 ## Blocker Policy
 
 Stop and ask the user when:

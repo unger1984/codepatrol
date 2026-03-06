@@ -39,23 +39,56 @@ This is a plan review, not code review.
 
 ## Output
 
-Produce a normalized report with findings that include:
-- severity
-- finding type
-- recommended resolution
-- status
-- resolution notes placeholder
-
 Save workflow-task reports under:
 - `.ai/tasks/<task>/reports/<timestamp>-<task-slug>.plan-review.report.md`
 
 If the review is ad hoc and not task-scoped, save under `.ai/reports/`.
+
+## Report Format
+
+Structure the report as:
+
+```markdown
+## Plan Review Report
+
+### Summary
+- Plan: task slug and path
+- Critical: N | Important: N | Minor: N
+- Assessment: NEEDS_CHANGES | APPROVED | APPROVED_WITH_NOTES
+
+### Critical Issues
+1. [CATEGORY] — description
+   **Fix:** concrete resolution
+   **Status:** open
+   **Resolved via:**
+   **Resolution notes:**
+
+### Important Issues
+(same format)
+
+### Minor Issues
+(same format)
+
+### Strengths
+What is well structured in the plan.
+```
+
+Rules:
+- every issue MUST include a Fix field with a concrete resolution — an issue without a Fix is useless
+- group by severity: Critical → Important → Minor
+- assessment: NEEDS_CHANGES if any Critical, APPROVED_WITH_NOTES if only Important/Minor, APPROVED if no issues
 
 ## Interaction Rules
 
 - Keep internal instructions in English
 - Use only new command names in user-facing examples, such as `/cpplanreview` and `/cpplanfix`
 - If scope or artifact selection is ambiguous, ask before proceeding
+
+## Progress Tracking
+
+Use TodoWrite to track review progress:
+- create a todo for each checklist item
+- mark as completed when the check is done
 
 ## Blocker Policy
 
@@ -66,6 +99,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+
+When asking the user, use `AskUserQuestion` if available on the current platform.
 
 ## Completion Criteria
 

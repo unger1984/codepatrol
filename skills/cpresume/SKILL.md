@@ -16,7 +16,7 @@ Resume work from existing workflow artifacts instead of reconstructing context f
 - `plan.md`
 - a report file inside `reports/`
 
-If no argument is provided, find resumable tasks under `.ai/tasks/` and ask the user which one to continue.
+If no argument is provided, find resumable tasks under `.ai/tasks/` and ask the user which one to continue. Use `AskUserQuestion` if available on the current platform.
 
 ## Resume Process
 

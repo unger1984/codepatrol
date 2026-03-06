@@ -95,6 +95,18 @@ If multiple viable approaches exist:
 
 For small tasks, keep this lightweight. For medium and large tasks, make the trade-off discussion explicit.
 
+### 4b. Iterative Solution Outline
+
+After the user chooses a direction, form an initial solution outline.
+
+The user may refine scope, approach, constraints, or request additional options multiple times.
+After each refinement:
+- update the outline
+- show what changed
+- update trade-offs if needed
+
+Only suggest moving to design after the user confirms the solution outline.
+
 ### 5. Drive Design And Plan Readiness
 
 Do not jump to implementation.
@@ -129,6 +141,81 @@ It must:
 
 This is not a full repeat of research — it is a targeted re-sync before design.
 
+### 5c. Design File Format
+
+One design file per workflow task: `<task-slug>.design.md` inside the task folder.
+The file is edited iteratively — no separate versions within one task.
+
+Design file must include:
+- task objective
+- research summary
+- constraints and relevant rules
+- considered approaches with trade-offs
+- chosen approach and rationale
+- solution outline
+- impact analysis
+- assumptions and open questions
+- diagrams where they genuinely help
+
+Default format: Markdown with Mermaid diagrams (DFD, Sequence, module relationships).
+Use C4-lite when it helps. Project rules and conventions override these defaults.
+
+Role: act as senior software architect.
+Design based on research and actual project structure, not ideal architecture in a vacuum.
+Do not jump to plan or implementation. Do not silently ignore project rules.
+
+### 5d. Plan File Format
+
+One plan file per workflow task: `<task-slug>.plan.md` inside the task folder.
+The file is edited iteratively after review/fix.
+
+Role: act as senior technical lead / delivery architect.
+
+**Plan header must include:**
+- link to design file
+- link to plan file
+- task slug
+- creation time
+- goal
+- scope
+- execution mode
+- execution model (default: current model; if a weaker model is specified, adapt granularity)
+- recommended skills and agents
+- high-level parallelization strategy
+- commit strategy
+- constraints
+- verification and documentation strategy
+
+**Plan body must include:**
+- stages with objectives
+- key steps per stage
+- verification per stage
+- commit expectations per stage
+
+**Plan body must not include:**
+- full code listings
+- step-by-step TDD for every micro-action
+- detailed file lists for every action
+- exact shell commands for every step
+
+The plan defines delivery structure. The executor defines execution structure.
+The plan is a draft for mandatory `/cpplanreview` — it is not execution-ready until reviewed, fixed, and revalidated.
+
+### 5e. Commit Strategy
+
+Before writing the plan, determine the commit strategy.
+
+If project rules or CLAUDE.md/AGENTS.md define a commit strategy, use it.
+Otherwise, ask the user. Use `{{ASK_USER}}` if available.
+
+Supported strategies:
+- no intermediate commits
+- commit per stage
+- commit per step
+- custom strategy for the specific task
+
+The chosen strategy affects plan structure, checkpoints, execution safety, parallelization, and rollback safety.
+
 ## Language Policy
 
 - Internal reusable instructions remain in English
@@ -141,6 +228,22 @@ This is not a full repeat of research — it is a targeted re-sync before design
 - Show command names as `/cpatrol`, `/cpresume`, `/cpplanreview`, `/cpexecute`, `/cpdocs`
 - Use display names such as `research`, `clarification`, `plan review`, `execution`, `AI docs update`
 - Do not expose internal technical stage ids, prompt file names, or hidden agent role names unless technically necessary
+
+## Progress Tracking
+
+Use TodoWrite to track workflow progress:
+- create a todo for each workflow stage
+- mark as in_progress when entering a stage
+- mark as completed when stage criteria are met
+
+Example:
+- [ ] Research
+- [ ] Clarification
+- [ ] Approach options
+- [ ] Solution outline
+- [ ] Research refresh
+- [ ] Design
+- [ ] Plan
 
 ### Session Mode Heuristic
 

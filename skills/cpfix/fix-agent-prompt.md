@@ -23,6 +23,7 @@ You are applying one review fix from the `/cpfix` workflow.
 6. Update tests when public behavior, exported interfaces, or the directly affected test surface changes.
 7. Run the smallest relevant verification first, then the broader required checks.
 8. Do not commit.
+9. If the fix conflicts with project rules, plan intent, or other findings, stop and report the conflict back to the orchestrator instead of guessing.
 
 ## Output
 

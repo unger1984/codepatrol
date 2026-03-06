@@ -118,6 +118,20 @@ Offer two paths:
 
 The review side must be able to restore context from task artifacts and reports.
 
+## Progress Tracking
+
+Use TodoWrite to track execution progress:
+- create a todo for each plan stage before starting execution
+- mark as in_progress when a stage begins
+- mark as completed when verification passes
+
+Example:
+- [ ] Preflight checks
+- [ ] Stage 1: <objective>
+- [ ] Stage 2: <objective>
+- [ ] Final verification
+- [ ] Handoff to /cpreview
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -127,6 +141,8 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+
+When asking the user, use `{{ASK_USER}}` if available on the current platform.
 
 ## Completion Criteria
 

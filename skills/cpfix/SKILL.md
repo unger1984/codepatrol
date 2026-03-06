@@ -70,6 +70,13 @@ For each processed finding, update:
 
 The report remains resumable across future `/cpfix` runs.
 
+## Progress Tracking
+
+Use TodoWrite to track fix progress:
+- create a todo for each open finding before starting fixes
+- mark as in_progress when working on a finding
+- mark as completed when bounded revalidation confirms the fix
+
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -80,8 +87,18 @@ Stop and ask the user when:
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
 
+When asking the user, use `AskUserQuestion` if available on the current platform.
+
 ## Completion Criteria
 
 This stage is complete when selected findings are resolved with evidence, compliance findings are handled first, and final verification is fresh.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
+
+## Code Path Complete
+
+After `/cpfix` and final verification, the code path is complete but the workflow task is not.
+
+Next mandatory step: `/cpdocs` — either in the current session or a new one.
+Do not automatically clean up branches, worktrees, or execution environment.
+Cleanup is allowed only as an explicit decision considering the next workflow step.
