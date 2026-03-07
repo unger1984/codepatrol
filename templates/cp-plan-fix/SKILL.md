@@ -158,7 +158,7 @@ This stage is complete when open findings are resolved or explicitly deferred, a
 
 After completion, present three options to the user:
 
-- **Execute in current session** — invoke `/cp-execute` directly ({{INVOKE_SKILL}}). Best when context is fresh and task is small.
+- **Execute in current session** — invoke `/cp-execute` ({{INVOKE_SKILL}}). Best when context is fresh and task is small.
 - **Hand off to a new session** — provide `/cp-execute <task-artifact-path>` for the user to run later. Best when context is heavy or upcoming work is long.
 - **Run another review/fix cycle** — invoke `/cp-plan-review` again. Best when the previous review found critical issues. After 2 review/fix cycles, recommend proceeding to execution — further cycles typically yield diminishing returns.
 

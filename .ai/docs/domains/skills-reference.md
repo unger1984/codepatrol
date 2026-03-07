@@ -28,50 +28,53 @@ All skills in `templates/`. For build mechanics see [Architecture](../shared/arc
 | Skill | Purpose | Detailed doc |
 |-------|---------|-------------|
 | [using-codepatrol](skills/using-codepatrol.md) | Маршрутизация задач к скиллам CodePatrol вместо генерических | [details](skills/using-codepatrol.md) |
-| [cpatrol](skills/cpatrol.md) | Research, design, plan для новой задачи (entry point) | [details](skills/cpatrol.md) |
-| [cpplanreview](skills/cpplanreview.md) | Валидация плана перед реализацией | [details](skills/cpplanreview.md) |
-| [cpplanfix](skills/cpplanfix.md) | Исправление findings из plan review | [details](skills/cpplanfix.md) |
-| [cpexecute](skills/cpexecute.md) | Реализация кода из утверждённого плана | [details](skills/cpexecute.md) |
-| [cpreview](skills/cpreview.md) | Двухпроходный code review (compliance + quality) | [details](skills/cpreview.md) |
-| [cpfix](skills/cpfix.md) | Исправление findings из code review | [details](skills/cpfix.md) |
-| [cpdocs](skills/cpdocs.md) | Создание/обновление AI-facing документации | [details](skills/cpdocs.md) |
-| [cpresume](skills/cpresume.md) | Восстановление прерванной работы | [details](skills/cpresume.md) |
-| [cprules](skills/cprules.md) | Улучшение правил проекта из паттернов | [details](skills/cprules.md) |
+| [cp-idea](skills/cp-idea.md) | Research и design для новой задачи (entry point) | [details](skills/cp-idea.md) |
+| [cp-plan](skills/cp-plan.md) | Написание плана реализации из утверждённого дизайна | [details](skills/cp-plan.md) |
+| [cp-plan-review](skills/cp-plan-review.md) | Валидация плана перед реализацией | [details](skills/cp-plan-review.md) |
+| [cp-plan-fix](skills/cp-plan-fix.md) | Исправление findings из plan review | [details](skills/cp-plan-fix.md) |
+| [cp-execute](skills/cp-execute.md) | Реализация кода из утверждённого плана | [details](skills/cp-execute.md) |
+| [cp-review](skills/cp-review.md) | Двухпроходный code review (compliance + quality) | [details](skills/cp-review.md) |
+| [cp-fix](skills/cp-fix.md) | Исправление findings из code review | [details](skills/cp-fix.md) |
+| [cp-docs](skills/cp-docs.md) | Создание/обновление AI-facing документации | [details](skills/cp-docs.md) |
+| [cp-resume](skills/cp-resume.md) | Восстановление прерванной работы | [details](skills/cp-resume.md) |
+| [cp-rules](skills/cp-rules.md) | Улучшение правил проекта из паттернов | [details](skills/cp-rules.md) |
 
 ## Workflow Pipeline
 
 ```
-/cpatrol → /cpplanreview → /cpplanfix (if findings) → /cpexecute → /cpreview → /cpfix (if findings) → /cpdocs → /cprules (optional)
+/cp-idea → /cp-plan → /cp-plan-review → /cp-plan-fix (if findings) → /cp-execute → /cp-review → /cp-fix (if findings) → /cp-docs → /cp-rules (optional)
 ```
 
-Cross-cutting: `/cpresume` — resume с любого этапа. `/using-codepatrol` — routing при старте.
+Cross-cutting: `/cp-resume` — resume с любого этапа. `/using-codepatrol` — routing при старте.
 
 ## Shared Mechanics
 
 | Механика | Где используется | Описание |
 |----------|------------------|----------|
 | Progress tracking | Все скиллы | Mandatory — progress items до старта работы |
-| Incremental report mutation | cpplanfix, cpfix | Обновление отчёта после каждого finding (не batch) |
-| Ad hoc save gate | cpplanreview, cpreview, cpplanfix, cpfix | Файл не сохраняется без explicit user approval |
-| Model policy | cpatrol, cpplanreview, cpexecute, cpreview, cpdocs | Subagent tiers: fast/default/powerful + ceiling rule |
-| Bounded revalidation | cpplanfix, cpfix | Revalidation только изменённых секций |
+| Incremental report mutation | cp-plan-fix, cp-fix | Обновление отчёта после каждого finding (не batch) |
+| Ad hoc save gate | cp-plan-review, cp-review, cp-plan-fix, cp-fix | Файл не сохраняется без explicit user approval |
+| Model policy | cp-idea, cp-plan, cp-plan-review, cp-execute, cp-review, cp-docs | Subagent tiers: fast/default/powerful + ceiling rule |
+| Bounded revalidation | cp-plan-fix, cp-fix | Revalidation только изменённых секций |
 | Blocker policy | Все скиллы | Stop и ask при conflicts, ambiguity, verification failure |
 
 ## Inter-Skill Dependencies
 
 ```mermaid
 flowchart TD
-    UC[using-codepatrol] -.->|routes to| CP[cpatrol]
-    CP -->|plan.md| PPR[cpplanreview]
-    PPR -->|findings| PPF[cpplanfix]
+    UC[using-codepatrol] -.->|routes to| CP[cp-idea]
+    CP -->|design.md| PL[cp-plan]
+    PL -->|plan.md| PPR[cp-plan-review]
+    PPR -->|findings| PPF[cp-plan-fix]
     PPF -->|re-check| PPR
-    PPR -->|approved| EX[cpexecute]
-    EX -->|code| CR[cpreview]
-    CR -->|findings| CF[cpfix]
+    PPR -->|approved| EX[cp-execute]
+    EX -->|code| CR[cp-review]
+    CR -->|findings| CF[cp-fix]
     CF -->|re-check| CR
-    CR -->|approved| CD[cpdocs]
-    CD --> CRL[cprules]
-    RES[cpresume] -.->|any stage| CP
+    CR -->|approved| CD[cp-docs]
+    CD --> CRL[cp-rules]
+    RES[cp-resume] -.->|any stage| CP
+    RES -.-> PL
     RES -.-> PPR
     RES -.-> EX
     RES -.-> CR
@@ -81,5 +84,5 @@ flowchart TD
 ## Change Impact
 
 - Adding a new skill: create template dir, add SKILL.md with frontmatter, rebuild, update using-codepatrol mapping, add doc in `skills/`
-- Modifying skill stages: update the skill doc + workflow doc + cpresume detection logic
-- Changing report format: update cpfix/cpplanfix parsing + cpresume detection + cprules analysis
+- Modifying skill stages: update the skill doc + workflow doc + cp-resume detection logic
+- Changing report format: update cp-fix/cp-plan-fix parsing + cp-resume detection + cp-rules analysis

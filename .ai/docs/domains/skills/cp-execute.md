@@ -1,4 +1,4 @@
-# cpexecute
+# cp-execute
 
 ## Purpose
 
@@ -13,13 +13,13 @@
 
 ## Scope
 
-Покрывает реализацию из plan.md до handoff к review. Не покрывает планирование (→ cpatrol) и review (→ cpreview).
+Покрывает реализацию из plan.md до handoff к review. Не покрывает планирование (→ cp-plan) и review (→ cp-review).
 
 ## Related docs
 
-- [cpatrol](cpatrol.md) — создание плана
-- [cpplanreview](cpplanreview.md) + [cpplanfix](cpplanfix.md) — валидация плана
-- [cpreview](cpreview.md) — следующий шаг: code review
+- [cp-plan](cp-plan.md) — создание плана
+- [cp-plan-review](cp-plan-review.md) + [cp-plan-fix](cp-plan-fix.md) — валидация плана
+- [cp-review](cp-review.md) — следующий шаг: code review
 
 ---
 
@@ -34,7 +34,7 @@
 - Активная workflow задача
 - Утверждённый design state (если создавался)
 - Текущий plan file
-- Завершённые `/cpplanreview` + `/cpplanfix`
+- Завершённые `/cp-plan-review` + `/cp-plan-fix`
 - Bounded revalidation показывает plan ready for execution
 
 ## Execution Preflight
@@ -72,7 +72,7 @@
 - Что осталось открытым
 - Blockers, новые risks
 
-## Handoff to /cpreview
+## Handoff to /cp-review
 
 - **Не запускать review автоматически**
 - Предложить два пути:
@@ -105,8 +105,8 @@
 
 ## Dependencies
 
-- **Requires:** завершённые `/cpatrol`, `/cpplanreview`, `/cpplanfix`
-- **Next:** `/cpreview`
+- **Requires:** завершённые `/cp-idea`, `/cp-plan`, `/cp-plan-review`, `/cp-plan-fix`
+- **Next:** `/cp-review`
 
 ## Change Impact
 

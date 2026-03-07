@@ -27,21 +27,23 @@ Covers workflow stages, artifact structure, resumability model, and cross-skill 
 
 ```mermaid
 flowchart TD
-    START([New task]) --> CP["/cpatrol\nresearch → design → plan"]
-    CP --> PPR["/cpplanreview\nvalidate plan"]
+    START([New task]) --> CP["/cp-idea\nresearch → design"]
+    CP --> PL["/cp-plan\nwrite plan"]
+    PL --> PPR["/cp-plan-review\nvalidate plan"]
     PPR --> PPF{Findings?}
-    PPF -->|yes| PPFIX["/cpplanfix\nfix plan issues"]
+    PPF -->|yes| PPFIX["/cp-plan-fix\nfix plan issues"]
     PPFIX --> PPR
-    PPF -->|no| EX["/cpexecute\nimplement from plan"]
-    EX --> CR["/cpreview\ncompliance + quality"]
+    PPF -->|no| EX["/cp-execute\nimplement from plan"]
+    EX --> CR["/cp-review\ncompliance + quality"]
     CR --> CRF{Findings?}
-    CRF -->|yes| CFIX["/cpfix\nfix code issues"]
+    CRF -->|yes| CFIX["/cp-fix\nfix code issues"]
     CFIX --> CR
-    CRF -->|no| DOCS["/cpdocs\nupdate documentation"]
-    DOCS --> RULES["/cprules\n(optional) evolve rules"]
+    CRF -->|no| DOCS["/cp-docs\nupdate documentation"]
+    DOCS --> RULES["/cp-rules\n(optional) evolve rules"]
     RULES --> DONE([Task complete])
 
-    RESUME["/cpresume"] -.->|resume at any stage| CP
+    RESUME["/cp-resume"] -.->|resume at any stage| CP
+    RESUME -.-> PL
     RESUME -.-> PPR
     RESUME -.-> EX
     RESUME -.-> CR
@@ -52,9 +54,9 @@ flowchart TD
 
 | Skill | Behavior |
 |-------|----------|
-| `/cpresume` | Resumes at any stage by reading workflow artifacts |
-| `/cpdocs` | Works in workflow mode (autonomous) or ad hoc mode (interactive) |
-| `/cprules` | Analyzes patterns across completed tasks to propose rule improvements |
+| `/cp-resume` | Resumes at any stage by reading workflow artifacts |
+| `/cp-docs` | Works in workflow mode (autonomous) or ad hoc mode (interactive) |
+| `/cp-rules` | Analyzes patterns across completed tasks to propose rule improvements |
 
 ## Artifact Storage
 
@@ -91,7 +93,7 @@ flowchart TD
 - All artifacts are **append-only** (except tracking fields like status)
 - Report tracking fields update **immediately after each finding** — not batched
 - Task is resumable while `Status: in-progress` in workflow.md
-- `/cpresume` reconstructs exact stage from artifacts: objective, status, last completed stage, blockers, next command
+- `/cp-resume` reconstructs exact stage from artifacts: objective, status, last completed stage, blockers, next command
 
 ## Subagent Model
 
@@ -115,10 +117,10 @@ Skills dispatch subagents for parallelizable work. Model selection follows tiers
 2. **Bounded revalidation** — after fixes, revalidate only impacted sections, not everything
 3. **Ad hoc save gates** — in ad hoc mode, reports stay in conversation until user explicitly approves saving
 4. **Blocker policy** — stop and ask user on critical conflicts, ambiguous intent, or verification failures
-5. **No parallelization of fixes without user approval** — cpfix and cpplanfix process findings sequentially by default
+5. **No parallelization of fixes without user approval** — cp-fix and cp-plan-fix process findings sequentially by default
 
 ## Change Impact
 
 - Modifying workflow stages requires updating multiple skills and this document
-- Adding a new stage requires considering resumability (cpresume must detect it)
+- Adding a new stage requires considering resumability (cp-resume must detect it)
 - Changing artifact format impacts all skills that read/write artifacts

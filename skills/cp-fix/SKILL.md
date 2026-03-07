@@ -27,15 +27,7 @@ Do not guess which report to use when multiple candidates exist.
 
 ## Processing Order
 
-Only process `open` findings.
-
-Default priority:
-1. `compliance`
-2. `quality`
-
-Do not move to quality findings while unresolved compliance findings remain, unless one combined change is clearly safer and still keeps the review trail understandable.
-
-Within each group, preserve the original order from the report. Do not reorder findings by your own judgment.
+Only process `open` findings. Process them **strictly in report order** — do not reorder by type, severity, or your own judgment. The review already places findings in the correct processing order.
 
 ## Progress Tracking (mandatory)
 
@@ -94,7 +86,7 @@ After all fixes, run all relevant project checks:
 - build or typecheck if applicable
 - other mandatory checks from project rules
 
-Bounded revalidation after fixes must first confirm that compliance risks are actually closed, and only then consider the quality fix cycle complete.
+Bounded revalidation after fixes must confirm that the addressed risks are actually closed before marking each finding resolved.
 
 If fixes lead to conflicting findings, unclear fix policy, or repeated revalidation failure, treat it as a blocker and stop.
 
@@ -137,22 +129,70 @@ The report remains the resumable source of truth across `/cp-fix` runs.
 
 ## Workflow Log
 
-### Workflow Log (mandatory within a workflow task)
+### Workflow Log
 
-When working within a workflow task, append entries to the `## Log` section of `workflow.md` at these points:
-- **skill invoked** — which skill started and how (auto-invoked, user-invoked, resumed)
-- **subagent dispatched** — role and brief result (e.g. "research subagent → 5 findings, 2 open questions")
-- **question asked** — brief question and user's answer
+Workflow logging is **disabled by default**. It is enabled when the file `.ai/.enable-log` exists in the project root. If the file does not exist, skip all logging — do not create the `## Log` section in `workflow.md` and do not append entries.
+
+To check: before the first log write, verify that `.ai/.enable-log` exists. If it does not, skip logging for the entire workflow run. Do not re-check on every event.
+
+#### Log language
+
+Write log entries in the language specified by project rules (CLAUDE.md, AGENTS.md). If the user explicitly specifies a log language when creating the task, use their choice instead. Fallback: English.
+
+#### When to log
+
+Append entries to the `## Log` section of `workflow.md` at these points:
+- **skill invoked** — which skill started, how (auto-invoked, user-invoked, resumed), and purpose
+- **subagent dispatched** — role, brief result (count of findings, conflicts, gaps)
+- **user interaction** — brief summary of question asked and user's answer or decision (not the full dialogue)
+- **decision made** — what was decided and why (approach chosen, scope narrowed, parameter set)
+- **context check** — what was verified when transitioning between skills (design status, rules, file map)
 - **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
 - **blocker hit** — what blocked and how it was resolved
+- **deviation** — unexpected events: model escalation, retry, approach change, scope change mid-workflow
 
-Log format — append one line per event:
+#### Log format
+
+Each entry starts with a timestamp and skill name. Entries may be 1-5 lines. Use nested bullets for structured details.
+
 ```
-- `HH:MM` **/skill** — action → result
+- `HH:MM` **/skill** — action summary
+  - detail 1
+  - detail 2
 ```
 
-Keep entries to one line each. Do not log internal reasoning, full agent context, or file contents.
 Use `date +%H%M` for the timestamp. Do not guess the time.
+
+#### Examples
+
+```
+- `10:49` **/cp-idea** clarification complete
+  - scope: standard, severity: Minor, new dimension: Compatibility
+  - user confirmed rules override via prompt instruction
+- `10:52` **/cp-idea** research subagent dispatched → 3 findings, no conflicts
+  - review structure: 3 severity levels, 4 dimensions
+- `10:55` **/cp-idea** user chose approach: new Compatibility dimension with dedicated reviewer
+- `10:58` **/cp-idea** research refresh → no conflicts, format confirmed
+- `13:52` **/cp-idea** design approved, auto-invoking /cp-plan
+- `13:54` **/cp-plan** context check passed
+  - design: approved, execution strategy: /cp-execute (small task)
+  - file map: 1 new, 1 modified, 2 docs
+- `13:55` **/cp-plan** plan written (4 stages), rules pre-check passed
+  - auto-invoking /cp-plan-review
+- `13:56` **/cp-plan-review** APPROVED, 0 findings
+  - user confirmed plan, proceeding to execution
+- `14:06` **/cp-execute** all 4 stages done, build passes
+- `14:07` **/cp-review** APPROVED, 0 findings — workflow complete
+- `14:10` **/cp-idea** deviation: research subagent failed at fast tier, escalated to default → success
+```
+
+#### Rules
+
+- Do not log internal reasoning, full agent prompts, or file contents
+- Do not log the full text of user messages — summarize the intent and decision
+- Do not include code snippets in log entries
+- Keep each entry concise — enough to reconstruct the workflow flow, not to replay it
+- The log must be sufficient for post-hoc analysis: what happened, what was decided, and why
 
 Skip logging when there is no active workflow task (ad hoc mode).
 
@@ -172,7 +212,7 @@ When asking the user, use `AskUserQuestion` if available on the current platform
 
 ## Completion Criteria
 
-This stage is complete when selected findings are resolved with evidence, compliance findings are handled first, and final verification is fresh.
+This stage is complete when selected findings are resolved with evidence and final verification is fresh.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
 
@@ -180,8 +220,7 @@ No stage can be marked `done` without fresh verification evidence. No workflow s
 
 Do NOT:
 - **Batch report updates to the end** — update tracking fields immediately after each finding, not in bulk
-- **Reorder findings by your own judgment** — preserve report order
-- **Move to quality findings while unresolved compliance findings remain** — compliance first
+- **Reorder findings by type, severity, or your own judgment** — always preserve report order as-is
 - **Skip bounded revalidation** — every fix must be verified before being marked resolved
 - **Save ad hoc reports without user permission** — the ad hoc save gate is a hard requirement
 - **Parallelize without user approval** — sequential processing is the default
@@ -193,7 +232,7 @@ Do NOT:
 After `/cp-fix` and final verification, the code path is complete but the workflow task is not.
 
 Next mandatory step: `/cp-docs`. Offer two paths:
-- **continue now** — invoke `/cp-docs` directly (Use the Skill tool to invoke the target skill directly.)
+- **continue now** — invoke `/cp-docs` (Use the Skill tool to invoke the target skill directly.)
 - **hand off to a new session** — provide `/cp-docs <task-artifact-path>` for the user to run later
 
 When the user chooses to continue, invoke `/cp-docs` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.

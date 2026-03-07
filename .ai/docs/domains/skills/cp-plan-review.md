@@ -1,4 +1,4 @@
-# cpplanreview
+# cp-plan-review
 
 ## Purpose
 
@@ -13,13 +13,13 @@
 
 ## Scope
 
-Покрывает проверку плана и формирование отчёта. Не покрывает исправление findings (→ cpplanfix).
+Покрывает проверку плана и формирование отчёта. Не покрывает исправление findings (→ cp-plan-fix).
 
 ## Related docs
 
-- [cpatrol](cpatrol.md) — предыдущий шаг: создание плана
-- [cpplanfix](cpplanfix.md) — следующий шаг при findings
-- [cpexecute](cpexecute.md) — следующий шаг при отсутствии findings
+- [cp-plan](cp-plan.md) — предыдущий шаг: создание плана
+- [cp-plan-fix](cp-plan-fix.md) — следующий шаг при findings
+- [cp-execute](cp-execute.md) — следующий шаг при отсутствии findings
 
 ---
 
@@ -86,7 +86,7 @@ Resolution notes:
 Если нет активной workflow задачи:
 1. Отчёт генерируется **только в conversation**
 2. **Нельзя** писать в файл до явного выбора пользователя
-3. Предложить: "Save to file" или "Run /cpplanfix now"
+3. Предложить: "Save to file" или "Run /cp-plan-fix now"
 4. Нарушение gate — критическая ошибка workflow
 
 ## Subagents
@@ -95,10 +95,10 @@ Resolution notes:
 
 ## Dependencies
 
-- **Requires:** завершённый `/cpatrol` (plan.md exists)
-- **Next:** `/cpplanfix` (если findings) или `/cpexecute` (если APPROVED)
+- **Requires:** завершённый `/cp-plan` (plan.md exists)
+- **Next:** `/cp-plan-fix` (если findings) или `/cp-execute` (если APPROVED)
 
 ## Change Impact
 
 - Изменение чек-листа влияет на то, какие проблемы обнаруживаются
-- Изменение формата отчёта требует обновления cpplanfix (парсинг) и cpresume (detection)
+- Изменение формата отчёта требует обновления cp-plan-fix (парсинг) и cp-resume (detection)

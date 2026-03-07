@@ -243,7 +243,7 @@ Executes the approved plan step by step with checkpoint reports. Stops on blocke
 
 **5. Code review — `/cp-review` → `/cp-fix`**
 
-`/cp-review` runs compliance first (design, plan, and rules alignment), then quality (architecture, style, tests, security). The report is saved as `.review.report.md`. `/cp-fix` resolves findings in priority order: compliance first, then quality.
+`/cp-review` runs compliance first (design, plan, and rules alignment), then quality (architecture, style, tests, security). The report is saved as `.review.report.md`. `/cp-fix` resolves findings in report order.
 
 **6. Documentation — `/cp-docs`**
 
@@ -261,6 +261,7 @@ Also works in ad hoc mode: `/cp-docs add a data flow diagram for the auth module
 - Any command accepts an explicit artifact path: `/cp-resume .ai/tasks/2026-03-06-1420-my-task/`.
 - `/cp-review` also works outside the workflow — you can review a branch, PR, directory, or file set.
 - When a command asks “which artifact?”, answer with a path or a short form: `current task`, `new task`.
+- CodePatrol installs a routing skill (`using-codepatrol`) that maps short aliases (`/idea`, `/plan`, `/review`...) and natural language intents to the right command.
 
 ## Session Example
 
@@ -278,22 +279,15 @@ Found: Express + Redis, 12 endpoints, JWT authentication.
 > 1 — by group, 2 — Redis, agree with recommendation
 
 📐 Design: created .ai/tasks/2026-03-06-1420-rate-limiting/rate-limiting.design.md
-   Next step → /cp-plan
 
-> /cp-plan
-
-📋 Plan: created rate-limiting.plan.md (3 stages, 2 batch files)
+📋 Plan: auto-invoked /cp-plan — created rate-limiting.plan.md (3 stages, 2 batch files)
    Rules compliance pre-check: passed
-   Next step → /cp-plan-review
 
-> /cp-plan-review
+✅ Plan review: auto-invoked /cp-plan-review
+   Findings: 1 minor (no fallback when Redis is unavailable)
 
-✅ Findings: 1 minor (no fallback when Redis is unavailable)
-   Next step → /cp-plan-fix
-
-> /cp-plan-fix
-
-🔧 Fixed: added in-memory counter fallback.
+🔧 Plan fix: auto-invoked /cp-plan-fix
+   Fixed: added in-memory counter fallback.
    Revalidation passed. Next step → /cp-execute
 
 > /cp-execute
@@ -376,7 +370,7 @@ Exception: `workflow.md` is always kept in English — it is a state file for ag
 
 ### Model Selection For Subagents
 
-Commands that dispatch subagents (`/cp-idea`, `/cp-plan`, `/cp-review`, `/cp-execute`) use a three-tier model system:
+Commands that dispatch subagents (`/cp-idea`, `/cp-plan`, `/cp-plan-review`, `/cp-review`, `/cp-execute`, `/cp-docs`, `/cp-rules`) use a three-tier model system:
 
 | Tier | Description | Examples |
 |------|-------------|----------|
@@ -388,7 +382,7 @@ Commands that dispatch subagents (`/cp-idea`, `/cp-plan`, `/cp-review`, `/cp-exe
 - The orchestrator picks the cheapest tier that fits the task complexity.
 - **Ceiling rule:** subagents never use a more capable model than the orchestrator session. If you run on Sonnet, subagents cannot escalate above Sonnet.
 - **Escalation:** if a subagent fails (error, empty output, failed self-check), it is re-dispatched one tier up. Maximum one escalation. If the ceiling tier fails, it becomes a blocker.
-- `/cp-idea` (research, design, planning) is recommended to run on the most capable model — it will warn if the current model may be too weak.
+- `/cp-idea` (research, design) is recommended to run on the most capable model — it will warn if the current model may be too weak.
 
 **Custom model mapping:**
 
@@ -411,9 +405,13 @@ All commands start context discovery from `.ai/docs/README.md` and follow its na
 
 ```text
 templates/                        source-of-truth skill templates
+  _shared/                        reusable partials included by multiple skills
 platforms/                        platform-specific placeholder values
-skills/                           generated output from ./install.sh build
+skills/                           generated output (Claude) from ./install.sh build
 .claude-plugin/                   Claude marketplace manifests
+.claude/rules/                    project-level authoring rules
+.ai/docs/                         AI-facing project documentation
+.github/workflows/                CI/CD pipelines
 install.sh                        local build and install entrypoint
 install-remote.sh                 release installer
 ```
@@ -424,9 +422,29 @@ install-remote.sh                 release installer
 ./install.sh codex
 ```
 
+### Workflow Logging
+
+Workflow activity logging is disabled by default. To enable detailed logging in `workflow.md` for debugging and analysis, create a flag file in your project:
+
+```bash
+touch .ai/.enable-log
+```
+
+When enabled, each workflow task records a structured activity log with skill invocations, subagent results, user decisions, and deviations. This is intended for plugin developers — end users do not need it.
+
+To disable logging, remove the file:
+
+```bash
+rm .ai/.enable-log
+```
+
 ## CI/CD
 
-CI rebuilds `skills/`, checks that generated output is current, validates placeholder substitution, and verifies the expected `cp-*` runtime structure for release assets.
+Three workflows in `.github/workflows/`:
+
+- **ci.yml** — runs on push/PR to main: rebuilds `skills/`, checks freshness, validates structure, rejects legacy skill names
+- **release.yml** — runs on version tags (`v*`): builds release archive and creates GitHub release
+- **validate-release.yml** — runs on PR/push/dispatch: validates release structure, placeholder substitution, and legacy rejection
 
 ## Known Limitations
 

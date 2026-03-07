@@ -1,8 +1,8 @@
-# cpfix
+# cp-fix
 
 ## Purpose
 
-Обработка open findings из отчёта `/cpreview` — исправление кода, обновление тестов, мутация отчёта.
+Обработка open findings из отчёта `/cp-review` — исправление кода, обновление тестов, мутация отчёта.
 
 ## When to read
 
@@ -13,13 +13,13 @@
 
 ## Scope
 
-Покрывает исправление code review findings. Не покрывает сам review (→ cpreview) и исправление плана (→ cpplanfix).
+Покрывает исправление code review findings. Не покрывает сам review (→ cp-review) и исправление плана (→ cp-plan-fix).
 
 ## Related docs
 
-- [cpreview](cpreview.md) — источник findings
-- [cpdocs](cpdocs.md) — следующий шаг после исправления
-- [cpplanfix](cpplanfix.md) — аналогичная механика для plan findings
+- [cp-review](cp-review.md) — источник findings
+- [cp-docs](cp-docs.md) — следующий шаг после исправления
+- [cp-plan-fix](cp-plan-fix.md) — аналогичная механика для plan findings
 - [Review System](../review-system.md) — подробности формата и tracking
 
 ---
@@ -37,10 +37,7 @@
 
 ## Processing Order
 
-1. **Compliance findings** — первый приоритет (design/plan/rules violations)
-2. **Quality findings** — второй приоритет (architecture, security, testing, conventions)
-
-Не переходить к quality, пока открыты compliance findings.
+Строго в порядке отчёта — не переупорядочивать по типу, severity или собственному решению. Ревью уже выстраивает findings в правильном порядке обработки.
 
 ## Fix Policy
 
@@ -93,7 +90,7 @@
 ## Completion
 
 - **Workflow task:** all selected findings resolved with evidence, final verification fresh
-- **Ad hoc:** нет handoff к /cpdocs
+- **Ad hoc:** нет handoff к /cp-docs
 - **Ad Hoc Save Gate:** если context-only, спросить перед сохранением
 
 ## Parallelization
@@ -122,10 +119,10 @@
 
 ## Dependencies
 
-- **Requires:** завершённый `/cpreview` с findings
-- **Next:** `/cpreview` (re-check) или `/cpdocs`
+- **Requires:** завершённый `/cp-review` с findings
+- **Next:** `/cp-review` (re-check) или `/cp-docs`
 
 ## Change Impact
 
 - Изменение fix agent contract влияет на качество исправлений
-- Изменение report mutation формата требует синхронизации с cpreview и cpresume
+- Изменение report mutation формата требует синхронизации с cp-review и cp-resume

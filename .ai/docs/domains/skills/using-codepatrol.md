@@ -29,23 +29,24 @@
 
 | Intent пользователя | CodePatrol скилл | Заменяет генерический |
 |---------------------|------------------|-----------------------|
-| Новая задача / идея / дизайн | `/cpatrol` | brainstorming, writing-plans |
-| Реализация по плану | `/cpexecute` | executing-plans |
-| Code review | `/cpreview` | requesting-code-review |
-| Документация | `/cpdocs` | — |
-| Продолжить работу | `/cpresume` | — |
-| Проверка плана | `/cpplanreview` | — |
-| Исправление плана | `/cpplanfix` | — |
-| Исправление кода | `/cpfix` | — |
-| Улучшение правил | `/cprules` | — |
+| Новая задача / идея / дизайн | `/cp-idea` | brainstorming |
+| Написание плана реализации | `/cp-plan` | writing-plans |
+| Реализация по плану | `/cp-execute` | executing-plans |
+| Code review | `/cp-review` | requesting-code-review |
+| Документация | `/cp-docs` | — |
+| Продолжить работу | `/cp-resume` | — |
+| Проверка плана | `/cp-plan-review` | — |
+| Исправление плана | `/cp-plan-fix` | — |
+| Исправление кода | `/cp-fix` | — |
+| Улучшение правил | `/cp-rules` | — |
 
 ## Trigger Examples
 
-- "let's plan/design/build X" → `/cpatrol`
-- "implement the plan" → `/cpexecute`
-- "review the code" → `/cpreview`
-- "update docs" → `/cpdocs`
-- "continue yesterday's work" → `/cpresume`
+- "let's plan/design/build X" → `/cp-idea`
+- "implement the plan" → `/cp-execute`
+- "review the code" → `/cp-review`
+- "update docs" → `/cp-docs`
+- "continue yesterday's work" → `/cp-resume`
 
 ## Key Rule
 

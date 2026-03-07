@@ -31,15 +31,16 @@ Start here to understand what documentation exists and where to find it.
 | Skill | Description | When to read |
 |-------|-------------|--------------|
 | [using-codepatrol](domains/skills/using-codepatrol.md) | Task routing to CodePatrol skills | Understanding skill priority and routing |
-| [cpatrol](domains/skills/cpatrol.md) | Research, design, and planning | Starting a new task, understanding artifacts |
-| [cpplanreview](domains/skills/cpplanreview.md) | Plan validation | Reviewing plan before execution |
-| [cpplanfix](domains/skills/cpplanfix.md) | Plan findings fix | Fixing plan review issues |
-| [cpexecute](domains/skills/cpexecute.md) | Code implementation from plan | Implementing features, subagent contracts |
-| [cpreview](domains/skills/cpreview.md) | Two-pass code review | Running review, reviewer dimensions |
-| [cpfix](domains/skills/cpfix.md) | Code review findings fix | Fixing code issues, fix agent contract |
-| [cpdocs](domains/skills/cpdocs.md) | AI-facing documentation | Creating or updating docs |
-| [cpresume](domains/skills/cpresume.md) | Session recovery | Resuming interrupted work |
-| [cprules](domains/skills/cprules.md) | Rules evolution | Improving project rules from patterns |
+| [cp-idea](domains/skills/cp-idea.md) | Research and design | Starting a new task, understanding artifacts |
+| [cp-plan](domains/skills/cp-plan.md) | Implementation planning from approved design | Writing plan from design |
+| [cp-plan-review](domains/skills/cp-plan-review.md) | Plan validation | Reviewing plan before execution |
+| [cp-plan-fix](domains/skills/cp-plan-fix.md) | Plan findings fix | Fixing plan review issues |
+| [cp-execute](domains/skills/cp-execute.md) | Code implementation from plan | Implementing features, subagent contracts |
+| [cp-review](domains/skills/cp-review.md) | Two-pass code review | Running review, reviewer dimensions |
+| [cp-fix](domains/skills/cp-fix.md) | Code review findings fix | Fixing code issues, fix agent contract |
+| [cp-docs](domains/skills/cp-docs.md) | AI-facing documentation | Creating or updating docs |
+| [cp-resume](domains/skills/cp-resume.md) | Session recovery | Resuming interrupted work |
+| [cp-rules](domains/skills/cp-rules.md) | Rules evolution | Improving project rules from patterns |
 
 ## Conventions
 

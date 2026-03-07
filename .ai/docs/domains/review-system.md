@@ -6,14 +6,14 @@ Documents the code review architecture — two-pass model, specialized reviewers
 
 ## When to read
 
-- Running or configuring code review (`/cpreview`)
-- Fixing findings (`/cpfix`)
+- Running or configuring code review (`/cp-review`)
+- Fixing findings (`/cp-fix`)
 - Understanding report format
 - Adding a new reviewer specialization
 
 ## Scope
 
-Covers `cpreview` mechanics, reviewer agents, report structure, and `cpfix` tracking. For the overall workflow position, see [Workflow](../shared/workflow.md).
+Covers `cp-review` mechanics, reviewer agents, report structure, and `cp-fix` tracking. For the overall workflow position, see [Workflow](../shared/workflow.md).
 
 ## Related docs
 
@@ -30,7 +30,7 @@ flowchart TD
     P1 --> P2["Pass 2: Quality"]
     P2 --> REPORT[Review Report]
     REPORT --> DECIDE{Findings?}
-    DECIDE -->|NEEDS_CHANGES| FIX["/cpfix"]
+    DECIDE -->|NEEDS_CHANGES| FIX["/cp-fix"]
     DECIDE -->|APPROVED| NEXT[Next stage]
     DECIDE -->|APPROVED_WITH_NOTES| NEXT
 ```
@@ -45,7 +45,7 @@ Checks adherence to:
 
 ### Pass 2 — Quality
 
-Four review dimensions, each with optional specialized reviewer:
+Five review dimensions, each with optional specialized reviewer:
 
 | Dimension | Reviewer file | Subagent tier |
 |-----------|--------------|---------------|
@@ -53,6 +53,7 @@ Four review dimensions, each with optional specialized reviewer:
 | Security | `security-reviewer.md` | default |
 | Testing | `testing-reviewer.md` | default |
 | Conventions | `codestyle-reviewer.md` | fast |
+| Compatibility | `compatibility-reviewer.md` | fast |
 
 ## Execution Models
 
@@ -95,6 +96,14 @@ Compliance pass always uses **powerful** tier (most critical check).
 - Code formatting
 - Project style consistency
 
+### Compatibility Reviewer
+
+- Deprecated API usage (libraries, frameworks, language standard library)
+- Version compatibility (APIs match declared dependency versions)
+- Breaking changes awareness (no reliance on undocumented/internal APIs)
+- Default severity: Minor; escalate to Important/Critical based on removal timeline
+- Project rules can whitelist specific deprecated APIs or disable the check entirely
+
 ## Report Format
 
 ```markdown
@@ -130,13 +139,11 @@ Compliance pass always uses **powerful** tier (most critical check).
 | `APPROVED_WITH_NOTES` | Minor findings only |
 | `APPROVED` | No findings |
 
-## Fix Tracking (cpfix)
+## Fix Tracking (cp-fix)
 
 ### Processing Order
 
-1. **Compliance findings first** — design/plan/rules violations
-2. **Quality findings second** — architecture, security, testing, conventions
-3. Within each group — preserve report order
+Строго в порядке отчёта (report order) — не переупорядочивать по типу или группе. Ревью уже выстраивает findings в правильном порядке обработки.
 
 ### Incremental Report Mutation
 
@@ -174,6 +181,6 @@ In ad hoc mode (no active workflow task):
 
 ## Change Impact
 
-- Adding a new reviewer dimension: create template in `cpreview/`, update review dispatch logic
-- Changing report format: impacts cpfix parsing, cpresume detection, cprules analysis
-- Modifying severity levels: impacts assessment logic across cpreview and cpfix
+- Adding a new reviewer dimension: create template in `cp-review/`, update review dispatch logic
+- Changing report format: impacts cp-fix parsing, cp-resume detection, cp-rules analysis
+- Modifying severity levels: impacts assessment logic across cp-review and cp-fix

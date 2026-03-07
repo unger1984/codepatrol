@@ -1,4 +1,4 @@
-# cpdocs
+# cp-docs
 
 ## Purpose
 
@@ -17,8 +17,8 @@
 
 ## Related docs
 
-- [cpfix](cpfix.md) — предыдущий шаг в workflow
-- [cprules](cprules.md) — опциональный следующий шаг
+- [cp-fix](cp-fix.md) — предыдущий шаг в workflow
+- [cp-rules](cp-rules.md) — опциональный следующий шаг
 - [Workflow](../../shared/workflow.md) — позиция в pipeline
 
 ---
@@ -143,7 +143,7 @@ Stop и ask когда:
 ## Dependencies
 
 - **Requires:** завершённый code path (в workflow) или user intent (в ad hoc)
-- **Next:** `/cprules` (optional) или завершение workflow task
+- **Next:** `/cp-rules` (optional) или завершение workflow task
 
 ## Change Impact
 

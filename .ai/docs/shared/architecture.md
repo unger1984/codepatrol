@@ -28,15 +28,16 @@ Covers `templates/`, `platforms/`, `install.sh`, `skills/`, `.claude-plugin/`. D
 codepatrol/
 ├── templates/              # Source of truth for all skills
 │   ├── _shared/            # Reusable partials (not a skill)
-│   ├── cpatrol/            # Planning skill
-│   ├── cpreview/           # Code review skill + reviewer prompts
-│   ├── cpexecute/          # Implementation skill
-│   ├── cpplanreview/       # Plan review skill
-│   ├── cpplanfix/          # Plan fix skill
-│   ├── cpfix/              # Code fix skill + fix agent prompt
-│   ├── cpdocs/             # Documentation skill
-│   ├── cpresume/           # Resume skill
-│   ├── cprules/            # Rules evolution skill
+│   ├── cp-idea/            # Research and design skill
+│   ├── cp-plan/            # Implementation planning skill
+│   ├── cp-review/          # Code review skill + reviewer prompts
+│   ├── cp-execute/         # Implementation skill
+│   ├── cp-plan-review/     # Plan review skill
+│   ├── cp-plan-fix/        # Plan fix skill
+│   ├── cp-fix/             # Code fix skill + fix agent prompt
+│   ├── cp-docs/            # Documentation skill
+│   ├── cp-resume/          # Resume skill
+│   ├── cp-rules/           # Rules evolution skill
 │   └── using-codepatrol/   # Priority declaration skill
 ├── platforms/              # Platform-specific variable files
 │   ├── claude.env
@@ -76,11 +77,19 @@ Templates reference shared content with `{{@include:path}}`:
 
 The build script resolves these by inlining the referenced file content.
 
+#### Platform-specific includes
+
+`{{@platform-include:name}}` — inlines `_shared/${name}-${platform}.md` where `${platform}` is determined by the build target (claude/codex). Used in `cp-rules` for platform-specific rules authoring guidelines.
+
 ### Shared Partials (`templates/_shared/`)
 
 Reusable content included by multiple skills:
 
-- **model-policy.md** — Subagent model tier selection policy (fast/default/powerful), ceiling rule, escalation on failure. Included by: `cpatrol`, `cpreview`, `cpexecute`, `cpplanreview`, `cpdocs`.
+- **model-policy.md** — Subagent model tier selection policy (fast/default/powerful), ceiling rule, escalation on failure. Included by: `cp-idea`, `cp-plan`, `cp-review`, `cp-execute`, `cp-plan-review`, `cp-docs`.
+- **workflow-log.md** — Activity log format and rules for workflow state tracking. Logging is disabled by default; enabled by `.ai/.enable-log` flag file. Supports multi-line entries (1-5 lines) with structured event types: skill invoked, subagent dispatched, user interaction, decision, context check, blocker, deviation.
+- **researcher.md** — Research subagent contract and output format.
+- **rules-authoring-claude.md** — Rules authoring guidelines for Claude Code platform.
+- **rules-authoring-codex.md** — Rules authoring guidelines for Codex CLI platform.
 
 ## Build Pipeline
 
@@ -132,6 +141,6 @@ Registers plugin in the Claude plugins marketplace. Owner: `unger1984`.
 
 ## Change Impact
 
-- Modifying `templates/_shared/model-policy.md` affects all skills that include it (5 skills)
+- Modifying `templates/_shared/model-policy.md` affects all skills that include it (6 skills)
 - Modifying `platforms/*.env` affects all generated skills for that platform
 - Adding a new skill requires: template dir + SKILL.md, rebuild, update plugin manifest if needed

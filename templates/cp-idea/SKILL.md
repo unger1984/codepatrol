@@ -80,7 +80,7 @@ If unfinished tasks exist:
 - show a warning
 - list task id, current stage display name, and overall status
 - offer exactly two paths:
-  - resume one of the unfinished tasks — invoke `/cp-resume` directly ({{INVOKE_SKILL}})
+  - resume one of the unfinished tasks — invoke `/cp-resume` ({{INVOKE_SKILL}})
   - ignore the warning and create a new workflow task
 
 When the user chooses to resume, invoke `/cp-resume` immediately. Do not tell the user to run it manually.

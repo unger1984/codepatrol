@@ -27,15 +27,7 @@ Do not guess which report to use when multiple candidates exist.
 
 ## Processing Order
 
-Only process `open` findings.
-
-Default priority:
-1. `compliance`
-2. `quality`
-
-Do not move to quality findings while unresolved compliance findings remain, unless one combined change is clearly safer and still keeps the review trail understandable.
-
-Within each group, preserve the original order from the report. Do not reorder findings by your own judgment.
+Only process `open` findings. Process them **strictly in report order** — do not reorder by type, severity, or your own judgment. The review already places findings in the correct processing order.
 
 ## Progress Tracking (mandatory)
 
@@ -94,7 +86,7 @@ After all fixes, run all relevant project checks:
 - build or typecheck if applicable
 - other mandatory checks from project rules
 
-Bounded revalidation after fixes must first confirm that compliance risks are actually closed, and only then consider the quality fix cycle complete.
+Bounded revalidation after fixes must confirm that the addressed risks are actually closed before marking each finding resolved.
 
 If fixes lead to conflicting findings, unclear fix policy, or repeated revalidation failure, treat it as a blocker and stop.
 
@@ -155,7 +147,7 @@ When asking the user, use `{{ASK_USER}}` if available on the current platform.
 
 ## Completion Criteria
 
-This stage is complete when selected findings are resolved with evidence, compliance findings are handled first, and final verification is fresh.
+This stage is complete when selected findings are resolved with evidence and final verification is fresh.
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
 
@@ -163,8 +155,7 @@ No stage can be marked `done` without fresh verification evidence. No workflow s
 
 Do NOT:
 - **Batch report updates to the end** — update tracking fields immediately after each finding, not in bulk
-- **Reorder findings by your own judgment** — preserve report order
-- **Move to quality findings while unresolved compliance findings remain** — compliance first
+- **Reorder findings by type, severity, or your own judgment** — always preserve report order as-is
 - **Skip bounded revalidation** — every fix must be verified before being marked resolved
 - **Save ad hoc reports without user permission** — the ad hoc save gate is a hard requirement
 - **Parallelize without user approval** — sequential processing is the default
@@ -176,7 +167,7 @@ Do NOT:
 After `/cp-fix` and final verification, the code path is complete but the workflow task is not.
 
 Next mandatory step: `/cp-docs`. Offer two paths:
-- **continue now** — invoke `/cp-docs` directly ({{INVOKE_SKILL}})
+- **continue now** — invoke `/cp-docs` ({{INVOKE_SKILL}})
 - **hand off to a new session** — provide `/cp-docs <task-artifact-path>` for the user to run later
 
 When the user chooses to continue, invoke `/cp-docs` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.

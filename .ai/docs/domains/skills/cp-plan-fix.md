@@ -1,8 +1,8 @@
-# cpplanfix
+# cp-plan-fix
 
 ## Purpose
 
-Обработка open findings из отчёта `/cpplanreview` — исправление, пропуск или отложение каждого.
+Обработка open findings из отчёта `/cp-plan-review` — исправление, пропуск или отложение каждого.
 
 ## When to read
 
@@ -13,13 +13,13 @@
 
 ## Scope
 
-Покрывает обработку findings и мутацию отчёта. Не покрывает сам review (→ cpplanreview).
+Покрывает обработку findings и мутацию отчёта. Не покрывает сам review (→ cp-plan-review).
 
 ## Related docs
 
-- [cpplanreview](cpplanreview.md) — источник findings
-- [cpexecute](cpexecute.md) — следующий шаг после исправления
-- [cpfix](cpfix.md) — аналогичная механика для code review findings
+- [cp-plan-review](cp-plan-review.md) — источник findings
+- [cp-execute](cp-execute.md) — следующий шаг после исправления
+- [cp-fix](cp-fix.md) — аналогичная механика для code review findings
 
 ---
 
@@ -82,10 +82,10 @@
 
 ## Dependencies
 
-- **Requires:** завершённый `/cpplanreview` с findings
-- **Next:** `/cpplanreview` (re-check) или `/cpexecute`
+- **Requires:** завершённый `/cp-plan-review` с findings
+- **Next:** `/cp-plan-review` (re-check) или `/cp-execute`
 
 ## Change Impact
 
-- Изменение формата report mutation влияет на cpresume detection
+- Изменение формата report mutation влияет на cp-resume detection
 - Изменение fix policy влияет на уровень автоматизации

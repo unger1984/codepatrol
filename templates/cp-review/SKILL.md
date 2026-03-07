@@ -19,6 +19,7 @@ Required items:
 - [ ] Security review
 - [ ] Testing review
 - [ ] Conventions review
+- [ ] Compatibility review
 - [ ] Report generation
 
 ## Supported Scope Modes
@@ -95,13 +96,14 @@ Review engineering quality after compliance is acceptable:
 - conventions and local code quality
 - testing and verification adequacy
 - security and reliability risks
+- compatibility and deprecated API usage
 
 ## Execution Model
 
 - **simple scopes** — the orchestrator runs both compliance and quality passes directly
 - **medium and large scopes** — the orchestrator may:
   - dispatch a dedicated compliance reviewer subagent
-  - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions)
+  - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
 - {{DISPATCH_AGENT}}
 - all findings from subagents must be normalized into one report
 
@@ -110,7 +112,7 @@ Review engineering quality after compliance is acceptable:
 {{@include:_shared/model-policy.md}}
 
 Starting tier by reviewer role:
-- **Conventions** → fast
+- **Conventions / Compatibility** → fast
 - **Architecture / Security / Testing** → default
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 

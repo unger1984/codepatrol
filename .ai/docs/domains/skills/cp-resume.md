@@ -1,4 +1,4 @@
-# cpresume
+# cp-resume
 
 ## Purpose
 
@@ -78,7 +78,7 @@
 | Current status | Текущий статус |
 | Last completed verified stage | Последний подтверждённый этап |
 | Open blockers | Нерешённые блокеры |
-| Recommended next command | `/cpXXX` команда для продолжения |
+| Recommended next command | `/cp-xxx` команда для продолжения |
 
 ## Resumability Rules
 
@@ -89,9 +89,9 @@
 ## Usage Examples
 
 ```
-/cpresume .ai/tasks/2026-03-06-1420-ai-workflow/
-/cpresume .ai/tasks/2026-03-06-1420-ai-workflow/ai-workflow.workflow.md
-/cpresume .ai/tasks/.../reports/2026-03-06-1540-ai-workflow.plan-review.report.md
+/cp-resume .ai/tasks/2026-03-06-1420-ai-workflow/
+/cp-resume .ai/tasks/2026-03-06-1420-ai-workflow/ai-workflow.workflow.md
+/cp-resume .ai/tasks/.../reports/2026-03-06-1540-ai-workflow.plan-review.report.md
 ```
 
 ## Inputs

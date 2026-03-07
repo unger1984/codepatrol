@@ -150,7 +150,7 @@ Provide a reasoned recommendation, but leave the final choice to the user.
 ## Handoff To /cp-review
 
 When implementation is complete, offer two paths:
-- **continue now** — invoke `/cp-review` directly ({{INVOKE_SKILL}})
+- **continue now** — invoke `/cp-review` ({{INVOKE_SKILL}})
 - **hand off to a new session** — provide `/cp-review <task-artifact-path>` for the user to run later
 
 When the user chooses to continue, invoke `/cp-review` immediately. Do not tell the user to run it manually. Manual invocation is only for handing off to a new session.

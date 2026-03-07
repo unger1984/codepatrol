@@ -1,4 +1,4 @@
-# cpreview
+# cp-review
 
 ## Purpose
 
@@ -14,13 +14,13 @@
 
 ## Scope
 
-Покрывает review процесс, reviewer-субагентов, формат отчёта. Для исправления findings → [cpfix](cpfix.md). Для детальной механики review → [Review System](../review-system.md).
+Покрывает review процесс, reviewer-субагентов, формат отчёта. Для исправления findings → [cp-fix](cp-fix.md). Для детальной механики review → [Review System](../review-system.md).
 
 ## Related docs
 
-- [cpexecute](cpexecute.md) — предыдущий шаг: реализация
-- [cpfix](cpfix.md) — следующий шаг при findings
-- [cpdocs](cpdocs.md) — следующий шаг при отсутствии findings
+- [cp-execute](cp-execute.md) — предыдущий шаг: реализация
+- [cp-fix](cp-fix.md) — следующий шаг при findings
+- [cp-docs](cp-docs.md) — следующий шаг при отсутствии findings
 - [Review System](../review-system.md) — подробная механика review
 
 ---
@@ -54,7 +54,7 @@ Review может работать с разными scope:
 
 ### Pass 2 — Quality
 
-Четыре измерения, каждое с опциональным специализированным reviewer:
+Пять измерений, каждое с опциональным специализированным reviewer:
 
 | Dimension | Reviewer file | Starting tier |
 |-----------|--------------|---------------|
@@ -62,6 +62,7 @@ Review может работать с разными scope:
 | Security | `security-reviewer.md` | default |
 | Testing | `testing-reviewer.md` | default |
 | Conventions | `codestyle-reviewer.md` | fast |
+| Compatibility | `compatibility-reviewer.md` | fast |
 
 **Quality pass запускается только после того, как compliance pass acceptable.**
 
@@ -94,6 +95,13 @@ Review может работать с разными scope:
 - Code formatting
 - Project style consistency
 - Forbidden patterns
+
+### Compatibility Reviewer
+- Deprecated API usage (libraries, frameworks, standard library)
+- Version compatibility (APIs match declared dependency versions)
+- Breaking changes awareness (no undocumented/internal API reliance)
+- Default severity: Minor; escalates based on removal timeline
+- Project rules can whitelist specific deprecated or disable the check
 
 ## Execution Model
 
@@ -154,7 +162,7 @@ Compliance pass всегда использует **powerful** tier (самая 
 Если нет активной workflow задачи:
 1. Отчёт генерируется **только в conversation**
 2. Нельзя писать в файл до явного выбора пользователя
-3. Предложить: "Save to file" или "Run /cpfix now"
+3. Предложить: "Save to file" или "Run /cp-fix now"
 
 ## Inputs
 
@@ -179,14 +187,15 @@ Compliance pass всегда использует **powerful** tier (самая 
 | Security reviewer | default | Безопасность |
 | Testing reviewer | default | Покрытие и качество тестов |
 | Codestyle reviewer | fast | Стиль и conventions |
+| Compatibility reviewer | fast | Deprecated API и совместимость |
 
 ## Dependencies
 
-- **Requires:** завершённый `/cpexecute` (в workflow) или код для review (в ad hoc)
-- **Next:** `/cpfix` (если findings) или `/cpdocs` (если APPROVED)
+- **Requires:** завершённый `/cp-execute` (в workflow) или код для review (в ad hoc)
+- **Next:** `/cp-fix` (если findings) или `/cp-docs` (если APPROVED)
 
 ## Change Impact
 
 - Добавление нового reviewer dimension: создать template, обновить dispatch logic
-- Изменение report format: влияет на cpfix (парсинг), cpresume (detection), cprules (анализ)
+- Изменение report format: влияет на cp-fix (парсинг), cp-resume (detection), cp-rules (анализ)
 - Изменение severity levels: влияет на assessment logic

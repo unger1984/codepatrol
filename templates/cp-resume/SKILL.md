@@ -68,7 +68,7 @@ Use artifact evidence, not assumptions.
 ### 4. Continue The Workflow
 
 After presenting the handoff state, offer two paths:
-- **continue now** — invoke the recommended next command directly ({{INVOKE_SKILL}})
+- **continue now** — invoke the recommended next command ({{INVOKE_SKILL}})
 - **hand off to a new session** — provide the command with the task artifact path for the user to run later
 
 When the user chooses to continue, invoke the command immediately. Do not tell the user to run it manually.

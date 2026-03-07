@@ -1,4 +1,4 @@
-# cprules
+# cp-rules
 
 ## Purpose
 
@@ -12,12 +12,12 @@
 
 ## Scope
 
-Покрывает анализ паттернов и применение rule changes. Не покрывает сам review (→ cpreview) или fix (→ cpfix).
+Покрывает анализ паттернов и применение rule changes. Не покрывает сам review (→ cp-review) или fix (→ cp-fix).
 
 ## Related docs
 
-- [cpdocs](cpdocs.md) — предыдущий шаг в workflow
-- [cpreview](cpreview.md) — источник review reports
+- [cp-docs](cp-docs.md) — предыдущий шаг в workflow
+- [cp-review](cp-review.md) — источник review reports
 - [Workflow](../../shared/workflow.md) — позиция в pipeline
 
 ---
@@ -95,4 +95,4 @@
 
 - Изменение формата proposals влияет на UX
 - Изменение analysis targets расширяет/сужает coverage
-- Правила, созданные cprules, влияют на все последующие задачи
+- Правила, созданные cp-rules, влияют на все последующие задачи

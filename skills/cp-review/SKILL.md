@@ -19,6 +19,7 @@ Required items:
 - [ ] Security review
 - [ ] Testing review
 - [ ] Conventions review
+- [ ] Compatibility review
 - [ ] Report generation
 
 ## Supported Scope Modes
@@ -95,13 +96,14 @@ Review engineering quality after compliance is acceptable:
 - conventions and local code quality
 - testing and verification adequacy
 - security and reliability risks
+- compatibility and deprecated API usage
 
 ## Execution Model
 
 - **simple scopes** — the orchestrator runs both compliance and quality passes directly
 - **medium and large scopes** — the orchestrator may:
   - dispatch a dedicated compliance reviewer subagent
-  - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions)
+  - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
 - Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
 - all findings from subagents must be normalized into one report
 
@@ -134,7 +136,7 @@ If a subagent returns an error, produces empty or unusable output, or fails its 
 4. Log the escalation in the progress update so the user sees it.
 
 Starting tier by reviewer role:
-- **Conventions** → fast
+- **Conventions / Compatibility** → fast
 - **Architecture / Security / Testing** → default
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 
@@ -257,22 +259,70 @@ For file discovery, use Glob, Grep, or MCP filesystem tools if available. Do not
 
 ## Workflow Log
 
-### Workflow Log (mandatory within a workflow task)
+### Workflow Log
 
-When working within a workflow task, append entries to the `## Log` section of `workflow.md` at these points:
-- **skill invoked** — which skill started and how (auto-invoked, user-invoked, resumed)
-- **subagent dispatched** — role and brief result (e.g. "research subagent → 5 findings, 2 open questions")
-- **question asked** — brief question and user's answer
+Workflow logging is **disabled by default**. It is enabled when the file `.ai/.enable-log` exists in the project root. If the file does not exist, skip all logging — do not create the `## Log` section in `workflow.md` and do not append entries.
+
+To check: before the first log write, verify that `.ai/.enable-log` exists. If it does not, skip logging for the entire workflow run. Do not re-check on every event.
+
+#### Log language
+
+Write log entries in the language specified by project rules (CLAUDE.md, AGENTS.md). If the user explicitly specifies a log language when creating the task, use their choice instead. Fallback: English.
+
+#### When to log
+
+Append entries to the `## Log` section of `workflow.md` at these points:
+- **skill invoked** — which skill started, how (auto-invoked, user-invoked, resumed), and purpose
+- **subagent dispatched** — role, brief result (count of findings, conflicts, gaps)
+- **user interaction** — brief summary of question asked and user's answer or decision (not the full dialogue)
+- **decision made** — what was decided and why (approach chosen, scope narrowed, parameter set)
+- **context check** — what was verified when transitioning between skills (design status, rules, file map)
 - **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
 - **blocker hit** — what blocked and how it was resolved
+- **deviation** — unexpected events: model escalation, retry, approach change, scope change mid-workflow
 
-Log format — append one line per event:
+#### Log format
+
+Each entry starts with a timestamp and skill name. Entries may be 1-5 lines. Use nested bullets for structured details.
+
 ```
-- `HH:MM` **/skill** — action → result
+- `HH:MM` **/skill** — action summary
+  - detail 1
+  - detail 2
 ```
 
-Keep entries to one line each. Do not log internal reasoning, full agent context, or file contents.
 Use `date +%H%M` for the timestamp. Do not guess the time.
+
+#### Examples
+
+```
+- `10:49` **/cp-idea** clarification complete
+  - scope: standard, severity: Minor, new dimension: Compatibility
+  - user confirmed rules override via prompt instruction
+- `10:52` **/cp-idea** research subagent dispatched → 3 findings, no conflicts
+  - review structure: 3 severity levels, 4 dimensions
+- `10:55` **/cp-idea** user chose approach: new Compatibility dimension with dedicated reviewer
+- `10:58` **/cp-idea** research refresh → no conflicts, format confirmed
+- `13:52` **/cp-idea** design approved, auto-invoking /cp-plan
+- `13:54` **/cp-plan** context check passed
+  - design: approved, execution strategy: /cp-execute (small task)
+  - file map: 1 new, 1 modified, 2 docs
+- `13:55` **/cp-plan** plan written (4 stages), rules pre-check passed
+  - auto-invoking /cp-plan-review
+- `13:56` **/cp-plan-review** APPROVED, 0 findings
+  - user confirmed plan, proceeding to execution
+- `14:06` **/cp-execute** all 4 stages done, build passes
+- `14:07` **/cp-review** APPROVED, 0 findings — workflow complete
+- `14:10` **/cp-idea** deviation: research subagent failed at fast tier, escalated to default → success
+```
+
+#### Rules
+
+- Do not log internal reasoning, full agent prompts, or file contents
+- Do not log the full text of user messages — summarize the intent and decision
+- Do not include code snippets in log entries
+- Keep each entry concise — enough to reconstruct the workflow flow, not to replay it
+- The log must be sufficient for post-hoc analysis: what happened, what was decided, and why
 
 Skip logging when there is no active workflow task (ad hoc mode).
 

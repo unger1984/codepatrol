@@ -165,7 +165,11 @@ When asking the user, use `{{ASK_USER}}` if available on the current platform.
 After the report is saved, the next step depends on the assessment:
 
 - **NEEDS_CHANGES** — the next fix command is `/cp-plan-fix`. {{INVOKE_SKILL}}
-- **APPROVED / APPROVED_WITH_NOTES** — the plan is execution-ready. Skip `/cp-plan-fix` and offer `/cp-execute` directly. {{INVOKE_SKILL}}
+- **APPROVED / APPROVED_WITH_NOTES** — the plan is execution-ready. Present the result to the user and offer options:
+  - **Execute in current session** — invoke `/cp-execute` ({{INVOKE_SKILL}}). Best when context is fresh and task is small.
+  - **Hand off to a new session** — provide `/cp-execute <task-artifact-path>` for the user to run later. Best when context is heavy or upcoming work is long.
+
+  Lead with your recommendation and explain why. **Wait for the user's explicit choice before proceeding.** Do not auto-invoke `/cp-execute` — the user must review the plan and confirm readiness.
 
 ### Ad hoc review (no active workflow task)
 
