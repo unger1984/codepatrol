@@ -1,0 +1,186 @@
+---
+name: cp-plan-fix
+description: Fix issues found during plan review
+---
+
+# /cp-plan-fix
+
+Process open findings from `/cp-plan-review`.
+
+## Source
+
+Accept either:
+- a saved plan review report path (explicit argument)
+- the latest plan review report from the current workflow task
+- the current conversation context if plan review just finished
+
+### No-argument behavior
+
+When invoked without arguments:
+1. Check for an active workflow task — if it has a single plan review report with `open` findings, use it.
+2. If multiple plan review reports with `open` findings exist (across `.ai/tasks/` and `.ai/reports/`), list them and ask the user which one to work with. Use `{{ASK_USER}}` if available.
+3. If the current conversation contains plan review results that were not saved to file, use those.
+
+4. If no reports and no conversation context exist, inform the user: "No plan review report found. Run `/cp-plan-review` first or provide a report path."
+
+Do not guess which report to use when multiple candidates exist.
+
+## Workflow
+
+1. Load the current plan review report
+2. Select only `open` findings in report order
+3. Create progress tracking items (see below)
+4. Decide whether each finding can be auto-fix or needs ask-user guidance
+5. Process findings in order, updating the plan and report tracking fields after each
+6. Run bounded revalidation on the changed parts
+
+## Progress Tracking (mandatory)
+
+Before starting fixes, you MUST create {{PROGRESS_TOOL}} items **only for `open` findings**, in report order. Skip findings that are already `resolved`, `skipped`, or `deferred`.
+
+**Naming format:** each item MUST start with the finding number and severity from the report:
+```
+#1 [Critical] — short description
+#2 [Important] — short description
+#3 [Minor] — short description
+```
+
+Mark each as `in_progress` when working on it and `completed` when revalidation confirms the fix.
+
+### Parallelization approval
+
+After creating the full task list, if some findings are independent and can be fixed in parallel:
+1. Present the proposed parallel groups to the user.
+2. Wait for explicit approval before parallelizing.
+3. If not approved, process all findings sequentially in report order.
+
+Sequential processing is the default. Parallel processing requires user confirmation.
+
+## Fix Policy
+
+Use auto-fix when:
+- the resolution is local
+- intent is clear
+- no meaningful product or architecture trade-off is being decided
+
+Ask the user when:
+- multiple valid fixes materially change scope or architecture
+- a finding conflicts with accepted constraints
+- the report lacks enough context for a safe inference
+
+If `{{ASK_USER}}` is available, use it. Otherwise ask in chat.
+
+## Context Gathering
+
+Before starting fixes, read project rules from `{{RULES_SOURCE}}` to ensure plan fixes remain compliant.
+
+## Bounded Revalidation
+
+Revalidation must confirm that:
+- the addressed finding is actually closed
+- the updated plan remains consistent with design and project rules from `{{RULES_SOURCE}}`
+- unrelated plan sections were not silently regressed
+
+Do not rerun the entire workflow unless the change requires it. Keep revalidation bounded to the impacted surface.
+
+## Report Mutation (incremental, mandatory)
+
+**First line preservation:** the first line of a report file is reserved for processing metadata. Never modify, move, or remove it when editing the report.
+
+Update the report file **immediately after each finding** is resolved, skipped, or deferred — not in a batch at the end. This is a hard requirement for resumability: the session may be interrupted at any point, and the next `/cp-plan-fix` run must see which findings are already handled.
+
+For each processed finding, update in the report file:
+- **Status:** `open` → `resolved` | `skipped` | `deferred`
+- **Resolved via:** what was changed
+- **Resolution notes:** brief explanation
+
+Order of operations per finding:
+1. Apply fix to the plan (or decide to skip/defer)
+2. Run bounded revalidation
+3. **Persist tracking update (mandatory — do this, not skip):**
+   - If a report file exists → **edit the report file right now** using the Edit tool. Find this finding's block and replace:
+     - `**Status:** open` → `**Status:** resolved` (or `skipped` / `deferred`)
+     - `**Resolved via:**` → `**Resolved via:** <what was changed>`
+     - `**Resolution notes:**` → `**Resolution notes:** <brief explanation>`
+   - If no file (context-only mode) → record the update in conversation memory
+4. Mark the {{PROGRESS_TOOL}} item as completed
+5. Move to the next finding
+
+**Not updating the report file after each finding is a workflow violation.** The file is the source of truth for resumability.
+
+### Mid-process save
+
+If the user asks to save the report at any point during the fix process, immediately:
+1. Write the report file to `.ai/reports/` with all current tracking state (already resolved + still open findings). Use `mkdir -p` for the directory — do not check existence separately or ask permission.
+2. From this point forward, the file exists — all subsequent findings use file-based persistence in step 3 above.
+
+### End of process (context-only mode)
+
+If no report file was created during the process, the ad hoc save gate at the end offers to write the final report.
+
+The report remains the resumable source of truth across `/cp-plan-fix` runs.
+
+## User-Facing Examples
+
+- `/cp-plan-fix`
+- `/cp-plan-fix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
+
+## Workflow Log
+
+{{@include:_shared/workflow-log.md}}
+
+## Blocker Policy
+
+Stop and ask the user when:
+- a critical conflict exists between design, plan, code, rules, or repo state
+- intent or choice is ambiguous and affects implementation meaning
+- required tools, access, or dependencies are missing
+- verification or revalidation repeatedly fails after reasonable attempts
+
+Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
+Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
+Ask first, act second. A clarifying question is always cheaper than a wrong action.
+
+## Anti-patterns
+
+Do NOT:
+- **Batch report updates to the end** — update tracking fields immediately after each finding, not in bulk
+- **Apply fixes without bounded revalidation** — every fix must be verified before being marked resolved
+- **Save ad hoc reports without user permission** — the ad hoc save gate is a hard requirement
+- **Parallelize without user approval** — sequential processing is the default
+- **Silently change the design intent when fixing plan issues** — escalate to the user if a fix changes scope or approach
+
+## Completion Criteria
+
+### Within a workflow task
+
+This stage is complete when open findings are resolved or explicitly deferred, and bounded revalidation shows the plan is ready for `/cp-execute`.
+
+After completion, present three options to the user:
+
+- **Execute in current session** — invoke `/cp-execute` directly ({{INVOKE_SKILL}}). Best when context is fresh and task is small.
+- **Hand off to a new session** — provide `/cp-execute <task-artifact-path>` for the user to run later. Best when context is heavy or upcoming work is long.
+- **Run another review/fix cycle** — invoke `/cp-plan-review` again. Best when the previous review found critical issues. After 2 review/fix cycles, recommend proceeding to execution — further cycles typically yield diminishing returns.
+
+Lead with your recommendation and explain why. When the user chooses, act accordingly — invoke the skill or provide the handoff command.
+
+No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
+
+### Ad hoc fix (no active workflow task)
+
+After all fixes and bounded revalidation, the work is complete. No `/cp-execute` handoff is required.
+
+If the source report was a saved file, update its tracking fields as usual.
+
+#### STOP — Ad Hoc Save Gate (mandatory)
+
+If findings were passed through conversation context (no saved file), you MUST NOT write any report file until the user explicitly chooses to save. This is a hard gate — no exceptions.
+
+Flow:
+1. Present the completed report with all resolution tracking fields **in conversation only**.
+2. Ask the user (use `{{ASK_USER}}` if available):
+   - **Save report to file** — only then write to `.ai/reports/`
+   - **Do not save** — findings and resolutions stay in conversation only
+3. Wait for the user's explicit choice before any file I/O.
+
+Violating this gate (saving before asking) is a critical workflow error.

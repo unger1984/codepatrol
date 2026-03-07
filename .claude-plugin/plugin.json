@@ -1,6 +1,6 @@
 {
   "name": "codepatrol",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Workflow-first AI skills for planning, execution, review, fixes, docs, and project rules",
   "keywords": ["workflow", "planning", "review", "docs", "rules"]
 }

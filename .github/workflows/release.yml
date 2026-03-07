@@ -19,11 +19,22 @@ jobs:
 
       - name: Validate generated workflow skills
         run: |
-          test -f skills/cpatrol/SKILL.md
-          test -f skills/cpreview/SKILL.md
-          test -f skills/cpfix/SKILL.md
-          test -f skills/cpdocs/SKILL.md
-          test -f skills/cprules/SKILL.md
+          test -f skills/using-codepatrol/SKILL.md
+          test -f skills/cp-idea/SKILL.md
+          test -f skills/cp-plan/SKILL.md
+          test -f skills/cp-execute/SKILL.md
+          test -f skills/cp-plan-review/SKILL.md
+          test -f skills/cp-plan-fix/SKILL.md
+          test -f skills/cp-resume/SKILL.md
+          test -f skills/cp-review/SKILL.md
+          test -f skills/cp-review/architecture-reviewer.md
+          test -f skills/cp-review/codestyle-reviewer.md
+          test -f skills/cp-review/security-reviewer.md
+          test -f skills/cp-review/testing-reviewer.md
+          test -f skills/cp-fix/SKILL.md
+          test -f skills/cp-fix/fix-agent-prompt.md
+          test -f skills/cp-docs/SKILL.md
+          test -f skills/cp-rules/SKILL.md
 
       - name: Create release archive
         run: |

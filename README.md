@@ -16,14 +16,15 @@ CodePatrol takes this idea further by adding structured artifact storage, sessio
 |------|------------|------------|
 | **Approach** | Composable general-purpose skills that trigger automatically | Full lifecycle workflow with structured stages and handoffs |
 | **Artifact storage** | No persistent structure — context lives in chat | `.ai/` directory: `workflow.md`, `design.md`, `plan.md`, reports |
-| **Session resumability** | Start over in new session | `/cpresume` restores exact stage from artifacts |
+| **Session resumability** | Start over in new session | `/cp-resume` restores exact stage from artifacts |
 | **Code review** | Single-pass review against plan | Two-pass: compliance first (design/plan/rules), then quality (arch/security/tests/conventions) |
 | **Review execution** | Single reviewer | Parallel specialized reviewers (architecture, security, testing, conventions) |
 | **Fix tracking** | Manual | Incremental report mutation — each finding tracked with status, resolution, and evidence |
-| **Plan validation** | No dedicated step | `/cpplanreview` → `/cpplanfix` cycle before implementation |
-| **Documentation** | No dedicated step | `/cpdocs` — AI-oriented docs in `.ai/docs/` with navigation and validation |
-| **Rule evolution** | No dedicated step | `/cprules` — proposes project rule improvements from accumulated findings |
-| **Ad hoc mode** | N/A | Any command works outside workflow tasks; `/cpdocs` accepts natural-language requests |
+| **Plan writing** | Micro-step plans with full code | Adaptive granularity by executor tier; batch files for medium/large tasks |
+| **Plan validation** | No dedicated step | `/cp-plan-review` → `/cp-plan-fix` cycle before implementation |
+| **Documentation** | No dedicated step | `/cp-docs` — AI-oriented docs in `.ai/docs/` with ToC, cross-doc links, and validation |
+| **Rule evolution** | No dedicated step | `/cp-rules` — proposes rule improvements from reports, research, or natural-language requests; diagnose mode |
+| **Ad hoc mode** | N/A | Any command works outside workflow tasks; `/cp-docs` accepts natural-language requests |
 | **Audit trail** | No | Append-only reports, workflow.md decision history |
 | **Platform support** | Claude Code, Codex, Cursor, OpenCode | Claude Code, Codex CLI |
 
@@ -58,10 +59,10 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install-r
 cd your-project
 
 # 3. Start your first task
-/cpatrol add caching to the API layer
+/cp-idea add caching to the API layer
 ```
 
-CodePatrol will create `.ai/` in your project, run research, discuss the approach, and prepare a design + plan. The workflow will guide you to the next command from there.
+CodePatrol will create `.ai/` in your project, run research, discuss the approach, and prepare a design. Then `/cp-plan` writes the implementation plan. The workflow guides you through each step.
 
 ## What CodePatrol Solves
 
@@ -78,44 +79,51 @@ title: Task Workflow
 flowchart LR
     subgraph design ["🔍 Design"]
         direction TB
-        cpatrol("/cpatrol")
+        cpidea("/cp-idea")
         research["research\nclarification\napproach options"]
         des["design.md"]
-        plan["plan.md"]
-        cpatrol --> research --> des --> plan
+        cpidea --> research --> des
+    end
+
+    subgraph planning ["📋 Planning"]
+        direction TB
+        cpplan("/cp-plan")
+        plan["plan.md\n+ batch files"]
+        cpplan --> plan
     end
 
     subgraph plancheck ["📋 Plan Review"]
         direction TB
-        planreview("/cpplanreview")
-        planfix("/cpplanfix")
+        planreview("/cp-plan-review")
+        planfix("/cp-plan-fix")
         planreview -- "findings" --> planfix
         planfix -. "revalidation" .-> planreview
     end
 
     subgraph impl ["⚡ Implementation"]
         direction TB
-        execute("/cpexecute")
+        execute("/cp-execute")
         checkpoints["checkpoint reports\nstep verification"]
         execute --> checkpoints
     end
 
     subgraph review ["📝 Code Review"]
         direction TB
-        cpreview("/cpreview")
+        cpreviewn("/cp-review")
         compliance["compliance pass"]
         quality["quality pass"]
-        cpfix("/cpfix")
-        cpreview --> compliance --> quality
-        quality -- "findings" --> cpfix
-        cpfix -. "revalidation" .-> cpreview
+        cpfixn("/cp-fix")
+        cpreviewn --> compliance --> quality
+        quality -- "findings" --> cpfixn
+        cpfixn -. "revalidation" .-> cpreviewn
     end
 
     subgraph docs ["📚 Documentation"]
-        cpdocs("/cpdocs")
+        cpdocs("/cp-docs")
     end
 
-    design -- "plan.md" --> plancheck
+    design -- "design.md" --> planning
+    planning -- "plan.md" --> plancheck
     plancheck -- "approved plan" --> impl
     impl -- "handoff" --> review
     review -- "verified" --> docs
@@ -141,19 +149,19 @@ flowchart TD
         adhoc[".ai/reports/\nad-hoc reports"]
     end
 
-    cpatrol2("/cpatrol") -- "creates" --> workflow
-    cpatrol2 -- "creates" --> designf
-    cpatrol2 -- "creates" --> planf
-    planreview2("/cpplanreview") -- "writes" --> reports
-    cpfix2("/cpfix") -- "updates tracking" --> reports
-    cpreview2("/cpreview") -- "writes" --> reports
-    cpreview2 -- "ad-hoc mode" --> adhoc
-    cpdocs2("/cpdocs") -- "updates" --> docsdir
-    cpresume2("/cpresume") -. "reads" .-> workflow
-    cpresume2 -. "reads" .-> reports
+    cpidea2("/cp-idea") -- "creates" --> workflow
+    cpidea2 -- "creates" --> designf
+    cpplan2("/cp-plan") -- "creates" --> planf
+    planreview2("/cp-plan-review") -- "writes" --> reports
+    cpfixn2("/cp-fix") -- "updates tracking" --> reports
+    cpreviewn2("/cp-review") -- "writes" --> reports
+    cpreviewn2 -- "ad-hoc mode" --> adhoc
+    cpdocs2("/cp-docs") -- "updates" --> docsdir
+    cpresumen2("/cp-resume") -. "reads" .-> workflow
+    cpresumen2 -. "reads" .-> reports
 
-    readme -. "entry point\nfor all commands" .-> cpatrol2
-    readme -. "entry point\nfor all commands" .-> cpreview2
+    readme -. "entry point\nfor all commands" .-> cpidea2
+    readme -. "entry point\nfor all commands" .-> cpreviewn2
 ```
 
 ```mermaid
@@ -161,11 +169,11 @@ flowchart TD
 title: Utility Commands
 ---
 flowchart LR
-    interrupted([Interrupted session]) --> cpresume("/cpresume")
-    cpresume -- "detects stage\nfrom workflow.md" --> resume_target(["→ continues at correct step"])
+    interrupted([Interrupted session]) --> cpresumen("/cp-resume")
+    cpresumen -- "detects stage\nfrom workflow.md" --> resume_target(["→ continues at correct step"])
 
-    experience([Accumulated experience]) --> cprules("/cprules")
-    cprules -- "analyzes reports\nand findings" --> proposals["rule change\nproposals"]
+    experience([Accumulated experience]) --> cprulesn("/cp-rules")
+    cprulesn -- "analyzes reports\nand findings" --> proposals["rule change\nproposals"]
     proposals -- "after approval" --> rules[(".claude/rules/\nCLAUDE.md\nAGENTS.md")]
 ```
 
@@ -179,27 +187,27 @@ Persistent AI-oriented documentation. This is not a duplicate of regular docs bu
 
 `README.md` inside is the mandatory entry point. Every CodePatrol command starts context discovery from it, follows navigation to find relevant docs, and reads only what is needed. This prevents aimless repository scanning.
 
-Created and updated by `/cpdocs` — both as a workflow step after task completion and via ad hoc natural-language requests.
+Created and updated by `/cp-docs` — both as a workflow step after task completion and via ad hoc natural-language requests.
 
 ### `.ai/tasks/` — Task Artifacts
 
 Each workflow task lives in its own directory: `.ai/tasks/<YYYY-MM-DD-HHMM>-<slug>/`.
 
-Inside are three core files created by `/cpatrol` and updated by subsequent commands:
+Inside are three core files created by `/cp-idea` and updated by subsequent commands:
 
-- **`<slug>.workflow.md`** — central state file. Tracks the current stage, status, artifact references, stage completion, and key decisions. This is what `/cpresume` uses to determine where to continue.
-- **`<slug>.design.md`** — solution design. Produced during `/cpatrol` after research and approach discussion. One per task, edited iteratively.
-- **`<slug>.plan.md`** — implementation plan. One per task, must pass `/cpplanreview` before execution.
+- **`<slug>.workflow.md`** — central state file. Tracks the current stage, status, artifact references, stage completion, and key decisions. This is what `/cp-resume` uses to determine where to continue.
+- **`<slug>.design.md`** — solution design. Produced during `/cp-idea` after research and approach discussion. One per task, edited iteratively.
+- **`<slug>.plan.md`** — implementation plan. One per task, must pass `/cp-plan-review` before execution.
 
-Tasks also contain `reports/` — plan review and code review reports. Reports are audit artifacts: `/cpplanfix` and `/cpfix` update only tracking fields (status, resolution method, notes) but never delete or rewrite findings.
+Tasks also contain `reports/` — plan review and code review reports. Reports are audit artifacts: `/cp-plan-fix` and `/cp-fix` update only tracking fields (status, resolution method, notes) but never delete or rewrite findings.
 
 ### `.ai/reports/` — Ad-hoc Reports
 
-Reports outside workflow tasks. For example, `/cpreview` for an arbitrary branch or PR saves results here rather than in a task directory.
+Reports outside workflow tasks. For example, `/cp-review` for an arbitrary branch or PR saves results here rather than in a task directory.
 
 ### Why This Matters
 
-- **Resumability.** A task can be continued in a new session via `/cpresume` — all context lives in artifacts, not chat memory.
+- **Resumability.** A task can be continued in a new session via `/cp-resume` — all context lives in artifacts, not chat memory.
 - **Audit trail.** Decision history and findings are preserved — reports are append-only, workflow.md captures key decision points.
 - **Context isolation.** Agents read `.ai/docs/README.md` → relevant docs → task artifacts → code. No bulk repository scanning.
 
@@ -209,52 +217,55 @@ Commands are entered in Claude Code or Codex CLI. Each command auto-discovers re
 
 ### Full Task Workflow
 
-The workflow is organized around a single task: one task = one design + one plan. A task is considered complete only after AI documentation is updated.
+The workflow is organized around a single task: one task = one design + one plan (the plan may be split into batch files, but it remains a single logical plan). A task is considered complete only after AI documentation is updated.
 
-**1. Start — `/cpatrol`**
+**1. Design — `/cp-idea`**
 
 Single entry point. Checks for unfinished tasks and offers to resume them or start a new one. For a new task it runs a mandatory chain:
 - **research** — gather context from `.ai/docs/`, code, and project rules;
 - **clarification** — resolve ambiguities with the user;
 - **approach options** — compare approaches with trade-offs and a recommendation;
-- **design** — produce `design.md`;
-- **plan** — produce `plan.md`.
+- **design** — produce `design.md` with execution strategy.
 
 Process depth adapts to the task: minimal for small fixes, full for large features.
 
-**2. Plan review — `/cpplanreview` → `/cpplanfix`**
+**2. Plan — `/cp-plan`**
 
-Before implementation the plan is checked against the design, project rules, and execution readiness. `/cpplanreview` saves a report with findings, `/cpplanfix` resolves them and runs bounded revalidation.
+Writes the implementation plan from the approved design. Verifies context readiness (design, project rules, file map, contracts), adapts plan granularity to executor tier (strategic for strong models, detailed for weak ones). For medium and large tasks, splits the plan into batch files for compact executor context.
 
-**3. Implementation — `/cpexecute`**
+**3. Plan review — `/cp-plan-review` → `/cp-plan-fix`**
+
+Before implementation the plan is checked against the design, project rules, and execution readiness. `/cp-plan-review` saves a report with findings, `/cp-plan-fix` resolves them and runs bounded revalidation.
+
+**4. Implementation — `/cp-execute`**
 
 Executes the approved plan step by step with checkpoint reports. Stops on blockers instead of guessing. On completion it offers to proceed to code review — in the current session or hand off to a new one.
 
-**4. Code review — `/cpreview` → `/cpfix`**
+**5. Code review — `/cp-review` → `/cp-fix`**
 
-`/cpreview` runs compliance first (design, plan, and rules alignment), then quality (architecture, style, tests, security). The report is saved as `.review.report.md`. `/cpfix` resolves findings in priority order: compliance first, then quality.
+`/cp-review` runs compliance first (design, plan, and rules alignment), then quality (architecture, style, tests, security). The report is saved as `.review.report.md`. `/cp-fix` resolves findings in priority order: compliance first, then quality.
 
-**5. Documentation — `/cpdocs`**
+**6. Documentation — `/cp-docs`**
 
 Updates AI-oriented documentation in `.ai/docs/` based on the task results. Runs a validation pass: checks navigation, placement, and code alignment.
 
-Also works in ad hoc mode: `/cpdocs add a data flow diagram for the auth module` — parses the request, researches the codebase, and creates or updates the appropriate doc.
+Also works in ad hoc mode: `/cp-docs add a data flow diagram for the auth module` — parses the request, researches the codebase, and creates or updates the appropriate doc.
 
 ### Utility Commands
 
-- `/cpresume` — continue an unfinished task. Loads artifacts, detects the current stage, and shows what to do next.
-- `/cprules` — not part of the mandatory workflow. Analyzes accumulated results (reports, recurring findings) and proposes project rule improvements. Changes are applied only after user approval.
+- `/cp-resume` — continue an unfinished task. Loads artifacts, detects the current stage, and shows what to do next.
+- `/cp-rules` — not part of the mandatory workflow. Analyzes reports, recurring findings, or a specific topic area and proposes numbered rule improvements grouped by category. Also supports diagnose mode: "why didn't rules apply?" — investigates and proposes fixes. Changes are applied only after user approval.
 
 ### Notes
 
-- Any command accepts an explicit artifact path: `/cpresume .ai/tasks/2026-03-06-1420-my-task/`.
-- `/cpreview` also works outside the workflow — you can review a branch, PR, directory, or file set.
+- Any command accepts an explicit artifact path: `/cp-resume .ai/tasks/2026-03-06-1420-my-task/`.
+- `/cp-review` also works outside the workflow — you can review a branch, PR, directory, or file set.
 - When a command asks “which artifact?”, answer with a path or a short form: `current task`, `new task`.
 
 ## Session Example
 
 ```
-> /cpatrol add rate limiting for the API
+> /cp-idea add rate limiting for the API
 
 🔍 Research: reading .ai/docs/README.md → docs/domains/api.md → src/api/...
 Found: Express + Redis, 12 endpoints, JWT authentication.
@@ -267,39 +278,44 @@ Found: Express + Redis, 12 endpoints, JWT authentication.
 > 1 — by group, 2 — Redis, agree with recommendation
 
 📐 Design: created .ai/tasks/2026-03-06-1420-rate-limiting/rate-limiting.design.md
-📋 Plan: created rate-limiting.plan.md (3 stages, 8 steps)
-   Next step → /cpplanreview
+   Next step → /cp-plan
 
-> /cpplanreview
+> /cp-plan
+
+📋 Plan: created rate-limiting.plan.md (3 stages, 2 batch files)
+   Rules compliance pre-check: passed
+   Next step → /cp-plan-review
+
+> /cp-plan-review
 
 ✅ Findings: 1 minor (no fallback when Redis is unavailable)
-   Next step → /cpplanfix
+   Next step → /cp-plan-fix
 
-> /cpplanfix
+> /cp-plan-fix
 
 🔧 Fixed: added in-memory counter fallback.
-   Revalidation passed. Next step → /cpexecute
+   Revalidation passed. Next step → /cp-execute
 
-> /cpexecute
+> /cp-execute
 
 ⚡ Stage 1/3: middleware created, tests passing
 ⚡ Stage 2/3: limit config by group, integration tests ok
 ⚡ Stage 3/3: documentation updated
-   Implementation complete. Next step → /cpreview
+   Implementation complete. Next step → /cp-review
 
-> /cpreview
+> /cp-review
 
 📝 Compliance: ok (matches design and plan)
 📝 Quality: 1 important (middleware does not log rejected requests)
    Report: .ai/tasks/.../reports/...-rate-limiting.review.report.md
-   Next step → /cpfix
+   Next step → /cp-fix
 
-> /cpfix
+> /cp-fix
 
 🔧 Added logging. Verification passed.
-   Next step → /cpdocs
+   Next step → /cp-docs
 
-> /cpdocs
+> /cp-docs
 
 📚 Updated .ai/docs/domains/api.md (added rate limiting section)
    Task complete.
@@ -346,7 +362,7 @@ CodePatrol does not introduce its own rules format — it uses what the platform
 | Claude Code | `.claude/rules/*.md`, `CLAUDE.md` |
 | Codex CLI | `AGENTS.md` |
 
-Commands like `/cpreview`, `/cpplanreview`, and `/cpexecute` automatically read project rules and apply them during reviews, plan validation, and implementation. `/cprules` analyzes accumulated results and proposes rule additions or updates.
+Commands like `/cp-plan`, `/cp-review`, `/cp-plan-review`, and `/cp-execute` automatically read project rules and apply them during planning, reviews, validation, and implementation. `/cp-rules` analyzes accumulated results and proposes rule additions or updates.
 
 ### Language Policy
 
@@ -360,7 +376,7 @@ Exception: `workflow.md` is always kept in English — it is a state file for ag
 
 ### Model Selection For Subagents
 
-Commands that dispatch subagents (`/cpreview`, `/cpexecute`) use a three-tier model system:
+Commands that dispatch subagents (`/cp-idea`, `/cp-plan`, `/cp-review`, `/cp-execute`) use a three-tier model system:
 
 | Tier | Description | Examples |
 |------|-------------|----------|
@@ -372,7 +388,7 @@ Commands that dispatch subagents (`/cpreview`, `/cpexecute`) use a three-tier mo
 - The orchestrator picks the cheapest tier that fits the task complexity.
 - **Ceiling rule:** subagents never use a more capable model than the orchestrator session. If you run on Sonnet, subagents cannot escalate above Sonnet.
 - **Escalation:** if a subagent fails (error, empty output, failed self-check), it is re-dispatched one tier up. Maximum one escalation. If the ceiling tier fails, it becomes a blocker.
-- `/cpatrol` (research, design, planning) is recommended to run on the most capable model — it will warn if the current model may be too weak.
+- `/cp-idea` (research, design, planning) is recommended to run on the most capable model — it will warn if the current model may be too weak.
 
 **Custom model mapping:**
 
@@ -410,7 +426,7 @@ install-remote.sh                 release installer
 
 ## CI/CD
 
-CI rebuilds `skills/`, checks that generated output is current, validates placeholder substitution, and verifies the expected `cpatrol` / `cp*` runtime structure for release assets.
+CI rebuilds `skills/`, checks that generated output is current, validates placeholder substitution, and verifies the expected `cp-*` runtime structure for release assets.
 
 ## Known Limitations
 

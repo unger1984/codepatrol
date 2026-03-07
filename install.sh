@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
 SKILLS_DIR="$SCRIPT_DIR/skills"
 PLATFORMS_DIR="$SCRIPT_DIR/platforms"
-MANAGED_SKILLS="using-codepatrol cpatrol cpresume cpexecute cpplanreview cpplanfix cpreview cpfix cpdocs cprules"
+LEGACY_SKILLS="cpatrol cpresume cpexecute cpplanreview cpplanfix cpreview cpfix cpdocs cprules"
 LEGACY_SKILL_A="code""-review"
 LEGACY_SKILL_B="code""-review""-fix"
 
@@ -24,8 +24,42 @@ clean_installed_skills() {
     local target_dir="$1"
     mkdir -p "$target_dir"
 
-    for skill_name in $MANAGED_SKILLS "$LEGACY_SKILL_A" "$LEGACY_SKILL_B"; do
+    # Clean current skills (derived from templates)
+    for skill_dir in "$TEMPLATES_DIR"/*/; do
+        local skill_name=$(basename "$skill_dir")
+        [[ "$skill_name" == _* ]] && continue
         rm -rf "$target_dir/$skill_name"
+    done
+
+    # Clean legacy skill names from previous versions
+    for skill_name in $LEGACY_SKILLS "$LEGACY_SKILL_A" "$LEGACY_SKILL_B"; do
+        rm -rf "$target_dir/$skill_name"
+    done
+}
+
+# Resolve {{@platform-include:filename}} directives by inlining _shared/filename-{platform}.md
+# Usage: resolve_platform_includes <file> <base_dir> <platform>
+resolve_platform_includes() {
+    local file="$1"
+    local base_dir="$2"
+    local platform="$3"
+
+    while grep -q '{{@platform-include:' "$file"; do
+        local include_name
+        include_name=$(grep -m1 -o '{{@platform-include:[^}]*}}' "$file" | sed 's/{{@platform-include://;s/}}//')
+        local full_path="$base_dir/_shared/${include_name}-${platform}.md"
+
+        if [ ! -f "$full_path" ]; then
+            echo "Error: platform include file not found: $full_path"
+            exit 1
+        fi
+
+        # Replace the include line with file contents (portable across GNU/BSD)
+        local tmp="$file.pinc.tmp"
+        awk -v pattern="{{@platform-include:${include_name}}}" -v inc="$full_path" '
+            $0 ~ pattern { while ((getline line < inc) > 0) print line; close(inc); next }
+            { print }
+        ' "$file" > "$tmp" && mv "$tmp" "$file"
     done
 }
 
@@ -55,15 +89,17 @@ resolve_includes() {
 }
 
 # Substitute placeholders in a template file using values from an env file
-# Usage: substitute <template_file> <env_file> <output_file>
+# Usage: substitute <template_file> <env_file> <output_file> <platform>
 substitute() {
     local template="$1"
     local env_file="$2"
     local output="$3"
+    local platform="$4"
 
     cp "$template" "$output"
 
-    # Resolve includes before variable substitution
+    # Resolve platform-specific includes first, then generic includes
+    resolve_platform_includes "$output" "$TEMPLATES_DIR" "$platform"
     resolve_includes "$output" "$TEMPLATES_DIR"
 
     # Read env file line by line and substitute each variable
@@ -119,7 +155,7 @@ generate() {
         for template_file in "$skill_dir"*.md; do
             [ -f "$template_file" ] || continue
             local filename=$(basename "$template_file")
-            substitute "$template_file" "$env_file" "$out_skill_dir/$filename"
+            substitute "$template_file" "$env_file" "$out_skill_dir/$filename" "$platform"
         done
 
         echo "  $skill_name: done"

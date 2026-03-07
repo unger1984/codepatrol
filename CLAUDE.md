@@ -26,5 +26,6 @@ Code review skills for Claude Code and Codex CLI.
 - Platform-specific values go in `platforms/*.env`, referenced as `{{VAR_NAME}}` in templates
 - Shared content goes in `templates/_shared/`, referenced as `{{@include:_shared/filename.md}}` in templates
 - `skills/` is generated output — edit templates, not skills
-- All text in skill files in English (LLM adapts to project language via project rules)
-- Responses and code comments — in Russian
+- Skill file content (templates/ and skills/) — in English. LLM adapts to the user's language via project rules at runtime.
+- Developer communication (responses, code comments, commit messages) — in Russian
+- After editing any file in `templates/`, run `./install.sh build` to regenerate `skills/`
