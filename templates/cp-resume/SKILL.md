@@ -22,6 +22,8 @@ If no argument is provided, find resumable tasks under `.ai/tasks/` and ask the 
 
 ### 1. Load Artifacts
 
+Re-check `.ai/.enable-log` existence before any log writes — do not inherit the logging decision from the previous session.
+
 Collect the minimum set of artifacts needed to continue:
 - `<task-slug>.workflow.md`
 - `<task-slug>.design.md` if present

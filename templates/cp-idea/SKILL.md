@@ -52,6 +52,48 @@ Required items:
 - [ ] Design
 - [ ] Handoff to /cp-plan
 
+## Accepted Inputs
+
+- a task description (text)
+- a draft file path (`.ai/drafts/<slug>.draft.md`)
+
+### Draft input behavior
+
+When invoked with a draft file path:
+1. Read the draft file.
+2. If `**Status:**` is not `open`, warn the user that this draft was already processed and show the linked task. Ask whether to proceed anyway or pick a different draft. Use `{{ASK_USER}}` if available.
+3. Create a new workflow task as usual (§1b).
+4. Pre-fill the clarification context from the draft's `## Problem`, `## Why deferred`, and `## Hints` sections.
+5. Present the loaded context to the user and start clarification: "Draft loaded. Here's what was captured — is this still accurate, or should we adjust the scope?"
+6. After the workflow task is created (§1b), mark the draft as processed:
+   - Update `**Status:** open` → `**Status:** processed`
+   - Add `**Task:** <task-directory-path>` below the Status line
+7. Continue the normal workflow (clarification → research → ...). The draft accelerates context gathering but does not skip any stages.
+
+### Draft-as-output intent
+
+The user may indicate at any point during the conversation that the current topic should become a draft rather than a full task. Recognize these intents:
+- direct: "это черновик", "сохрани как черновик", "save as draft", "just a draft"
+- indirect: "пока не готов к реализации", "надо ещё подумать", "not ready yet", "park this for later"
+
+When detected:
+1. Confirm with the user: "Save current progress as a draft? Clarification and approach discussion will be preserved."
+2. If confirmed, create a draft via the Draft Creation flow (see below), filling `## Context` with all gathered clarification, research, and approach discussion results.
+3. Do not create a workflow task or design file. The skill is complete after the draft is saved.
+
+### Side-topic detection
+
+During clarification or approach discussion, a related but out-of-scope topic may emerge (e.g., "we'll also need to refactor X for this to work properly" or "this depends on Y which is broken").
+
+When this happens:
+1. Point out that the topic is outside the current task scope.
+2. Offer two paths:
+   - **Save as a separate draft** — create a draft for the side-topic and continue with the current task
+   - **Expand the current task scope** — include the side-topic in the current task
+3. If the user chooses a draft, create it immediately and continue the main task. Use `{{ASK_USER}}` if available.
+
+Do not silently expand scope. Do not ignore side-topics — they are valuable context that should not be lost.
+
 ## No-argument behavior
 
 When invoked without arguments:
@@ -203,6 +245,14 @@ Do NOT suggest moving to design until the user explicitly confirms the full solu
 **Why this gate exists:** design and plan are expensive to redo. A 10-second confirmation prevents a 10-minute rewrite. The model's confidence in understanding the task is not a substitute for the user's confirmation.
 </HARD-GATE>
 
+### 4c. Design-or-Draft Gate
+
+After the user confirms the solution outline, ask how to proceed. Use `{{ASK_USER}}` if available:
+- **Write design** — proceed to research refresh and design (default, recommended for tasks ready for implementation)
+- **Save as draft** — save everything gathered so far (clarification, research, approach, outline) as a draft in `.ai/drafts/`. No design file or workflow task is created. Use this when the task needs more thought, depends on other work, or is not a priority yet.
+
+If the user chooses draft, create it via the Draft Creation flow and complete the skill. If the task already has a workflow folder (created in §1b), update `workflow.md` status to `deferred` and link the draft.
+
 ### 5. Drive Design Readiness
 
 Do not jump to implementation.
@@ -276,6 +326,8 @@ After the design is approved and committed, the next step is plan writing via `/
 
 Plan file format, granularity, batching, commit strategy, and rules compliance are defined in `/cp-plan`.
 
+{{@include:_shared/draft-creation.md}}
+
 ## Workflow Log
 
 {{@include:_shared/workflow-log.md}}
@@ -341,10 +393,16 @@ Do NOT:
 
 ## Completion Criteria
 
-This command is complete when:
+This command is complete when one of these outcomes is reached:
+
+**Full task path:**
 - the workflow task exists
 - clarification and research are captured
 - the current design state is approved and committed (or commit deferred per project rules)
 - `/cp-plan` has been invoked (or handed off to a new session)
+
+**Draft path:**
+- a draft file has been saved to `.ai/drafts/` with all gathered context
+- if a workflow task was created, its status is updated to `deferred` with a link to the draft
 
 No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.

@@ -2,7 +2,7 @@
 
 # CodePatrol
 
-Workflow-first skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Codex CLI](https://github.com/openai/codex). CodePatrol replaces the old review-only interaction with a full lifecycle workflow that keeps templates in `templates/` and platform differences in `platforms/*.env`.
+Workflow-first, spec-driven AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Codex CLI](https://github.com/openai/codex). CodePatrol replaces the old review-only interaction with a full task lifecycle — from idea to design, planning, code review, fixes, and documentation — with session resumability and audit trail. Templates live in `templates/`, platform differences in `platforms/*.env`.
 
 ## Inspiration
 
@@ -147,6 +147,7 @@ flowchart TD
             reports["reports/\nplan-review · code-review"]
         end
         adhoc[".ai/reports/\nad-hoc reports"]
+        drafts[".ai/drafts/\ndeferred task drafts"]
     end
 
     cpidea2("/cp-idea") -- "creates" --> workflow
@@ -156,6 +157,8 @@ flowchart TD
     cpfixn2("/cp-fix") -- "updates tracking" --> reports
     cpreviewn2("/cp-review") -- "writes" --> reports
     cpreviewn2 -- "ad-hoc mode" --> adhoc
+    cpfixn2 -- "deferred findings" --> drafts
+    cpidea2 -. "loads draft" .-> drafts
     cpdocs2("/cp-docs") -- "updates" --> docsdir
     cpresumen2("/cp-resume") -. "reads" .-> workflow
     cpresumen2 -. "reads" .-> reports
@@ -201,6 +204,24 @@ Inside are three core files created by `/cp-idea` and updated by subsequent comm
 
 Tasks also contain `reports/` — plan review and code review reports. Reports are audit artifacts: `/cp-plan-fix` and `/cp-fix` update only tracking fields (status, resolution method, notes) but never delete or rewrite findings.
 
+Deferred findings may produce draft files in `.ai/drafts/` (see below).
+
+### `.ai/drafts/` — Deferred Task Drafts
+
+Lightweight task sketches saved for future processing. Drafts can be created by:
+- **`/cp-fix` and `/cp-plan-fix`** — when a finding is too large for the fixer scope (architectural change, cross-cutting refactor)
+- **`/cp-idea`** — when a side-topic emerges during discussion, or when the user decides the idea is not ready for a full design yet
+
+Drafts are stored as `.ai/drafts/<YYYY-MM-DD-HHMM>-<slug>.draft.md`. Each draft captures the origin, problem description, gathered context, and hints. Before creating a draft, the skill checks for existing drafts covering the same scope to avoid duplicates.
+
+To turn a draft into a full workflow task, pass it to `/cp-idea`:
+
+```
+/cp-idea .ai/drafts/2026-03-07-1500-refactor-auth-middleware.draft.md
+```
+
+`/cp-idea` loads the draft context, creates a new task, and marks the draft as `processed` with a link to the created task — so it won't be picked up again.
+
 ### `.ai/reports/` — Ad-hoc Reports
 
 Reports outside workflow tasks. For example, `/cp-review` for an arbitrary branch or PR saves results here rather than in a task directory.
@@ -208,6 +229,7 @@ Reports outside workflow tasks. For example, `/cp-review` for an arbitrary branc
 ### Why This Matters
 
 - **Resumability.** A task can be continued in a new session via `/cp-resume` — all context lives in artifacts, not chat memory.
+- **Deferred work.** Ideas not ready for implementation and findings too large for a fixer become drafts in `.ai/drafts/`, ready to be turned into full tasks via `/cp-idea`.
 - **Audit trail.** Decision history and findings are preserved — reports are append-only, workflow.md captures key decision points.
 - **Context isolation.** Agents read `.ai/docs/README.md` → relevant docs → task artifacts → code. No bulk repository scanning.
 
@@ -227,7 +249,7 @@ Single entry point. Checks for unfinished tasks and offers to resume them or sta
 - **approach options** — compare approaches with trade-offs and a recommendation;
 - **design** — produce `design.md` with execution strategy.
 
-Process depth adapts to the task: minimal for small fixes, full for large features.
+Process depth adapts to the task: minimal for small fixes, full for large features. At any point the user can save the idea as a draft instead of proceeding to design. Before writing the design, `/cp-idea` explicitly asks whether to continue to design or save as a draft.
 
 **2. Plan — `/cp-plan`**
 
@@ -243,7 +265,7 @@ Executes the approved plan step by step with checkpoint reports. Stops on blocke
 
 **5. Code review — `/cp-review` → `/cp-fix`**
 
-`/cp-review` runs compliance first (design, plan, and rules alignment), then quality (architecture, style, tests, security). The report is saved as `.review.report.md`. `/cp-fix` resolves findings in report order.
+`/cp-review` runs compliance first (design, plan, and rules alignment), then quality (architecture, style, tests, security). The report is saved as `.review.report.md`. `/cp-fix` resolves findings in report order. Findings too large for the fixer can be deferred to `.ai/drafts/` for future processing via `/cp-idea`.
 
 **6. Documentation — `/cp-docs`**
 
@@ -259,6 +281,7 @@ Also works in ad hoc mode: `/cp-docs add a data flow diagram for the auth module
 ### Notes
 
 - Any command accepts an explicit artifact path: `/cp-resume .ai/tasks/2026-03-06-1420-my-task/`.
+- `/cp-idea` also accepts a draft path: `/cp-idea .ai/drafts/2026-03-07-1500-refactor-auth.draft.md` — loads context and starts a new task from the draft.
 - `/cp-review` also works outside the workflow — you can review a branch, PR, directory, or file set.
 - When a command asks “which artifact?”, answer with a path or a short form: `current task`, `new task`.
 - CodePatrol installs a routing skill (`using-codepatrol`) that maps short aliases (`/idea`, `/plan`, `/review`...) and natural language intents to the right command.

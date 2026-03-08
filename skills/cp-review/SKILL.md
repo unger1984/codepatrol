@@ -277,6 +277,11 @@ Append entries to the `## Log` section of `workflow.md` at these points:
 - **user interaction** — brief summary of question asked and user's answer or decision (not the full dialogue)
 - **decision made** — what was decided and why (approach chosen, scope narrowed, parameter set)
 - **context check** — what was verified when transitioning between skills (design status, rules, file map)
+- **stage checkpoint** — when a stage or step within a skill completes, log it with the verification result (e.g. analyze clean, tests pass, specific metrics)
+- **verification failure** — when a check (analyze, test, lint) fails before being fixed: what failed, what was fixed, and the re-run result (e.g. "analyze: 1 unused_import → removed → re-run clean")
+- **file map** — at skill completion, list files created, modified, and deleted during that skill's run
+- **tool error** — when a tool call fails (Edit mismatch, Bash error, etc.): which tool, brief cause, and how it was resolved (retry, alternative approach, manual fix)
+- **auto-continuation** — when a skill decides to auto-invoke the next skill instead of asking the user: the reason (e.g. "task small + context fresh → auto-continue to /cp-review")
 - **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
 - **blocker hit** — what blocked and how it was resolved
 - **deviation** — unexpected events: model escalation, retry, approach change, scope change mid-workflow
@@ -311,7 +316,16 @@ Use `date +%H%M` for the timestamp. Do not guess the time.
   - auto-invoking /cp-plan-review
 - `13:56` **/cp-plan-review** APPROVED, 0 findings
   - user confirmed plan, proceeding to execution
-- `14:06` **/cp-execute** all 4 stages done, build passes
+- `14:00` **/cp-execute** stage 1 done — extract utils, analyze clean
+- `14:02` **/cp-execute** stage 2 — analyze failed: 1 unused_import
+  - fix: removed `import 'app_durations.dart'` → re-run clean
+- `14:03` **/cp-execute** stage 2 done — extract handler, analyze clean
+- `14:04` **/cp-execute** tool error: Edit failed (old_string not found in video_controls.dart)
+  - re-read file, updated match context → retry succeeded
+- `14:05` **/cp-execute** stage 3 done — final verify, tests pass, 853→689 lines
+- `14:06` **/cp-execute** all 3 stages done, build passes
+  - files: created `priority_key_handler.dart`, `series_utils.dart`; modified `video_controls.dart`
+- `14:06` **/cp-execute** auto-continue → /cp-review (task small, context fresh)
 - `14:07` **/cp-review** APPROVED, 0 findings — workflow complete
 - `14:10` **/cp-idea** deviation: research subagent failed at fast tier, escalated to default → success
 ```

@@ -7,7 +7,7 @@
     {
       "name": "codepatrol",
       "source": "./",
-      "description": "Workflow-first AI skills for planning, execution, review, fixes, docs, and project rules"
+      "description": "Workflow-first, spec-driven AI skills for task lifecycle: design, planning, code review, fixes, documentation, and project rules — with session resumability and audit trail"
     }
   ]
 }

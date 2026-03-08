@@ -30,3 +30,4 @@ Code review skills for Claude Code and Codex CLI.
 - Skill file content (templates/ and skills/) — in English. LLM adapts to the user's language via project rules at runtime.
 - Developer communication (responses, code comments, commit messages) — in Russian
 - After editing any file in `templates/`, run `./install.sh build` to regenerate `skills/`
+- After any skill or behavior change, check and update `README.md`, `README.ru.md`, and `.ai/docs/` if affected — documentation updates are part of the change

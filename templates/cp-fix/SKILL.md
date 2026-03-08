@@ -71,6 +71,15 @@ Before starting fixes, determine:
 
 If policy is not already clear, ask the user.
 
+### Defer-to-draft intent
+
+When the user responds to a finding with natural language that implies deferral to a draft, recognize these intents and treat them as "defer + create draft" (proceed to Draft Creation flow):
+- direct: "отложи в черновик", "создай черновик", "в драфт", "save as draft", "create a draft"
+- indirect: "отложи на будущее", "это потом", "слишком большое", "не сейчас", "skip and save for later"
+- scope-based: "это отдельная задача", "это надо прорабатывать отдельно", "this needs its own task"
+
+If the user says just "пропусти" / "skip" without mentioning drafts or future work, treat it as a regular skip (`skipped`, no draft). If ambiguous, ask once.
+
 ## Execution Rules
 
 - process findings in report order (see Parallelization approval for exceptions)
@@ -126,6 +135,8 @@ If the user asks to save the report at any point during the fix process, immedia
 If no report file was created during the process, the ad hoc save gate at the end offers to write the final report.
 
 The report remains the resumable source of truth across `/cp-fix` runs.
+
+{{@include:_shared/draft-creation.md}}
 
 ## Workflow Log
 

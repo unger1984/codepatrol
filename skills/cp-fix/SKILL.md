@@ -71,6 +71,15 @@ Before starting fixes, determine:
 
 If policy is not already clear, ask the user.
 
+### Defer-to-draft intent
+
+When the user responds to a finding with natural language that implies deferral to a draft, recognize these intents and treat them as "defer + create draft" (proceed to Draft Creation flow):
+- direct: "отложи в черновик", "создай черновик", "в драфт", "save as draft", "create a draft"
+- indirect: "отложи на будущее", "это потом", "слишком большое", "не сейчас", "skip and save for later"
+- scope-based: "это отдельная задача", "это надо прорабатывать отдельно", "this needs its own task"
+
+If the user says just "пропусти" / "skip" without mentioning drafts or future work, treat it as a regular skip (`skipped`, no draft). If ambiguous, ask once.
+
 ## Execution Rules
 
 - process findings in report order (see Parallelization approval for exceptions)
@@ -127,6 +136,63 @@ If no report file was created during the process, the ad hoc save gate at the en
 
 The report remains the resumable source of truth across `/cp-fix` runs.
 
+### Draft Creation
+
+Drafts are lightweight task sketches stored in `.ai/drafts/`. They capture enough context for `/cp-idea` to start a full task later. Drafts can be created by any skill — fixers defer findings, `/cp-idea` saves side-topics or early-stage ideas.
+
+#### Creating a draft
+
+1. Check `.ai/drafts/` for existing drafts that cover the same scope (same file + same area, or same concept). If a matching draft exists, show it to the user and ask whether to update it or create a new one.
+2. Run `date +%Y-%m-%d-%H%M` to get the current timestamp. Never hardcode or guess the time.
+3. Create the draft file at `.ai/drafts/<YYYY-MM-DD-HHMM>-<slug>.draft.md`. Use `mkdir -p` for the directory.
+4. If created from a fixer — update the report finding: set `**Status:** deferred` and add `**Draft:** .ai/drafts/<YYYY-MM-DD-HHMM>-<slug>.draft.md`.
+
+#### Draft file format
+
+```markdown
+# Draft: <title>
+
+**Status:** open
+**Created:** <YYYY-MM-DD> by <source-skill>
+
+## Origin
+
+- Source: <source-skill> (<context — e.g. report path, task path, or "ad hoc">)
+- Finding: #N [Severity] — short description (if from a fixer)
+- Parent task: <task-directory-path> (if created during another task's workflow)
+
+## Problem
+
+<what needs to be done, in which area/module, why it matters — enough context for cp-idea to start>
+
+## Context
+
+<clarification results, research findings, approach ideas — whatever was gathered before deferral>
+
+## Hints
+
+<suggestions for future work — what to consider, dependencies, related areas, possible approaches>
+```
+
+Fill only the sections that have content. For fixer drafts, `## Context` may be minimal. For `/cp-idea` drafts, it may include clarification and approach discussion results.
+
+#### Slug rules
+
+The slug should be short and descriptive, derived from the subject. Example: `refactor-auth-middleware`, `extract-video-series-utils`.
+
+#### Duplicate check
+
+Before creating a draft, search `.ai/drafts/` for files with `**Status:** open`. Compare:
+- same file or module mentioned in `## Problem`
+- same concept or description
+
+If a potential duplicate is found, show it to the user and ask:
+- **Update existing draft** — append the new context
+- **Create new draft** — the topics are different enough to warrant a separate draft
+- **Skip draft creation** — do not create a draft
+
+Do not create duplicate drafts silently.
+
 ## Workflow Log
 
 ### Workflow Log
@@ -147,6 +213,11 @@ Append entries to the `## Log` section of `workflow.md` at these points:
 - **user interaction** — brief summary of question asked and user's answer or decision (not the full dialogue)
 - **decision made** — what was decided and why (approach chosen, scope narrowed, parameter set)
 - **context check** — what was verified when transitioning between skills (design status, rules, file map)
+- **stage checkpoint** — when a stage or step within a skill completes, log it with the verification result (e.g. analyze clean, tests pass, specific metrics)
+- **verification failure** — when a check (analyze, test, lint) fails before being fixed: what failed, what was fixed, and the re-run result (e.g. "analyze: 1 unused_import → removed → re-run clean")
+- **file map** — at skill completion, list files created, modified, and deleted during that skill's run
+- **tool error** — when a tool call fails (Edit mismatch, Bash error, etc.): which tool, brief cause, and how it was resolved (retry, alternative approach, manual fix)
+- **auto-continuation** — when a skill decides to auto-invoke the next skill instead of asking the user: the reason (e.g. "task small + context fresh → auto-continue to /cp-review")
 - **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
 - **blocker hit** — what blocked and how it was resolved
 - **deviation** — unexpected events: model escalation, retry, approach change, scope change mid-workflow
@@ -181,7 +252,16 @@ Use `date +%H%M` for the timestamp. Do not guess the time.
   - auto-invoking /cp-plan-review
 - `13:56` **/cp-plan-review** APPROVED, 0 findings
   - user confirmed plan, proceeding to execution
-- `14:06` **/cp-execute** all 4 stages done, build passes
+- `14:00` **/cp-execute** stage 1 done — extract utils, analyze clean
+- `14:02` **/cp-execute** stage 2 — analyze failed: 1 unused_import
+  - fix: removed `import 'app_durations.dart'` → re-run clean
+- `14:03` **/cp-execute** stage 2 done — extract handler, analyze clean
+- `14:04` **/cp-execute** tool error: Edit failed (old_string not found in video_controls.dart)
+  - re-read file, updated match context → retry succeeded
+- `14:05` **/cp-execute** stage 3 done — final verify, tests pass, 853→689 lines
+- `14:06` **/cp-execute** all 3 stages done, build passes
+  - files: created `priority_key_handler.dart`, `series_utils.dart`; modified `video_controls.dart`
+- `14:06` **/cp-execute** auto-continue → /cp-review (task small, context fresh)
 - `14:07` **/cp-review** APPROVED, 0 findings — workflow complete
 - `14:10` **/cp-idea** deviation: research subagent failed at fast tier, escalated to default → success
 ```

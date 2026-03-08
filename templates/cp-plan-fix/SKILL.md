@@ -70,6 +70,15 @@ Ask the user when:
 
 If `{{ASK_USER}}` is available, use it. Otherwise ask in chat.
 
+### Defer-to-draft intent
+
+When the user responds to a finding with natural language that implies deferral to a draft, recognize these intents and treat them as "defer + create draft" (proceed to Draft Creation flow):
+- direct: "отложи в черновик", "создай черновик", "в драфт", "save as draft", "create a draft"
+- indirect: "отложи на будущее", "это потом", "слишком большое", "не сейчас", "skip and save for later"
+- scope-based: "это отдельная задача", "это надо прорабатывать отдельно", "this needs its own task"
+
+If the user says just "пропусти" / "skip" without mentioning drafts or future work, treat it as a regular skip (`skipped`, no draft). If ambiguous, ask once.
+
 ## Context Gathering
 
 Before starting fixes, read project rules from `{{RULES_SOURCE}}` to ensure plan fixes remain compliant.
@@ -124,6 +133,8 @@ The report remains the resumable source of truth across `/cp-plan-fix` runs.
 
 - `/cp-plan-fix`
 - `/cp-plan-fix .ai/tasks/.../reports/2026-03-06-1540-task.plan-review.report.md`
+
+{{@include:_shared/draft-creation.md}}
 
 ## Workflow Log
 

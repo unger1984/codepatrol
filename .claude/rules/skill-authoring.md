@@ -23,6 +23,15 @@ alwaysApply: false
 - Shared concepts (e.g., "completion criteria", "blocker policy", "user approval") MUST have consistent definitions across all skills — define once in `_shared/`, include everywhere
 - When adding a new constraint to a skill, grep all other skills for conflicting constraints on the same topic before committing
 
+## Documentation sync rule
+
+When any skill template (`templates/`), shared partial (`templates/_shared/`), or skill behavior changes:
+- Check and update `README.md` and `README.ru.md` if the change affects user-facing behavior, data storage, commands, or workflow
+- Check and update `.ai/docs/` if it exists and covers the changed area
+- This includes: new features, new artifact types, new accepted inputs, changed workflow stages, new directories in `.ai/`
+
+Do not skip documentation updates — they are part of the change, not a follow-up task.
+
 ## Required skill structure
 
 Every skill template MUST include:
