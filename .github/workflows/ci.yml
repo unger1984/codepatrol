@@ -26,12 +26,6 @@ jobs:
       - name: Validate generated workflow skills
         run: |
           test -f skills/using-codepatrol/SKILL.md
-          test -f skills/cp-idea/SKILL.md
-          test -f skills/cp-plan/SKILL.md
-          test -f skills/cp-execute/SKILL.md
-          test -f skills/cp-plan-review/SKILL.md
-          test -f skills/cp-plan-fix/SKILL.md
-          test -f skills/cp-resume/SKILL.md
           test -f skills/cp-review/SKILL.md
           test -f skills/cp-review/architecture-reviewer.md
           test -f skills/cp-review/codestyle-reviewer.md
@@ -39,12 +33,10 @@ jobs:
           test -f skills/cp-review/testing-reviewer.md
           test -f skills/cp-fix/SKILL.md
           test -f skills/cp-fix/fix-agent-prompt.md
-          test -f skills/cp-docs/SKILL.md
-          test -f skills/cp-rules/SKILL.md
 
       - name: Reject legacy skill names
         run: |
-          if find skills -maxdepth 1 -type d \( -name 'code-review' -o -name 'code-review-fix' -o -name 'cpatrol' -o -name 'cpresume' -o -name 'cpexecute' -o -name 'cpplanreview' -o -name 'cpplanfix' -o -name 'cpreview' -o -name 'cpfix' -o -name 'cpdocs' -o -name 'cprules' \) | grep -q .; then
+          if find skills -maxdepth 1 -type d \( -name 'code-review' -o -name 'code-review-fix' -o -name 'cpatrol' -o -name 'cpresume' -o -name 'cpexecute' -o -name 'cpplanreview' -o -name 'cpplanfix' -o -name 'cpreview' -o -name 'cpfix' -o -name 'cpdocs' -o -name 'cprules' -o -name 'cp-idea' -o -name 'cp-plan' -o -name 'cp-execute' -o -name 'cp-plan-review' -o -name 'cp-plan-fix' -o -name 'cp-resume' -o -name 'cp-docs' -o -name 'cp-rules' \) | grep -q .; then
             echo "::error::Legacy skill directories are still present."
             find skills -maxdepth 1 -type d
             exit 1
