@@ -5,7 +5,7 @@ description: Use to create or update project documentation, add diagrams, or des
 
 # /cp-docs
 
-Update AI-facing project documentation. Supports both workflow-driven updates and ad hoc requests in natural language.
+Create and maintain AI-facing project documentation from natural language requests.
 
 ## Progress Tracking (mandatory)
 
@@ -28,23 +28,20 @@ Must not:
 - read all `.ai/docs/` and all code by default
 - break README-based navigation
 
-## Mode Detection
+## No-argument behavior
 
-Determine the operating mode before any other work:
+When invoked without arguments, follow this cascade:
 
-- **Task-aware mode** — a task folder exists in `.ai/tasks/` with design and/or plan files. Brief is formed from task artifacts. The skill decides autonomously what and where to document.
-  - **Detection:** accept a task folder path as argument, or scan `.ai/tasks/` for recent task folders with design/plan files.
-- **Ad hoc mode** — no task context. Brief is formed via Intent Resolution from the user's phrase. Asks the user only when genuine ambiguity exists.
+1. **No `.ai/docs/README.md`** (missing or empty/broken — no navigable links) → offer to initialize project documentation
+2. **Uncommitted changes exist** (`git diff --name-only HEAD` + untracked) → offer to check/update docs for those changes, show the file list
+3. **On a non-main branch with committed changes vs main** → offer to check/update docs for the branch diff, show the changed files
+4. **None of the above** → ask the user with concrete options (e.g., document a specific area, audit existing docs, add a new doc)
 
-When invoked without arguments:
-- if a task folder with design/plan exists → task-aware mode
-- if `.ai/docs/` does not exist → offer to initialize it
-- if recent code changes exist → offer to update docs for those changes
-- otherwise → ask the user with concrete options
+Stop at the first matching condition. Do not fall through silently.
 
-## Ad Hoc Intent Resolution
+## Intent Resolution
 
-Applies only in ad hoc mode. Produces a brief for the unified flow.
+Produces a brief for the runtime flow.
 
 ### Step 1 — Parse intent
 
@@ -86,9 +83,11 @@ Decide autonomously when the answer is clear. Ask the user with options only whe
 
 ## Model Policy
 
-Applies only when dispatching a research subagent for broad-scope ad hoc requests.
+Applies only when dispatching a research subagent for broad-scope requests.
 
 {{@include:_shared/model-policy.md}}
+
+{{@include:_shared/subagent-limits.md}}
 
 {{DISPATCH_RESEARCHER}}
 
@@ -103,16 +102,14 @@ Applies only when dispatching a research subagent for broad-scope ad hoc request
 The flow has two phases: **analysis** (reasoning) and **writing** (mechanical I/O). Do not mix them.
 
 ### Analysis phase
-1. **Mode detection** — workflow or ad hoc (see above)
-2. **Brief formation** — workflow: from task artifacts (autonomous); ad hoc: via Intent Resolution (interactive when ambiguous)
-3. **Research** — collect information from the project codebase; scope-aware: subagent for broad, inline for narrow
-4. **Read relevant code and configs** — targeted reading based on brief and research results
-5. **Prepare drafts** — for each target doc, prepare exact content: what to add, update, or restructure
+1. **Brief formation** — via Intent Resolution (interactive when ambiguous)
+2. **Research** — collect information from the project codebase; scope-aware: subagent for broad, inline for narrow
+3. **Read relevant code and configs** — targeted reading based on brief and research results
+4. **Prepare drafts** — for each target doc, prepare exact content: what to add, update, or restructure
 
 ### Writing phase
-6. **Apply drafts** — write prepared content to doc files; no new reasoning
-7. **Validate** — run scope-aware validation pass
-8. **Update workflow state** — only in workflow mode
+5. **Apply drafts** — write prepared content to doc files; no new reasoning
+6. **Validate** — run scope-aware validation pass
 
 Complete all analysis and draft preparation before writing any file.
 
@@ -137,7 +134,7 @@ Read only the targeted docs, then the relevant code needed for the documentation
 
 Initialization is part of the **Writing phase** — it happens at the start of step 6, before any doc file writes. Research (analysis phase) proceeds without docs context when `.ai/docs/` does not exist.
 
-If `.ai/docs/` does not exist and the mode requires it:
+If `.ai/docs/` does not exist:
 - create directories with `mkdir -p` (idempotent — do not check existence separately or ask permission): `.ai/docs/`, `.ai/docs/domains/`, `.ai/docs/shared/`
 - populate README.md as a navigation entry point
 - use project rules from `{{RULES_SOURCE}}` and actual code as sources for initial documentation
@@ -188,10 +185,29 @@ All cross-document references must be navigable links. This applies to:
 Default format: Markdown with Mermaid diagrams.
 Use C4-lite structuring when it helps, but it is not mandatory for every file.
 
-Useful diagram types by default:
-- DFD
-- Sequence
-- module relationship diagrams
+### Diagrams
+
+Documentation is read by both AI agents and humans. Diagrams make complex relationships visible at a glance — use them actively, not only when explicitly requested.
+
+**When to add a Mermaid diagram:**
+- interaction between 3+ components or services
+- data flow across system boundaries
+- request/response sequences with multiple steps
+- state machines or lifecycle transitions
+- dependency graphs between modules
+
+**When a diagram is NOT needed:**
+- simple A-calls-B relationships — a sentence is enough
+- configuration or list-style documentation
+- the same information is already clear from a short paragraph
+
+**Diagram types by context:**
+- Architecture, module relationships → flowchart or C4-style
+- API calls, multi-step processes → sequence diagram
+- Data flow → DFD
+- State transitions → state diagram
+
+**User-requested documentation** (ad hoc mode) has the highest likelihood of benefiting from diagrams — the user is trying to understand something, and a visual overview helps. Default to including at least one diagram unless the topic is purely list-based.
 
 Project rules and existing project conventions override these defaults.
 
@@ -235,7 +251,7 @@ Scope-aware validation before completion.
 
 Stop and ask the user when:
 - documentation scope or source of truth cannot be reliably determined
-- a conflict exists between code, task artifacts, and existing `.ai/docs`
+- a conflict exists between code and existing `.ai/docs`
 - the intent behind a docs change is ambiguous after inference
 
 Do not continue on assumptions when the risk of documenting wrong information is high.

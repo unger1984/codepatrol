@@ -16,6 +16,7 @@ CodePatrol enhances the standard superpowers workflow (brainstorming → writing
 | Implement from a plan | executing-plans / subagent-driven-development (superpowers) | As-is |
 | Code review | `/cp-review` | CodePatrol skill |
 | Fix code review findings | `/cp-fix` | CodePatrol skill |
+| Create or update project documentation | `/cp-docs` | CodePatrol skill |
 
 ## Short Aliases
 
@@ -23,6 +24,7 @@ CodePatrol enhances the standard superpowers workflow (brainstorming → writing
 |------------|-----------|
 | `/review` | `/cp-review` |
 | `/fix` | `/cp-fix` |
+| `/docs` | `/cp-docs` |
 
 ## When the user says...
 
@@ -31,6 +33,7 @@ CodePatrol enhances the standard superpowers workflow (brainstorming → writing
 - "implement/execute the plan" / "let's build it" → executing-plans or subagent-driven-development
 - "review the code/changes" / "check my code" → `/cp-review`
 - "fix the findings" / "fix review issues" → `/cp-fix`
+- "add/update/write docs/documentation" → `/cp-docs`
 
 ---
 
@@ -45,6 +48,13 @@ Read project-specific context before asking clarifying questions:
 1. **Project rules** — ``.claude/rules/*.md` and `CLAUDE.md``
 2. **Project documentation** — if `.ai/docs/README.md` exists, read it as a navigation hub. Follow links only to docs relevant to the task scope.
 3. **Recent commits** — `git log --oneline -20` for recent activity context
+
+If `.ai/docs/` does not exist, ask the user (multiple choice, one question at a time):
+- Create project documentation now before designing (invoke `/cp-docs`)
+- Add a documentation initialization step to the plan after implementation
+- Proceed without project documentation
+
+Recommend the second option for most cases. Remember the user's choice — it affects the writing-plans enhancement.
 
 This context informs all subsequent steps: questions, approaches, and design.
 
@@ -82,7 +92,9 @@ Read project-specific context:
 
 ### Include .ai/docs update step
 
-If the task changes architecture, APIs, data structures, or conventions documented in `.ai/docs/`, include an explicit step in the plan to update the affected documentation. Reference the specific docs that need changes and what should change.
+If `.ai/docs/` exists and the task changes architecture, APIs, data structures, or conventions documented there, include an explicit step in the plan to update the affected documentation. Reference the specific docs that need changes and what should change.
+
+If `.ai/docs/` does not exist and the user chose "add a documentation step to the plan" during brainstorming, include a final step to initialize project documentation via `/cp-docs`.
 
 ### Self-check after writing
 
@@ -115,3 +127,23 @@ All task artifacts are stored in `.ai/tasks/`:
 ```
 
 The slug should be short and descriptive, derived from the task subject.
+
+## Blocker Policy
+
+Stop and ask the user when:
+- the user's request does not clearly map to any skill or enhancement
+- multiple skills could apply and the choice affects the outcome
+
+Do not guess which skill to invoke. Present concrete options and let the user choose.
+When asking the user, use `AskUserQuestion` if available on the current platform.
+
+## Anti-patterns
+
+Do NOT:
+- **Invoke multiple skills simultaneously without explicit user request** — route to one skill at a time
+- **Skip enhancements when invoking brainstorming or writing-plans** — enhancements are mandatory when CodePatrol is active
+- **Auto-invoke execution or review after planning** — the user decides when to proceed to the next stage
+
+## Completion Criteria
+
+This skill is complete when the target skill or enhanced workflow has been identified and invoked. If the skill acts as a router, completion is the successful handoff to the target skill.

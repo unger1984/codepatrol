@@ -52,6 +52,12 @@ Sequential processing is the default. Parallel processing requires user confirma
 
 Before dispatching fix agents, read project rules from `{{RULES_SOURCE}}`. Pass the rules summary as `{PROJECT_RULES}` to each fix agent so it can respect codestyle, testing, and naming conventions.
 
+## Subagent Model Policy
+
+{{@include:_shared/model-policy.md}}
+
+{{@include:_shared/subagent-limits.md}}
+
 ## Fix Policy
 
 Before starting fixes, determine:
@@ -123,7 +129,7 @@ Stop and ask the user when:
 - a critical conflict exists between design, plan, code, rules, or repo state
 - intent or choice is ambiguous and affects implementation meaning
 - required tools, access, or dependencies are missing
-- verification or revalidation repeatedly fails after reasonable attempts
+- verification or revalidation fails after 3 attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
 When asking the user, use `{{ASK_USER}}` if available on the current platform.

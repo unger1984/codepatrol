@@ -182,6 +182,8 @@ Only when the user explicitly asks to derive rules from code patterns (e.g. "loo
 
 {{@include:_shared/model-policy.md}}
 
+{{@include:_shared/subagent-limits.md}}
+
 ## Anti-patterns
 
 Do NOT:

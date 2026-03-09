@@ -52,6 +52,49 @@ Sequential processing is the default. Parallel processing requires user confirma
 
 Before dispatching fix agents, read project rules from ``.claude/rules/*.md` and `CLAUDE.md``. Pass the rules summary as `{PROJECT_RULES}` to each fix agent so it can respect codestyle, testing, and naming conventions.
 
+## Subagent Model Policy
+
+Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
+
+### Model Tiers
+
+| Tier | Description | Use when |
+|------|-------------|----------|
+| **fast** | Cheapest/fastest available | Simple, well-scoped tasks with clear instructions |
+| **default** | Mid-range | Most subagent work requiring comprehension and judgment |
+| **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
+
+### Ceiling Rule
+
+The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
+
+### User Override
+
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+
+### Escalation on Failure
+
+If a subagent returns an error, produces empty or unusable output, or fails its task:
+1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
+2. Re-dispatch the same task with the higher-tier model.
+3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
+4. Log the escalation in the progress update so the user sees it.
+
+### Subagent Limits
+
+Every dispatched subagent is bounded:
+
+- **Max tool calls:** 30 per subagent. The subagent must return its best result within this budget.
+- **Partial results:** if a subagent hits the limit before completing, it must return what it has gathered so far — not an empty or error response.
+
+**Failure escalation chain:**
+
+1. Subagent returns incomplete or unusable result → escalate model tier (per Model Tiers policy, max one escalation)
+2. Escalated subagent still fails → treat as a blocker
+3. Blocker handling: present partial results to the user, explain what the subagent could not complete, and offer options (continue manually, narrow scope, skip this pass)
+
+Do not retry a subagent at the same tier. Do not wait indefinitely for a subagent response.
+
 ## Fix Policy
 
 Before starting fixes, determine:
@@ -123,7 +166,7 @@ Stop and ask the user when:
 - a critical conflict exists between design, plan, code, rules, or repo state
 - intent or choice is ambiguous and affects implementation meaning
 - required tools, access, or dependencies are missing
-- verification or revalidation repeatedly fails after reasonable attempts
+- verification or revalidation fails after 3 attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
 When asking the user, use `AskUserQuestion` if available on the current platform.

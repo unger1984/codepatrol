@@ -38,6 +38,7 @@ writing-plans                        executing-plans / subagent-driven
 | `using-codepatrol` | Расширяет brainstorming и writing-plans осведомлённостью о проекте |
 | `/cp-review` | Двухпроходное ревью: compliance (дизайн + план + правила), затем quality (5 специализированных ревьюеров) |
 | `/cp-fix` | Обработка и исправление findings с инкрементальным трекингом |
+| `/cp-docs` | Создание и ведение AI-документации проекта |
 
 ## Хранение данных
 
@@ -103,6 +104,13 @@ cd codepatrol
 > /cp-fix .ai/tasks/2026-03-09-1420-rate-limit/review.md
 ```
 
+### Обновление документации
+
+```
+> /cp-docs
+> /cp-docs .ai/tasks/2026-03-09-1420-rate-limit/
+```
+
 
 ## Разработка
 
@@ -113,6 +121,7 @@ templates/             # Исходные шаблоны (редактирова
 ├── _shared/           # Общие частичные файлы
 ├── cp-review/         # Скилл ревью + промпты ревьюеров
 ├── cp-fix/            # Скилл фиксов + промпт агента
+├── cp-docs/           # Скилл документации
 └── using-codepatrol/  # Определения расширений
 
 platforms/             # Платформенные env-файлы
