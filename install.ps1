@@ -20,7 +20,23 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$RepoUrl = 'https://github.com/unger1984/codepatrol.git'
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ClonedDir = $null
+
+# Удалённая установка: если templates/ нет рядом со скриптом — клонируем репо
+if (-not (Test-Path (Join-Path $ScriptDir 'templates'))) {
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        Write-Error 'Error: git is required for remote installation'
+        exit 1
+    }
+    $ClonedDir = Join-Path ([System.IO.Path]::GetTempPath()) "codepatrol-$(Get-Random)"
+    Write-Host 'Cloning codepatrol...'
+    git clone --depth 1 $RepoUrl $ClonedDir 2>$null
+    $ScriptDir = $ClonedDir
+}
+
 $TemplatesDir = Join-Path $ScriptDir 'templates'
 $SkillsDir = Join-Path $ScriptDir 'skills'
 $PlatformsDir = Join-Path $ScriptDir 'platforms'
@@ -251,6 +267,11 @@ switch ($Command) {
         }
         Remove-Item -Recurse -Force $tmpDir
     }
+}
+
+# Очистка клонированного репо
+if ($ClonedDir -and (Test-Path $ClonedDir)) {
+    Remove-Item -Recurse -Force $ClonedDir
 }
 
 Write-Host "Done."
