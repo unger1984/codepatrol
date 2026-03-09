@@ -73,4 +73,5 @@ Adapt the Findings section to the query — there is no fixed schema. Use subsec
 - Cite sources for every claim (file path and line, or URL)
 - Do not read files outside the scope hints when scope hints are provided
 - Do not modify any files — read only
+- Do not read more than 20 files per research session. If more files seem relevant, return findings from what was read and note the gap.
 - Keep the summary concise — the orchestrator works from this summary for all subsequent stages

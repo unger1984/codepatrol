@@ -109,6 +109,8 @@ Review engineering quality after compliance is acceptable:
 
 {{@include:_shared/model-policy.md}}
 
+{{@include:_shared/subagent-limits.md}}
+
 Starting tier by reviewer role:
 - **Conventions / Compatibility** → fast
 - **Architecture / Security / Testing** → default
@@ -224,7 +226,7 @@ Stop and ask the user when:
 - a critical conflict exists between design, plan, code, rules, or repo state
 - intent or choice is ambiguous and affects implementation meaning
 - required tools, access, or dependencies are missing
-- verification or revalidation repeatedly fails after reasonable attempts
+- verification or revalidation fails after 3 attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
 When asking the user, use `{{ASK_USER}}` if available on the current platform.

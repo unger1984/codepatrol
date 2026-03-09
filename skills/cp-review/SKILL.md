@@ -133,6 +133,21 @@ If a subagent returns an error, produces empty or unusable output, or fails its 
 3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
 4. Log the escalation in the progress update so the user sees it.
 
+### Subagent Limits
+
+Every dispatched subagent is bounded:
+
+- **Max tool calls:** 30 per subagent. The subagent must return its best result within this budget.
+- **Partial results:** if a subagent hits the limit before completing, it must return what it has gathered so far — not an empty or error response.
+
+**Failure escalation chain:**
+
+1. Subagent returns incomplete or unusable result → escalate model tier (per Model Tiers policy, max one escalation)
+2. Escalated subagent still fails → treat as a blocker
+3. Blocker handling: present partial results to the user, explain what the subagent could not complete, and offer options (continue manually, narrow scope, skip this pass)
+
+Do not retry a subagent at the same tier. Do not wait indefinitely for a subagent response.
+
 Starting tier by reviewer role:
 - **Conventions / Compatibility** → fast
 - **Architecture / Security / Testing** → default
@@ -248,7 +263,7 @@ Stop and ask the user when:
 - a critical conflict exists between design, plan, code, rules, or repo state
 - intent or choice is ambiguous and affects implementation meaning
 - required tools, access, or dependencies are missing
-- verification or revalidation repeatedly fails after reasonable attempts
+- verification or revalidation fails after 3 attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
 When asking the user, use `AskUserQuestion` if available on the current platform.

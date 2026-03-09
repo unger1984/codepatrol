@@ -38,6 +38,7 @@ writing-plans                        executing-plans / subagent-driven
 | `using-codepatrol` | Enhances brainstorming and writing-plans with project awareness |
 | `/cp-review` | Two-pass code review: compliance (design + plan + rules) then quality (5 specialized reviewers) |
 | `/cp-fix` | Process and fix review findings with incremental tracking |
+| `/cp-docs` | Create and maintain AI-facing project documentation |
 
 ## Data Storage
 
@@ -103,6 +104,13 @@ Just describe what you want to build. CodePatrol enhances brainstorming automati
 > /cp-fix .ai/tasks/2026-03-09-1420-rate-limit/review.md
 ```
 
+### Update documentation
+
+```
+> /cp-docs
+> /cp-docs .ai/tasks/2026-03-09-1420-rate-limit/
+```
+
 
 ## Development
 
@@ -113,6 +121,7 @@ templates/             # Source templates (edit these)
 ├── _shared/           # Shared partials
 ├── cp-review/         # Code review skill + reviewer prompts
 ├── cp-fix/            # Fix skill + fix agent prompt
+├── cp-docs/           # Documentation skill
 └── using-codepatrol/  # Enhancement definitions
 
 platforms/             # Platform-specific env files
