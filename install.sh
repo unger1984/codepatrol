@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Remote install: if templates/ not found locally, clone the repo to a temp dir
 CLONED_DIR=""
-if [ ! -d "$SCRIPT_DIR/templates" ]; then
+if [ ! -d "$SCRIPT_DIR/templates/_shared" ]; then
     if ! command -v git &>/dev/null; then
         echo "Error: git is required for remote installation"
         exit 1
