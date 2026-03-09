@@ -1,7 +1,6 @@
 ---
-description: Rules for writing and maintaining skill templates
-globs: ["templates/**/*.md"]
-alwaysApply: false
+description: Rules for writing and maintaining skill templates and build scripts
+paths: ["templates/**/*.md", "install.sh", "install.ps1"]
 ---
 
 ## Anti-lock and anti-hang rules
@@ -22,6 +21,24 @@ alwaysApply: false
   - status/completion criteria must not conflict
 - Shared concepts (e.g., "completion criteria", "blocker policy", "user approval") MUST have consistent definitions across all skills — define once in `_shared/`, include everywhere
 - When adding a new constraint to a skill, grep all other skills for conflicting constraints on the same topic before committing
+
+## Cross-platform compatibility (AI platforms)
+
+When editing templates or shared partials, verify impact on ALL supported AI platforms (Claude, Codex, Cursor):
+
+- If adding a new `{{PLACEHOLDER}}` variable, ensure it is defined in every `platforms/*.env` file
+- If adding `{{@platform-include:name}}`, create a corresponding partial (`_shared/{name}-{platform}.md`) for every platform
+- If a template behavior depends on platform capabilities (e.g., parallel agents, progress tracking), use platform variables to abstract the difference — never hardcode platform-specific instructions in templates
+- When in doubt, check all env files: `ls platforms/*.env` and verify each has the variable
+
+## Cross-platform compatibility (OS)
+
+Build and install scripts exist in two variants: `install.sh` (Unix/macOS) and `install.ps1` (Windows/PowerShell). They MUST stay in sync:
+
+- When changing logic in `install.sh`, apply the same change to `install.ps1` and vice versa
+- When adding a new command (e.g., a new platform), add it to both scripts
+- When adding or removing legacy skill names, update the list in both scripts
+- Shell commands in skill templates must provide both Unix and PowerShell variants: `date +%H%M` / `Get-Date -Format 'HHmm'`, `mkdir -p` / `New-Item -ItemType Directory -Force`
 
 ## Documentation sync rule
 

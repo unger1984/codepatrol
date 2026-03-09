@@ -2,7 +2,22 @@
 
 # CodePatrol
 
-Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Codex CLI](https://github.com/openai/codex). Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
+Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), and [Cursor](https://cursor.com). Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
+
+## Table of Contents
+
+- [How It Works](#how-it-works)
+- [Skills](#skills)
+- [Data Storage](#data-storage)
+- [Quick Start](#quick-start)
+  - [Claude Code](#claude-code)
+  - [Codex CLI](#codex-cli)
+  - [Cursor](#cursor)
+- [Usage](#usage)
+- [Development](#development)
+- [CI/CD](#cicd)
+- [Known Limitations](#known-limitations)
+- [License](#license)
 
 ## How It Works
 
@@ -56,22 +71,82 @@ writing-plans                        executing-plans / subagent-driven
 
 ## Quick Start
 
-### Install from Claude Marketplace
+### Claude Code
 
-Search for `codepatrol` in Claude Code marketplace.
-
-### Install from latest release
-
+**From latest release (Unix/macOS):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- claude
 ```
 
-### Install from source
+**From latest release (Windows):**
+```powershell
+irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 claude
+```
 
+**From source (Unix/macOS):**
 ```bash
 git clone https://github.com/unger1984/codepatrol.git
 cd codepatrol
-./install.sh claude   # or: ./install.sh codex
+./install.sh claude
+```
+
+**From source (Windows):**
+```powershell
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+.\install.ps1 claude
+```
+
+### Codex CLI
+
+**From latest release (Unix/macOS):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- codex
+```
+
+**From latest release (Windows):**
+```powershell
+irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 codex
+```
+
+**From source (Unix/macOS):**
+```bash
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+./install.sh codex
+```
+
+**From source (Windows):**
+```powershell
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+.\install.ps1 codex
+```
+
+### Cursor
+
+**From latest release (Unix/macOS):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- cursor
+```
+
+**From latest release (Windows):**
+```powershell
+irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 cursor
+```
+
+**From source (Unix/macOS):**
+```bash
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+./install.sh cursor
+```
+
+**From source (Windows):**
+```powershell
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+.\install.ps1 cursor
 ```
 
 ## Usage
@@ -126,17 +201,28 @@ templates/             # Source templates (edit these)
 
 platforms/             # Platform-specific env files
 ├── claude.env
-└── codex.env
+├── codex.env
+└── cursor.env
 
 skills/                # Generated output (do not edit)
 ```
 
 ### Build
 
+**Unix/macOS:**
 ```bash
 ./install.sh build   # Regenerate skills/ from templates
 ./install.sh claude  # Generate and install to ~/.claude/skills/
-./install.sh codex   # Generate and install to ~/.codex/skills/
+./install.sh codex   # Generate and install to ~/.agents/skills/
+./install.sh cursor  # Generate and install to ~/.cursor/skills/
+```
+
+**Windows (PowerShell):**
+```powershell
+.\install.ps1 build   # Regenerate skills/ from templates
+.\install.ps1 claude  # Generate and install to ~/.claude/skills/
+.\install.ps1 codex   # Generate and install to ~/.agents/skills/
+.\install.ps1 cursor  # Generate and install to ~/.cursor/skills/
 ```
 
 ### Template rules
@@ -156,8 +242,8 @@ skills/                # Generated output (do not edit)
 ## Known Limitations
 
 - Tested on macOS only
-- Cursor support not yet implemented
 - Codex CLI support is experimental
+- Cursor support is experimental
 
 ## License
 

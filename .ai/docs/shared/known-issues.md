@@ -129,7 +129,7 @@
 
 **Причина:** LLM "угадывает" время вместо вызова `date`.
 
-**Решение в коде:** Явная инструкция в шаблонах: "run `date +%H%M` to get the current time. Use the real output. Never hardcode or guess the time."
+**Решение в коде:** Явная инструкция в шаблонах с кросс-платформенными командами: `date +%H%M` (Unix/macOS) или `Get-Date -Format 'HHmm'` (PowerShell/Windows). Аналогично для `mkdir -p` → `New-Item -ItemType Directory -Force`.
 
 **Правило:** Никогда не хардкодить и не угадывать динамические значения (время, дату, версии). Всегда получать через команду.
 

@@ -151,9 +151,9 @@ Violating this gate (saving before asking) is a critical workflow error.
 
 ### Filename rules
 
-Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part. Never hardcode or guess the time.
+Before generating the filename, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output in the HHMM part. Never hardcode or guess the time.
 
-Use `mkdir -p` when creating directories. This is idempotent — do not check existence separately or ask permission.
+Use `mkdir -p` (Unix) or `New-Item -ItemType Directory -Force` (PowerShell) when creating directories. Both are idempotent — do not check existence separately or ask permission.
 
 ## Report Format
 
