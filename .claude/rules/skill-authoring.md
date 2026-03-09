@@ -32,6 +32,21 @@ When any skill template (`templates/`), shared partial (`templates/_shared/`), o
 
 Do not skip documentation updates — they are part of the change, not a follow-up task.
 
+## Change checklist
+
+Before committing any change to `templates/` or `templates/_shared/`:
+
+1. Edit templates, NEVER edit `skills/` directly
+2. Run `./install.sh build` to regenerate `skills/`
+3. Grep other templates for conflicting instructions on the same topic
+4. If the change affects data format between skills (e.g., review report → fix input), verify the full chain still works
+5. If ad hoc behavior is affected — verify the save gate: no file writes without user confirmation outside workflow mode
+6. Never hardcode dynamic values (timestamps, versions) — always get them via shell commands (`date`, reading from files)
+7. Update version in `plugin.json` and `marketplace.json` if releasing
+8. Update `README.md`, `README.ru.md`, and `.ai/docs/` per the documentation sync rule below
+
+See [Known Issues](/.ai/docs/shared/known-issues.md) for detailed context on each point.
+
 ## Required skill structure
 
 Every skill template MUST include:
