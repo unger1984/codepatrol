@@ -1,6 +1,6 @@
 # CodePatrol
 
-Code review skills for Claude Code and Codex CLI.
+Project-aware AI skills for Claude Code and Codex CLI. Enhances Superpowers workflow with project rules and documentation awareness.
 
 ## Structure
 

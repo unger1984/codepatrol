@@ -5,7 +5,7 @@ description: Use to review code changes for compliance and quality before mergin
 
 # /cp-review
 
-Review implementation with a workflow-first review model.
+Review implementation with a two-pass review model: compliance first, then quality.
 
 ## Progress Tracking (mandatory)
 
@@ -24,7 +24,6 @@ Required items:
 
 ## Supported Scope Modes
 
-- current workflow task
 - current working tree
 - staged changes
 - committed branch diff
@@ -32,6 +31,7 @@ Required items:
 - pull request or merge request diff
 - entire project
 - explicit file or directory paths
+- task-scoped (design + plan from `.ai/tasks/`)
 
 If scope is ambiguous or empty, ask before reviewing.
 
@@ -47,7 +47,7 @@ If scope is ambiguous or empty, ask before reviewing.
 | "branch X vs Y" | diff between branches |
 | "PR", "pull request" | PR diff |
 | specific file or directory paths | those paths only |
-| no argument, active workflow task | task-scoped review |
+| no argument | committed diff vs main |
 
 ### When in doubt — ask, do not guess
 
@@ -61,15 +61,14 @@ Do not run diffs, merge branches, or take any destructive action unless explicit
 Before starting review:
 - read project rules from `{{RULES_SOURCE}}`
 - if `.ai/docs/README.md` exists, read it and only relevant domain/shared docs
-- if review is task-scoped, read task artifacts (workflow.md, design, plan)
+- if a task folder exists in `.ai/tasks/` for the current work, read design and plan files
 - identify documented exceptions, accepted trade-offs, and constraints
 - then read the relevant code
 
 For the compliance pass, mandatory sources are:
 - project rules from `{{RULES_SOURCE}}`
-- `workflow.md` if review is within a workflow task
-- approved design
-- current plan
+- approved design (if exists in `.ai/tasks/`)
+- current plan (if exists in `.ai/tasks/`)
 - documented constraints and accepted trade-offs
 
 ## Review Order
@@ -81,9 +80,8 @@ The order is mandatory:
 ### Compliance Pass
 
 Check that the implementation matches:
-- approved design
-- current plan
-- workflow decisions
+- approved design (if exists)
+- current plan (if exists)
 - project rules
 - documented constraints
 
@@ -121,42 +119,38 @@ The orchestrator must not:
 - run a broad noisy review without proper scoping
 - treat every deviation from plan/design as an error without evaluating context
 
-## STOP — Ad Hoc Save Gate (mandatory)
+## Reports
 
-**If there is no active workflow task, you are in ad hoc mode.**
+### Task-scoped reports
 
-In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to save. This is a hard gate — no exceptions, no "I'll ask after saving", no "saving as draft".
+If a task folder exists in `.ai/tasks/` for the current work, save the report there:
+- `.ai/tasks/<task-folder>/review.md`
+
+No need to ask — save automatically.
+
+### Ad hoc reports
+
+When there is no task folder, you are in ad hoc mode.
+
+**STOP — Ad Hoc Save Gate (mandatory)**
+
+In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to save. This is a hard gate — no exceptions.
 
 Flow:
 1. Generate the report content **in conversation only** (do not call Write/Edit/create file).
 2. Present the report to the user inline.
 3. Ask the user (use `{{ASK_USER}}` if available) which action to take:
-   - **Save report to file** — only then write to `.ai/reports/`
+   - **Save report to file** — only then write to `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.md`
    - **Run /cp-fix now** — pass results through conversation context, no file
 4. Wait for the user's explicit choice before any file I/O.
 
 Violating this gate (saving before asking) is a critical workflow error.
 
-## Reports
-
-### Workflow-task reports
-
-Saved automatically (no need to ask) under:
-- `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<task-slug>.review.report.md`
-
-### Ad hoc reports
-
-Saved ONLY after user confirms via the save gate above, under:
-- `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.report.md`
-
 ### Filename rules
 
-Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part of the filename. Never hardcode or guess the time.
-Example: `.ai/tasks/2026-03-06-1420-auth-refactor/reports/2026-03-06-1540-auth-refactor.review.report.md`
+Before generating the filename, run `date +%H%M` to get the current time. Use the real output in the HHMM part. Never hardcode or guess the time.
 
-Use `mkdir -p` when creating report directories. This is idempotent — do not check existence separately or ask the user for permission to create `.ai/` directories.
-
-A finding cannot be marked `done` without verification evidence that the risk is actually resolved.
+Use `mkdir -p` when creating directories. This is idempotent — do not check existence separately or ask permission.
 
 ## Report Format
 
@@ -201,26 +195,17 @@ Rules:
 
 ## Handoff
 
-### Within a workflow task
-
-After the report is saved, the next fix command is `/cp-fix`. {{INVOKE_SKILL}}
-
-### Ad hoc review (no active workflow task)
-
-The save gate above already blocks file I/O. After the user makes their choice:
-- If **save** — write the file, then offer `/cp-fix`.
-- If **run /cp-fix now** — invoke `/cp-fix` directly, passing findings through conversation context.
+After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it automatically — the user decides.
 
 ## Scope Detection Commands
 
-Default (no args) — decision tree:
-1. **Active workflow task exists** → task-scoped review (files from plan + changed files in task branch)
-2. **No workflow task** → committed diff vs main:
+Default (no args) — committed diff vs main:
 ```bash
 MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
 git diff --name-only ${MAIN_BRANCH}...HEAD
 ```
-3. **Diff is empty** → ask the user for scope (offer: review specific files, review full project, or cancel). Use `{{ASK_USER}}` if available.
+
+If diff is empty — ask the user for scope (offer: review specific files, review full project, or cancel). Use `{{ASK_USER}}` if available.
 
 Uncommitted changes:
 ```bash
@@ -233,10 +218,6 @@ Specific paths — use as-is. If a directory — find all source files inside it
 
 {{FILE_DISCOVERY}}
 
-## Workflow Log
-
-{{@include:_shared/workflow-log.md}}
-
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -246,15 +227,7 @@ Stop and ask the user when:
 - verification or revalidation repeatedly fails after reasonable attempts
 
 Do not push the workflow forward on guesses. Infer when safe, ask when ambiguous.
-Do not take actions the user did not request. Do not guess intent when multiple interpretations exist.
-Ask first, act second. A clarifying question is always cheaper than a wrong action.
-
 When asking the user, use `{{ASK_USER}}` if available on the current platform.
-
-## Saving Policy
-
-- **Workflow task** — save the report automatically to the task reports directory. No need to ask.
-- **Ad hoc review** — governed by the STOP — Ad Hoc Save Gate section. Never bypass it.
 
 ## Anti-patterns
 
@@ -268,6 +241,4 @@ Do NOT:
 
 ## Completion Criteria
 
-This stage is complete when the compliance pass and quality pass are both finished and the report is saved.
-
-No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
+This skill is complete when the compliance pass and quality pass are both finished and the report is either presented inline or saved to file.

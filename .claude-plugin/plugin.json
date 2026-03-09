@@ -1,6 +1,6 @@
 {
   "name": "codepatrol",
-  "version": "0.4.2",
-  "description": "Workflow-first, spec-driven AI skills for task lifecycle: design, planning, code review, fixes, documentation, and project rules — with session resumability and audit trail",
-  "keywords": ["workflow", "spec-driven", "planning", "code-review", "design", "docs", "rules", "task-lifecycle", "audit-trail", "resumable", "ai-skills", "coding-agent"]
+  "version": "0.5.0",
+  "description": "Project-aware AI skills that enhance brainstorming and planning with rules and documentation awareness, plus specialized code review and fix tools",
+  "keywords": ["code-review", "project-rules", "docs", "ai-skills", "coding-agent", "brainstorming", "planning", "superpowers"]
 }

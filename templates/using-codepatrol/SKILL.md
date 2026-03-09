@@ -1,58 +1,117 @@
 ---
 name: using-codepatrol
-description: Use when starting any conversation - establishes that CodePatrol workflow skills take priority over generic skills for planning, design, implementation, review, and documentation
+description: Use when starting any conversation - enhances brainstorming and writing-plans with project awareness, routes review and fix tasks to CodePatrol skills
 ---
 
-# CodePatrol Skill Priority
+# CodePatrol — Project-Aware Enhancements
 
-When CodePatrol skills are available, they take priority over generic skills (brainstorming, writing-plans, executing-plans, requesting-code-review, etc.) for the following tasks:
+CodePatrol enhances the standard superpowers workflow (brainstorming → writing-plans → executing-plans) with project rules and documentation awareness. It also provides specialized code review and fix skills.
 
-| Task type | Use CodePatrol skill | Instead of generic skill |
-|-----------|---------------------|--------------------------|
-| New task, idea, feature, or change | `/cp-idea` | brainstorming |
-| Write implementation plan from design | `/cp-plan` | writing-plans |
-| Implement from a plan | `/cp-execute` | executing-plans, subagent-driven-development |
-| Code review | `/cp-review` | requesting-code-review |
-| Create or update documentation | `/cp-docs` | — |
-| Resume unfinished work | `/cp-resume` | — |
-| Review a plan | `/cp-plan-review` | — |
-| Fix code review findings | `/cp-fix` | — |
-| Fix plan review findings | `/cp-plan-fix` | — |
-| Improve project rules | `/cp-rules` | — |
+## Skill Routing
 
-## The Rule
-
-Before invoking a generic process skill (brainstorming, writing-plans, executing-plans, debugging, requesting-code-review), check if a CodePatrol skill covers the same task. If it does, use the CodePatrol skill.
-
-Generic skills remain available for tasks that no CodePatrol skill covers (e.g., TDD, systematic debugging, git worktrees, keybindings).
+| Task type | Skill | Notes |
+|-----------|-------|-------|
+| New task, idea, feature, or change | brainstorming (superpowers) | Enhanced — see below |
+| Write implementation plan | writing-plans (superpowers) | Enhanced — see below |
+| Implement from a plan | executing-plans / subagent-driven-development (superpowers) | As-is |
+| Code review | `/cp-review` | CodePatrol skill |
+| Fix code review findings | `/cp-fix` | CodePatrol skill |
 
 ## Short Aliases
 
-Users may invoke commands without the `cp-` prefix. Resolve these to the corresponding CodePatrol skill:
-
 | User types | Resolve to |
 |------------|-----------|
-| `/idea`, `/design`, `/brainstorm` | `/cp-idea` |
-| `/plan` | `/cp-plan` |
-| `/execute`, `/implement`, `/run` | `/cp-execute` |
 | `/review` | `/cp-review` |
 | `/fix` | `/cp-fix` |
-| `/plan-review` | `/cp-plan-review` |
-| `/plan-fix` | `/cp-plan-fix` |
-| `/docs` | `/cp-docs` |
-| `/resume` | `/cp-resume` |
-| `/rules` | `/cp-rules` |
-
-If a short alias conflicts with another installed skill, prefer the CodePatrol skill.
 
 ## When the user says...
 
-- "let's plan/design/build/add/create X" → `/cp-idea`
-- "brainstorm" / "let's think about" / "I have an idea" → `/cp-idea`
-- "write the plan" / "create implementation plan" → `/cp-plan`
-- "implement/execute the plan" / "let's build it" → `/cp-execute`
+- "let's plan/design/build/add/create X" / "brainstorm" / "I have an idea" → brainstorming (with enhancements)
+- "write the plan" / "create implementation plan" → writing-plans (with enhancements)
+- "implement/execute the plan" / "let's build it" → executing-plans or subagent-driven-development
 - "review the code/changes" / "check my code" → `/cp-review`
 - "fix the findings" / "fix review issues" → `/cp-fix`
-- "add/update/write docs/documentation" → `/cp-docs`
-- "continue/resume where we left off" → `/cp-resume`
-- "let's work on rules" / "improve/add/update rules" / "add linting rules" → `/cp-rules`
+
+---
+
+## Enhancement: brainstorming
+
+When `superpowers:brainstorming` is invoked, apply these enhancements **in addition to** the standard brainstorming flow.
+
+### At "Explore project context" step
+
+Read project-specific context before asking clarifying questions:
+
+1. **Project rules** — `{{RULES_SOURCE}}`
+2. **Project documentation** — if `.ai/docs/README.md` exists, read it as a navigation hub. Follow links only to docs relevant to the task scope.
+3. **Recent commits** — `git log --oneline -20` for recent activity context
+
+This context informs all subsequent steps: questions, approaches, and design.
+
+### At "Propose approaches" step
+
+Before presenting approaches, verify each candidate against project rules and conventions discovered during context exploration. If an approach conflicts with a project rule, either discard it or explicitly note the conflict and why the rule should be overridden.
+
+### At "Present design" step
+
+In the design, explicitly reference relevant project rules and constraints that shaped design decisions. The user should see that the design was informed by the project's own conventions, not just general best practices.
+
+### Save design
+
+Save the approved design to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` instead of `docs/plans/`.
+
+Before generating the folder name, run `date +%H%M` to get the current time. Use the real output. Never hardcode or guess the time. Use `mkdir -p` to create the directory.
+
+### Handoff to writing-plans
+
+After the design is saved, invoke `superpowers:writing-plans` as usual. The enhancements below will apply automatically.
+
+---
+
+## Enhancement: writing-plans
+
+When `superpowers:writing-plans` is invoked, apply these enhancements **in addition to** the standard writing-plans flow.
+
+### Before writing the plan
+
+Read project-specific context:
+
+1. **Project rules** — `{{RULES_SOURCE}}`
+2. **Project documentation** — if `.ai/docs/README.md` exists, read it and follow links to docs relevant to the task. This reveals architecture details, conventions, and constraints not captured in rules. It also shows what documentation will need updating after implementation.
+3. **Design file** — the approved design from `.ai/tasks/` for the current task
+
+### Include .ai/docs update step
+
+If the task changes architecture, APIs, data structures, or conventions documented in `.ai/docs/`, include an explicit step in the plan to update the affected documentation. Reference the specific docs that need changes and what should change.
+
+### Self-check after writing
+
+After the plan is written, review it against:
+- project rules — no step should violate a known rule or convention
+- project documentation — no step should contradict documented architecture
+- design file — all design decisions should be reflected in the plan
+
+If conflicts are found, fix them before presenting the plan to the user.
+
+### Save plan
+
+Save the plan to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md` (same task folder as design.md).
+
+### Execution handoff
+
+After the plan is saved, follow the standard writing-plans execution handoff (offer subagent-driven or parallel session). Do NOT automatically invoke review after execution — the user decides when to review.
+
+---
+
+## Task Folder Structure
+
+All task artifacts are stored in `.ai/tasks/`:
+
+```
+.ai/tasks/YYYY-MM-DD-HHMM-slug/
+├── design.md    — approved design
+├── plan.md      — implementation plan
+└── review.md    — code review report (created by /cp-review)
+```
+
+The slug should be short and descriptive, derived from the task subject.
