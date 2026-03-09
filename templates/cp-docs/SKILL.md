@@ -133,7 +133,7 @@ Read only the targeted docs, then the relevant code needed for the documentation
 Initialization is part of the **Writing phase** — it happens at the start of step 5, before any doc file writes. Research (analysis phase) proceeds without docs context when `.ai/docs/` does not exist.
 
 If `.ai/docs/` does not exist:
-- create directories with `mkdir -p` (idempotent — do not check existence separately or ask permission): `.ai/docs/`, `.ai/docs/domains/`, `.ai/docs/shared/`
+- create directories with `mkdir -p` (Unix) or `New-Item -ItemType Directory -Force` (PowerShell) — both are idempotent, do not check existence separately or ask permission: `.ai/docs/`, `.ai/docs/domains/`, `.ai/docs/shared/`
 - populate README.md as a navigation entry point
 - use project rules from `{{RULES_SOURCE}}` and actual code as sources for initial documentation
 

@@ -16,6 +16,7 @@ usage() {
     echo "  build    Generate skills/ from templates using Claude platform values"
     echo "  claude   Generate and install skills to ~/.claude/skills/"
     echo "  codex    Generate and install skills to ~/.codex/skills/"
+    echo "  cursor   Generate and install skills to ~/.cursor/skills/"
     echo ""
     exit 1
 }
@@ -124,7 +125,7 @@ substitute() {
                 print
             }' "$output" > "$output.tmp" && mv "$output.tmp" "$output"
         fi
-    done < "$env_file"
+    done < <(cat "$env_file"; echo)
 }
 
 # Generate skills from templates for a given platform
@@ -183,10 +184,26 @@ case "${1:-}" in
         done
         ;;
     codex)
-        local_dir="$HOME/.codex/skills"
+        local_dir="$HOME/.agents/skills"
+        legacy_dir="$HOME/.codex/skills"
         tmp_dir=$(mktemp -d)
         generate "codex" "$tmp_dir"
+        # Clean legacy install path (~/.codex/skills) from previous versions
+        clean_installed_skills "$legacy_dir"
         # Copy to Codex skills directory
+        clean_installed_skills "$local_dir"
+        for skill_dir in "$tmp_dir"/*/; do
+            skill_name=$(basename "$skill_dir")
+            target="$local_dir/$skill_name"
+            cp -r "$skill_dir" "$target"
+            echo "Installed: $target"
+        done
+        rm -rf "$tmp_dir"
+        ;;
+    cursor)
+        local_dir="$HOME/.cursor/skills"
+        tmp_dir=$(mktemp -d)
+        generate "cursor" "$tmp_dir"
         clean_installed_skills "$local_dir"
         for skill_dir in "$tmp_dir"/*/; do
             skill_name=$(basename "$skill_dir")

@@ -34,7 +34,8 @@ codepatrol/
 │   └── using-codepatrol/   # Enhancement definitions
 ├── platforms/              # Platform-specific variable files
 │   ├── claude.env
-│   └── codex.env
+│   ├── codex.env
+│   └── cursor.env
 ├── skills/                 # Generated output (DO NOT EDIT)
 ├── .claude-plugin/         # Plugin manifests
 │   ├── plugin.json
@@ -50,14 +51,14 @@ Templates use `{{VARIABLE}}` syntax for platform-specific values. Variables are 
 
 Key variables:
 
-| Variable | Claude Code | Codex CLI |
-|----------|-------------|-----------|
-| `{{ASK_USER}}` | `AskUserQuestion` | `request_user_input` |
-| `{{DISPATCH_AGENT}}` | Parallel via Agent tool | Sequential execution |
-| `{{PROGRESS_TOOL}}` | `TodoWrite` | *(empty — line removed)* |
-| `{{FILE_DISCOVERY}}` | Glob, Grep, MCP tools | Available search tools |
-| `{{RULES_SOURCE}}` | `.claude/rules/*.md` + `CLAUDE.md` | `AGENTS.md` only |
-| `{{SKILLS_DIR}}` | `~/.claude/skills` | `~/.codex/skills` |
+| Variable | Claude Code | Codex CLI | Cursor |
+|----------|-------------|-----------|--------|
+| `{{ASK_USER}}` | `AskUserQuestion` | `request_user_input` | Built-in Ask Questions |
+| `{{DISPATCH_AGENT}}` | Parallel via Agent tool | Sequential execution | Subagents via `.cursor/agents/` |
+| `{{PROGRESS_TOOL}}` | `TodoWrite` | `checklist` | Checkpoints |
+| `{{FILE_DISCOVERY}}` | Glob, Grep, MCP tools | Available search tools | Semantic Search + Search Files |
+| `{{RULES_SOURCE}}` | `.claude/rules/*.md` + `CLAUDE.md` | `AGENTS.md` only | `.cursor/rules/*.mdc` + `AGENTS.md` |
+| `{{SKILLS_DIR}}` | `~/.claude/skills` | `~/.agents/skills` | `~/.cursor/skills` |
 
 ### Include Directives
 
@@ -71,7 +72,7 @@ The build script resolves these by inlining the referenced file content.
 
 #### Platform-specific includes
 
-`{{@platform-include:name}}` — inlines `_shared/${name}-${platform}.md` where `${platform}` is determined by the build target (claude/codex). Used in `cp-rules` for platform-specific rules authoring guidelines.
+`{{@platform-include:name}}` — inlines `_shared/${name}-${platform}.md` where `${platform}` is determined by the build target (claude/codex/cursor). Used in `cp-rules` for rules authoring guidelines and in `using-codepatrol` for platform-specific short aliases.
 
 ### Shared Partials (`templates/_shared/`)
 
@@ -81,6 +82,10 @@ Reusable content included by multiple skills:
 - **researcher.md** — Research subagent contract and output format. Included by: `cp-docs`, `cp-rules`.
 - **rules-authoring-claude.md** — Rules authoring guidelines for Claude Code platform.
 - **rules-authoring-codex.md** — Rules authoring guidelines for Codex CLI platform.
+- **rules-authoring-cursor.md** — Rules authoring guidelines for Cursor platform (MDC format).
+- **aliases-claude.md** — Short slash-command aliases for Claude Code (includes `/review`).
+- **aliases-codex.md** — Short slash-command aliases for Codex CLI (`/review` excluded — built-in conflict).
+- **aliases-cursor.md** — Short slash-command aliases for Cursor (includes `/review`).
 
 ## Build Pipeline
 
@@ -99,7 +104,8 @@ flowchart LR
 |---------|--------|
 | `./install.sh build` | Regenerate `skills/` from templates using Claude env |
 | `./install.sh claude` | Generate and install to `~/.claude/skills/` |
-| `./install.sh codex` | Generate and install to `~/.codex/skills/` |
+| `./install.sh codex` | Generate and install to `~/.agents/skills/` |
+| `./install.sh cursor` | Generate and install to `~/.cursor/skills/` |
 
 ### Build Steps
 

@@ -15,6 +15,7 @@ Start here to understand what documentation exists and where to find it.
 | Document | Description | When to read |
 |----------|-------------|--------------|
 | [Architecture](shared/architecture.md) | Template system, build pipeline, platform abstraction | Understanding how skills are built and deployed |
+| [Known Issues](shared/known-issues.md) | Повторяющиеся проблемы и чеклисты | Before changing templates, skills, or releasing |
 
 ### Domains
 
