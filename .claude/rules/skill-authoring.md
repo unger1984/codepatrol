@@ -17,7 +17,7 @@ alwaysApply: false
 
 - A skill MUST NOT contain instructions that contradict each other (e.g., "always do X" in one section and "never do X" in another)
 - When a skill references another skill's output or artifacts, it MUST use the same terminology and format expectations
-- If two skills can run in sequence (e.g., cp-plan → cp-execute), their interfaces MUST be compatible:
+- If two skills can run in sequence (e.g., cp-review → cp-fix), their interfaces MUST be compatible:
   - output format of skill A must match expected input of skill B
   - status/completion criteria must not conflict
 - Shared concepts (e.g., "completion criteria", "blocker policy", "user approval") MUST have consistent definitions across all skills — define once in `_shared/`, include everywhere

@@ -13,12 +13,11 @@ Documents the code review architecture — two-pass model, specialized reviewers
 
 ## Scope
 
-Covers `cp-review` mechanics, reviewer agents, report structure, and `cp-fix` tracking. For the overall workflow position, see [Workflow](../shared/workflow.md).
+Covers `cp-review` mechanics, reviewer agents, report structure, and `cp-fix` tracking.
 
 ## Related docs
 
 - [Skills Reference](skills-reference.md) — all skills overview
-- [Workflow](../shared/workflow.md) — where review fits in the pipeline
 
 ---
 
@@ -31,16 +30,15 @@ flowchart TD
     P2 --> REPORT[Review Report]
     REPORT --> DECIDE{Findings?}
     DECIDE -->|NEEDS_CHANGES| FIX["/cp-fix"]
-    DECIDE -->|APPROVED| NEXT[Next stage]
-    DECIDE -->|APPROVED_WITH_NOTES| NEXT
+    DECIDE -->|APPROVED| DONE[Done]
+    DECIDE -->|APPROVED_WITH_NOTES| DONE
 ```
 
 ### Pass 1 — Compliance (mandatory first)
 
 Checks adherence to:
-- Approved design (`design.md`)
-- Implementation plan (`plan.md`)
-- Workflow decisions recorded in `workflow.md`
+- Approved design (`design.md` from `.ai/tasks/`, if exists)
+- Implementation plan (`plan.md` from `.ai/tasks/`, if exists)
 - Project rules (`.claude/rules/`, `CLAUDE.md` / `AGENTS.md`)
 
 ### Pass 2 — Quality
@@ -135,21 +133,21 @@ Compliance pass always uses **powerful** tier (most critical check).
 
 | Assessment | Meaning |
 |------------|---------|
-| `NEEDS_CHANGES` | Has critical or important findings |
-| `APPROVED_WITH_NOTES` | Minor findings only |
+| `NEEDS_CHANGES` | Has critical or open compliance findings |
+| `APPROVED_WITH_NOTES` | Only important/minor quality findings |
 | `APPROVED` | No findings |
 
 ## Fix Tracking (cp-fix)
 
 ### Processing Order
 
-Строго в порядке отчёта (report order) — не переупорядочивать по типу или группе. Ревью уже выстраивает findings в правильном порядке обработки.
+Strictly in report order — do not reorder by type or group. The review already places findings in the correct processing order.
 
 ### Incremental Report Mutation
 
 After each finding is processed, **immediately** update the report file:
 
-- `Status: open` → `resolved` | `skipped` | `deferred`
+- `Status: open` → `resolved` | `skipped`
 - Fill `Resolved via:` — what changed
 - Fill `Resolution notes:` — brief explanation
 
@@ -172,9 +170,13 @@ After all fixes:
 2. Confirm quality fixes are complete
 3. Revalidate only impacted sections — NOT full re-review
 
+### Documentation Check
+
+After all fixes and final verification, cp-fix checks if changes affect anything documented in `.ai/docs/`. If so, it informs the user and suggests running `/cp-docs`.
+
 ## Ad Hoc Save Gate
 
-In ad hoc mode (no active workflow task):
+When there is no task folder in `.ai/tasks/`:
 - Report is generated **in conversation only**
 - Report is **not saved to disk** until user explicitly approves
 - Violating this gate is a critical workflow error
@@ -182,5 +184,5 @@ In ad hoc mode (no active workflow task):
 ## Change Impact
 
 - Adding a new reviewer dimension: create template in `cp-review/`, update review dispatch logic
-- Changing report format: impacts cp-fix parsing, cp-resume detection, cp-rules analysis
+- Changing report format: impacts cp-fix parsing and cp-rules analysis
 - Modifying severity levels: impacts assessment logic across cp-review and cp-fix

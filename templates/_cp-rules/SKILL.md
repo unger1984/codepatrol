@@ -9,7 +9,7 @@ Analyze evidence and improve project rules.
 
 ## Progress Tracking (mandatory)
 
-Before starting work, you MUST create TodoWrite items for each runtime step.
+Before starting work, you MUST create {{PROGRESS_TOOL}} items for each runtime step.
 Mark each as `in_progress` when working on it and `completed` when done.
 
 Default mode items:
@@ -44,61 +44,7 @@ Must not:
 - go on tangential research — if the user asked to add a rule, add it; do not investigate the problem domain
 - loop or stall — if information is insufficient, ask the user instead of digging deeper
 
-## Rules Format (Claude Code)
-
-Rules are stored as individual `.md` files in `.claude/rules/` and as `CLAUDE.md` files (root and nested).
-
-### File format
-
-Each rule file supports optional YAML frontmatter:
-
-```yaml
----
-description: Short description of what this rule covers
-globs: ["src/api/**/*.ts", "src/api/**/*.test.ts"]
-alwaysApply: false
----
-
-Rule content in markdown.
-```
-
-**Frontmatter fields:**
-- `description` — shown in rule listings, helps agents decide relevance
-- `globs` — file patterns this rule applies to (only loaded when matching files are in context)
-- `alwaysApply` — if `true`, rule is always loaded regardless of file context
-
-**When to use scoping:**
-- `alwaysApply: true` — universal rules: naming, commit messages, language policy, general codestyle
-- `globs` without `alwaysApply` — rules for specific areas: API conventions, test patterns, migration policy
-- No frontmatter — treated as always-apply
-
-### File placement strategy
-
-When placing a new rule, follow this priority:
-
-1. **Scope match first** — find an existing file whose `globs` overlap with the new rule's scope. Add the rule there, expanding `globs` if needed.
-2. **Scoped rule, no matching file** — create a new file with appropriate `globs`. Name it after the scope area (e.g. `api-conventions.md`, `test-patterns.md`).
-3. **Global rule, thematic match** — find an existing `alwaysApply: true` file on the same topic. Add the rule there.
-4. **Global rule, no thematic match** — if 3+ related rules justify a new file, create one. A single rule goes into the closest thematic file.
-
-**Anti-patterns:**
-- One file per rule — leads to file sprawl
-- All rules in one file — makes scoping impossible
-- Mixing unrelated scoped rules in one file — confusing `globs`
-
-### Example
-
-```yaml
----
-description: API endpoint conventions
-globs: ["src/api/**", "src/routes/**"]
-alwaysApply: false
----
-
-- All endpoints return JSON with `{ data, error }` envelope
-- Use zod schemas for request validation
-- Error responses use standard error codes from `src/lib/errors.ts`
-```
+{{@platform-include:rules-authoring}}
 
 ## Mode Detection
 
@@ -125,14 +71,14 @@ User describes what they want in free form. Parse intent:
 | "work on rules" (vague) | Ask the user with concrete options (see below) |
 
 **Propose mode:** when the user describes a rule topic but not exact text:
-1. Read existing project rules from ``.claude/rules/*.md` and `CLAUDE.md``
+1. Read existing project rules from `{{RULES_SOURCE}}`
 2. Check for duplicates — is this topic already covered?
 3. Draft a rule based on the user's description — the user's request is the primary input, not codebase analysis
 4. Present as a proposal (see Output Format) with placement recommendation
 5. Apply after user approval
 
 **Direct mode:** when the user provides the exact rule text:
-1. Read existing project rules from ``.claude/rules/*.md` and `CLAUDE.md``
+1. Read existing project rules from `{{RULES_SOURCE}}`
 2. Check for duplicates — is this rule already covered (fully or partially)?
 3. Check for conflicts — does this rule contradict any existing rule?
 4. If duplicate or conflict found → report to the user, offer options:
@@ -148,7 +94,7 @@ For topic-focused requests (without exact rule text), analyze existing rules and
 
 When the user asks why rules didn't apply, didn't work, or were ignored:
 
-1. Clarify which rules the user expected to apply — if unclear from context, ask with concrete options (list existing rule files, recent review reports). Use `AskUserQuestion` if available.
+1. Clarify which rules the user expected to apply — if unclear from context, ask with concrete options (list existing rule files, recent review reports). Use `{{ASK_USER}}` if available.
 2. Research: read the referenced rules and the relevant code/report where the violation occurred
 3. Determine the cause:
    - Rule exists but is too vague → propose Strengthen
@@ -167,7 +113,7 @@ Scan for unprocessed reports (see Report Tracking below). Then:
   - Derive rules from codebase patterns (analyzes code — only if user picks this)
   - Focus on a specific area (user names it)
 
-Always ask — never silently pick an option. Use `AskUserQuestion` if available, otherwise ask in chat.
+Always ask — never silently pick an option. Use `{{ASK_USER}}` if available, otherwise ask in chat.
 
 ## Report Tracking
 
@@ -193,7 +139,7 @@ Research has two tiers. **Default: rules-only.** Codebase analysis requires expl
 ### Rules-only research (default)
 
 Read and analyze existing project rules and documentation:
-- rules from ``.claude/rules/*.md` and `CLAUDE.md``
+- rules from `{{RULES_SOURCE}}`
 - project docs: `.ai/docs/README.md` (if exists), `CLAUDE.md`
 - workflow reports (if working from reports)
 
@@ -221,119 +167,20 @@ Only when the user explicitly asks to derive rules from code patterns (e.g. "loo
 - When unsure about scope boundaries, check project structure and docs before proposing
 - Research best practices for the specific stack/scope (use web research if needed — e.g. React best practices for a React frontend, API design best practices for a REST backend)
 
-Dispatch a research subagent using Agent tool with the researcher prompt from this skill.
+{{DISPATCH_RESEARCHER}}
 
 **Researcher prompt:**
 
-# Research Subagent
-
-You are a research subagent. Your job is to find specific information and return a structured summary. You do not make decisions — you gather evidence.
-
-## Available Sources
-
-### Project sources
-
-1. **Project rules** — ``.claude/rules/*.md` and `CLAUDE.md``
-2. **Project documentation** — `.ai/docs/README.md` (if exists, use it as navigation hub; follow links to relevant docs only)
-3. **Codebase** — files, configs, tests, scripts
-
-For file discovery: For file discovery, use Glob, Grep, or MCP filesystem tools if available. Do not fall back to shell commands (find, grep) unless no dedicated tool is available.
-
-### Web sources
-
-For web research use WebSearch, WebFetch, or MCP Exa tools if available.
-
-## Source Selection
-
-Determine the right source from the query:
-
-| Query pattern | Source |
-|---|---|
-| About this project, our code, how we do X | Project |
-| External docs, library API, best practices, "how does X work" (not our code) | Web |
-| Mixed — need both project context and external info | Project first, then web for gaps |
-| Ambiguous | Project first; if insufficient, note the gap |
-
-Do NOT go to web for questions answerable from the project. Do NOT dig through the codebase for questions about external tools/APIs.
-
-## Research Protocol
-
-1. Read the query and scope hints (if provided)
-2. Select source(s) per the table above
-3. For project research:
-   - start from `.ai/docs/README.md` if it exists, follow navigation to relevant docs
-   - read rules from ``.claude/rules/*.md` and `CLAUDE.md``
-   - read only the code/files needed for the query — do not bulk-read
-4. For web research:
-   - search for the specific topic, not broad queries
-   - prefer official documentation over blog posts
-   - extract the relevant facts, not entire pages
-5. If you cannot find what was asked — do not guess. Report the gap.
-
-## Return Format
-
-Return a structured summary in markdown:
-
-```
-## Research Summary
-
-### Query
-<the original query, restated>
-
-### Findings
-<what you found, organized by topic>
-
-### Sources
-<list of files read or URLs visited>
-
-### Gaps
-<what you could not find or verify>
-<if web research might help, say so explicitly: "Web research recommended: <specific query>">
-<if user clarification is needed, say so explicitly: "User clarification needed: <specific question>">
-```
-
-Adapt the Findings section to the query — there is no fixed schema. Use subsections if multiple topics were requested.
-
-## Rules
-
-- Return facts, not opinions
-- Cite sources for every claim (file path and line, or URL)
-- Do not read files outside the scope hints when scope hints are provided
-- Do not modify any files — read only
-- Keep the summary concise — the orchestrator works from this summary for all subsequent stages
+{{@include:_shared/researcher.md}}
 
 **Query construction:** include the topic or focus area, and request the researcher to:
-- read current project rules from ``.claude/rules/*.md` and `CLAUDE.md`` and understand what is already covered
+- read current project rules from `{{RULES_SOURCE}}` and understand what is already covered
 - analyze relevant codebase areas for patterns, conventions, inconsistencies
 - return: current rules summary, observed patterns, gaps, conflicts, and recommendations with evidence
 
 ## Subagent Model Policy
 
-Choose the cheapest model that can handle the task. If the platform supports model selection for subagents, use it.
-
-### Model Tiers
-
-| Tier | Description | Use when |
-|------|-------------|----------|
-| **fast** | Cheapest/fastest available | Simple, well-scoped tasks with clear instructions |
-| **default** | Mid-range | Most subagent work requiring comprehension and judgment |
-| **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
-
-### Ceiling Rule
-
-The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
-
-### User Override
-
-If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
-
-### Escalation on Failure
-
-If a subagent returns an error, produces empty or unusable output, or fails its task:
-1. **Do not retry at the same tier.** Escalate to the next tier up (fast → default → powerful), respecting the ceiling.
-2. Re-dispatch the same task with the higher-tier model.
-3. Maximum one escalation per subagent. If the ceiling tier fails, treat it as a blocker and ask the user.
-4. Log the escalation in the progress update so the user sees it.
+{{@include:_shared/model-policy.md}}
 
 ## Anti-patterns
 
@@ -414,96 +261,13 @@ Group proposals by category (e.g. Testing, Code Style, Security, Data Access, Ar
 
 ### User Approval
 
-After presenting proposals, ask the user which to apply. Use `AskUserQuestion` if available. Accept any of these response forms:
+After presenting proposals, ask the user which to apply. Use `{{ASK_USER}}` if available. Accept any of these response forms:
 - "apply all" → apply all proposals
 - "apply #1, #3, #5" → apply only the listed numbers
 - "apply all except #2" → apply everything except the listed numbers
 - "skip all" → apply nothing, complete without changes
 
 After applying, summarize: which proposals were applied, which files were changed, which proposals were skipped.
-
-## Workflow Log
-
-### Workflow Log
-
-Workflow logging is **disabled by default**. It is enabled when the file `.ai/.enable-log` exists in the project root. If the file does not exist, skip all logging — do not create the `## Log` section in `workflow.md` and do not append entries.
-
-To check: before the first log write, verify that `.ai/.enable-log` exists. If it does not, skip logging for the entire workflow run. Do not re-check on every event.
-
-#### Log language
-
-Write log entries in the language specified by project rules (CLAUDE.md, AGENTS.md). If the user explicitly specifies a log language when creating the task, use their choice instead. Fallback: English.
-
-#### When to log
-
-Append entries to the `## Log` section of `workflow.md` at these points:
-- **skill invoked** — which skill started, how (auto-invoked, user-invoked, resumed), and purpose
-- **subagent dispatched** — role, brief result (count of findings, conflicts, gaps)
-- **user interaction** — brief summary of question asked and user's answer or decision (not the full dialogue)
-- **decision made** — what was decided and why (approach chosen, scope narrowed, parameter set)
-- **context check** — what was verified when transitioning between skills (design status, rules, file map)
-- **stage checkpoint** — when a stage or step within a skill completes, log it with the verification result (e.g. analyze clean, tests pass, specific metrics)
-- **verification failure** — when a check (analyze, test, lint) fails before being fixed: what failed, what was fixed, and the re-run result (e.g. "analyze: 1 unused_import → removed → re-run clean")
-- **file map** — at skill completion, list files created, modified, and deleted during that skill's run
-- **tool error** — when a tool call fails (Edit mismatch, Bash error, etc.): which tool, brief cause, and how it was resolved (retry, alternative approach, manual fix)
-- **auto-continuation** — when a skill decides to auto-invoke the next skill instead of asking the user: the reason (e.g. "task small + context fresh → auto-continue to /cp-review")
-- **skill completed** — brief outcome (e.g. "plan ready, 0 rule violations" or "3 critical, 2 important findings")
-- **blocker hit** — what blocked and how it was resolved
-- **deviation** — unexpected events: model escalation, retry, approach change, scope change mid-workflow
-
-#### Log format
-
-Each entry starts with a timestamp and skill name. Entries may be 1-5 lines. Use nested bullets for structured details.
-
-```
-- `HH:MM` **/skill** — action summary
-  - detail 1
-  - detail 2
-```
-
-Use `date +%H%M` for the timestamp. Do not guess the time.
-
-#### Examples
-
-```
-- `10:49` **/cp-idea** clarification complete
-  - scope: standard, severity: Minor, new dimension: Compatibility
-  - user confirmed rules override via prompt instruction
-- `10:52` **/cp-idea** research subagent dispatched → 3 findings, no conflicts
-  - review structure: 3 severity levels, 4 dimensions
-- `10:55` **/cp-idea** user chose approach: new Compatibility dimension with dedicated reviewer
-- `10:58` **/cp-idea** research refresh → no conflicts, format confirmed
-- `13:52` **/cp-idea** design approved, auto-invoking /cp-plan
-- `13:54` **/cp-plan** context check passed
-  - design: approved, execution strategy: /cp-execute (small task)
-  - file map: 1 new, 1 modified, 2 docs
-- `13:55` **/cp-plan** plan written (4 stages), rules pre-check passed
-  - auto-invoking /cp-plan-review
-- `13:56` **/cp-plan-review** APPROVED, 0 findings
-  - user confirmed plan, proceeding to execution
-- `14:00` **/cp-execute** stage 1 done — extract utils, analyze clean
-- `14:02` **/cp-execute** stage 2 — analyze failed: 1 unused_import
-  - fix: removed `import 'app_durations.dart'` → re-run clean
-- `14:03` **/cp-execute** stage 2 done — extract handler, analyze clean
-- `14:04` **/cp-execute** tool error: Edit failed (old_string not found in video_controls.dart)
-  - re-read file, updated match context → retry succeeded
-- `14:05` **/cp-execute** stage 3 done — final verify, tests pass, 853→689 lines
-- `14:06` **/cp-execute** all 3 stages done, build passes
-  - files: created `priority_key_handler.dart`, `series_utils.dart`; modified `video_controls.dart`
-- `14:06` **/cp-execute** auto-continue → /cp-review (task small, context fresh)
-- `14:07` **/cp-review** APPROVED, 0 findings — workflow complete
-- `14:10` **/cp-idea** deviation: research subagent failed at fast tier, escalated to default → success
-```
-
-#### Rules
-
-- Do not log internal reasoning, full agent prompts, or file contents
-- Do not log the full text of user messages — summarize the intent and decision
-- Do not include code snippets in log entries
-- Keep each entry concise — enough to reconstruct the workflow flow, not to replay it
-- The log must be sufficient for post-hoc analysis: what happened, what was decided, and why
-
-Skip logging when there is no active workflow task (ad hoc mode).
 
 ## Blocker Policy
 
@@ -514,7 +278,7 @@ Stop and ask the user when:
 
 Do not push rules on guesses. Infer when safe, ask when ambiguous.
 
-When asking the user, use `AskUserQuestion` if available on the current platform.
+When asking the user, use `{{ASK_USER}}` if available on the current platform.
 
 ## Completion Summary (mandatory)
 

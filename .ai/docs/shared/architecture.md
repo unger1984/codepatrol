@@ -18,7 +18,6 @@ Covers `templates/`, `platforms/`, `install.sh`, `skills/`, `.claude-plugin/`. D
 ## Related docs
 
 - [Skills Reference](../domains/skills-reference.md) — individual skill behavior
-- [Workflow](workflow.md) — how skills form a workflow pipeline
 
 ---
 
@@ -28,17 +27,11 @@ Covers `templates/`, `platforms/`, `install.sh`, `skills/`, `.claude-plugin/`. D
 codepatrol/
 ├── templates/              # Source of truth for all skills
 │   ├── _shared/            # Reusable partials (not a skill)
-│   ├── cp-idea/            # Research and design skill
-│   ├── cp-plan/            # Implementation planning skill
 │   ├── cp-review/          # Code review skill + reviewer prompts
-│   ├── cp-execute/         # Implementation skill
-│   ├── cp-plan-review/     # Plan review skill
-│   ├── cp-plan-fix/        # Plan fix skill
 │   ├── cp-fix/             # Code fix skill + fix agent prompt
 │   ├── cp-docs/            # Documentation skill
-│   ├── cp-resume/          # Resume skill
 │   ├── cp-rules/           # Rules evolution skill
-│   └── using-codepatrol/   # Priority declaration skill
+│   └── using-codepatrol/   # Enhancement definitions
 ├── platforms/              # Platform-specific variable files
 │   ├── claude.env
 │   └── codex.env
@@ -63,7 +56,6 @@ Key variables:
 | `{{DISPATCH_AGENT}}` | Parallel via Agent tool | Sequential execution |
 | `{{PROGRESS_TOOL}}` | `TodoWrite` | *(empty — line removed)* |
 | `{{FILE_DISCOVERY}}` | Glob, Grep, MCP tools | Available search tools |
-| `{{INVOKE_SKILL}}` | Skill tool invocation | Manual command suggestion |
 | `{{RULES_SOURCE}}` | `.claude/rules/*.md` + `CLAUDE.md` | `AGENTS.md` only |
 | `{{SKILLS_DIR}}` | `~/.claude/skills` | `~/.codex/skills` |
 
@@ -85,9 +77,8 @@ The build script resolves these by inlining the referenced file content.
 
 Reusable content included by multiple skills:
 
-- **model-policy.md** — Subagent model tier selection policy (fast/default/powerful), ceiling rule, escalation on failure. Included by: `cp-idea`, `cp-plan`, `cp-review`, `cp-execute`, `cp-plan-review`, `cp-docs`.
-- **workflow-log.md** — Activity log format and rules for workflow state tracking. Logging is disabled by default; enabled by `.ai/.enable-log` flag file. Supports multi-line entries (1-5 lines) with structured event types: skill invoked, subagent dispatched, user interaction, decision, context check, blocker, deviation.
-- **researcher.md** — Research subagent contract and output format.
+- **model-policy.md** — Subagent model tier selection policy (fast/default/powerful), ceiling rule, escalation on failure. Included by: `cp-review`, `cp-docs`.
+- **researcher.md** — Research subagent contract and output format. Included by: `cp-docs`, `cp-rules`.
 - **rules-authoring-claude.md** — Rules authoring guidelines for Claude Code platform.
 - **rules-authoring-codex.md** — Rules authoring guidelines for Codex CLI platform.
 
@@ -115,7 +106,7 @@ flowchart LR
 1. **resolve_includes(file, base_dir)** — finds `{{@include:...}}` directives, replaces with file content (portable awk)
 2. **substitute(template, env_file, output)** — copies template, resolves includes, replaces `{{KEY}}` with env values. Empty values → entire line removed
 3. **generate(platform, output_dir)** — iterates `templates/` subdirs (excluding `_shared`), processes all `.md` files
-4. **clean_installed_skills(target_dir)** — removes old skills before install (including legacy `code-review`, `code-review-fix`)
+4. **clean_installed_skills(target_dir)** — removes old skills before install (including legacy names)
 
 ### Portability
 
@@ -141,6 +132,6 @@ Registers plugin in the Claude plugins marketplace. Owner: `unger1984`.
 
 ## Change Impact
 
-- Modifying `templates/_shared/model-policy.md` affects all skills that include it (6 skills)
+- Modifying `templates/_shared/model-policy.md` affects all skills that include it
 - Modifying `platforms/*.env` affects all generated skills for that platform
 - Adding a new skill requires: template dir + SKILL.md, rebuild, update plugin manifest if needed

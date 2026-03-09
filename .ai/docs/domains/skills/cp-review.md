@@ -2,59 +2,49 @@
 
 ## Purpose
 
-Двухпроходный code review: сначала compliance (соответствие дизайну, плану, правилам), затем quality (архитектура, безопасность, тесты, стиль).
+Two-pass code review: compliance first (design + plan + rules), then quality (architecture, security, testing, conventions, compatibility).
 
 ## When to read
 
-- Проведение code review
-- Понимание двухпроходной модели и порядка проверок
-- Настройка специализированных reviewer-субагентов
-- Работа с report format и severity levels
-- Понимание ad hoc save gate
-
-## Scope
-
-Покрывает review процесс, reviewer-субагентов, формат отчёта. Для исправления findings → [cp-fix](cp-fix.md). Для детальной механики review → [Review System](../review-system.md).
+- Running code review
+- Understanding the two-pass model
+- Configuring specialized reviewer subagents
+- Working with report format and severity levels
 
 ## Related docs
 
-- [cp-execute](cp-execute.md) — предыдущий шаг: реализация
-- [cp-fix](cp-fix.md) — следующий шаг при findings
-- [cp-docs](cp-docs.md) — следующий шаг при отсутствии findings
-- [Review System](../review-system.md) — подробная механика review
+- [cp-fix](cp-fix.md) — next step when findings exist
+- [Review System](../review-system.md) — detailed review mechanics
 
 ---
 
 ## Role
 
-**Multi-dimensional reviewer.** Проводит compliance и quality review, dispatch-ит специализированных reviewer-субагентов, формирует единый отчёт.
+**Multi-dimensional reviewer.** Runs compliance and quality passes, dispatches specialized reviewer subagents, produces a unified report.
 
 ## Scope Modes
 
-Review может работать с разными scope:
-
-- Current workflow task
-- Current working tree
-- Staged changes
-- Committed branch diff
-- Branch vs branch
+- Current working tree / staged changes
+- Committed branch diff / branch vs branch
 - PR/MR diff
 - Entire project
 - Explicit file/directory paths
+- Task-scoped (design + plan from `.ai/tasks/`)
+
+Default (no args): committed diff vs main.
 
 ## Two-Pass Review Model
 
 ### Pass 1 — Compliance (mandatory first)
 
-Проверка соответствия:
-- Утверждённому design (`design.md`)
-- Плану реализации (`plan.md`)
-- Workflow decisions из `workflow.md`
-- Правилам проекта (CLAUDE.md / AGENTS.md)
+Checks adherence to:
+- Approved design (`design.md` from `.ai/tasks/`, if exists)
+- Implementation plan (`plan.md` from `.ai/tasks/`, if exists)
+- Project rules (`.claude/rules/`, `CLAUDE.md` / `AGENTS.md`)
 
 ### Pass 2 — Quality
 
-Пять измерений, каждое с опциональным специализированным reviewer:
+Five dimensions, each with optional specialized reviewer:
 
 | Dimension | Reviewer file | Starting tier |
 |-----------|--------------|---------------|
@@ -64,138 +54,36 @@ Review может работать с разными scope:
 | Conventions | `codestyle-reviewer.md` | fast |
 | Compatibility | `compatibility-reviewer.md` | fast |
 
-**Quality pass запускается только после того, как compliance pass acceptable.**
-
-## Specialized Reviewers
-
-### Architecture Reviewer
-- Module boundaries и single responsibility
-- Dependency direction (no circular)
-- Layering rules
-- Composition over inheritance
-- Dead code removal
-- Plan compliance
-
-### Security Reviewer
-- Injection prevention (SQL, command, path traversal)
-- Secrets и sensitive data exposure
-- Input validation
-- Authorization и IDOR
-- Error handling (no sensitive data в errors)
-- Concurrency safety
-
-### Testing Reviewer
-- Test coverage для new/changed code
-- Test quality и edge cases
-- Test isolation
-- Anti-patterns
-
-### Codestyle Reviewer
-- Naming conventions
-- Code formatting
-- Project style consistency
-- Forbidden patterns
-
-### Compatibility Reviewer
-- Deprecated API usage (libraries, frameworks, standard library)
-- Version compatibility (APIs match declared dependency versions)
-- Breaking changes awareness (no undocumented/internal API reliance)
-- Default severity: Minor; escalates based on removal timeline
-- Project rules can whitelist specific deprecated or disable the check
-
-## Execution Model
-
-| Scope | Strategy |
-|-------|----------|
-| Simple (few files) | Оркестратор выполняет оба pass |
-| Medium/Large | Dispatch специализированных reviewer-субагентов параллельно |
-
-Compliance pass всегда использует **powerful** tier (самая критичная проверка).
-
-## Report Format
-
-```markdown
-## Code Review Report
-
-### Summary
-- Scope: N files (description)
-- Critical: N | Important: N | Minor: N
-- Assessment: NEEDS_CHANGES | APPROVED | APPROVED_WITH_NOTES
-
-### Critical Issues
-1. [CATEGORY] `file:line` — description
-   **Finding type:** compliance | quality
-   **Fix:** concrete solution
-   **Status:** open
-   **Resolved via:**
-   **Resolution notes:**
-
-### Strengths
-- ...
-```
-
-### Severity Levels
-
-| Level | Meaning |
-|-------|---------|
-| Critical | Must fix — correctness, security, compliance violation |
-| Important | Should fix — architecture, maintainability |
-| Minor | Nice to fix — style, minor improvements |
-
-### Assessment Values
-
-| Assessment | Meaning |
-|------------|---------|
-| `NEEDS_CHANGES` | Critical или important findings |
-| `APPROVED_WITH_NOTES` | Только minor findings |
-| `APPROVED` | Нет findings |
-
 ## Report Storage
 
-| Mode | Путь | Условие |
-|------|------|---------|
-| Workflow task | `.ai/tasks/<task>/reports/YYYY-MM-DD-HHMM-<slug>.review.report.md` | Автоматически |
-| Ad hoc | `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.report.md` | Только после Save Gate |
+| Context | Path | Condition |
+|---------|------|-----------|
+| Task folder exists | `.ai/tasks/<task>/review.md` | Automatic |
+| Ad hoc | `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.md` | Only after Save Gate |
 
-## Ad Hoc Save Gate (critical)
+## Ad Hoc Save Gate
 
-Если нет активной workflow задачи:
-1. Отчёт генерируется **только в conversation**
-2. Нельзя писать в файл до явного выбора пользователя
-3. Предложить: "Save to file" или "Run /cp-fix now"
+When no task folder exists:
+1. Report generated **in conversation only**
+2. Cannot write to file until user explicitly chooses
+3. Offer: "Save to file" or "Run /cp-fix now"
 
-## Inputs
+## Handoff
 
-| Input | Источник | Обязателен |
-|-------|----------|------------|
-| Code changes | Git diff / file paths | Да |
-| `design.md` | Workflow task | Нет |
-| `plan.md` | Workflow task | Нет |
-| `workflow.md` | Workflow task | Нет |
-| Правила проекта | CLAUDE.md / AGENTS.md | Да |
-
-## Outputs
-
-- Review report (в conversation или файл)
+After presenting the report, offer `/cp-fix`. Do not invoke automatically — user decides.
 
 ## Subagents
 
-| Роль | Tier | Назначение |
-|------|------|------------|
-| Compliance reviewer | powerful | Проверка соответствия design/plan/rules |
-| Architecture reviewer | default | Архитектурное качество |
-| Security reviewer | default | Безопасность |
-| Testing reviewer | default | Покрытие и качество тестов |
-| Codestyle reviewer | fast | Стиль и conventions |
-| Compatibility reviewer | fast | Deprecated API и совместимость |
-
-## Dependencies
-
-- **Requires:** завершённый `/cp-execute` (в workflow) или код для review (в ad hoc)
-- **Next:** `/cp-fix` (если findings) или `/cp-docs` (если APPROVED)
+| Role | Tier | Purpose |
+|------|------|---------|
+| Compliance reviewer | powerful | Design/plan/rules alignment |
+| Architecture reviewer | default | Architecture quality |
+| Security reviewer | default | Security risks |
+| Testing reviewer | default | Test coverage and quality |
+| Codestyle reviewer | fast | Conventions and style |
+| Compatibility reviewer | fast | Deprecated APIs |
 
 ## Change Impact
 
-- Добавление нового reviewer dimension: создать template, обновить dispatch logic
-- Изменение report format: влияет на cp-fix (парсинг), cp-resume (detection), cp-rules (анализ)
-- Изменение severity levels: влияет на assessment logic
+- Adding a new reviewer dimension: create template in `cp-review/`, update dispatch logic
+- Changing report format: impacts cp-fix parsing and cp-rules analysis

@@ -2,87 +2,73 @@
 
 ## Purpose
 
-Reference for all CodePatrol skills — purpose, inputs/outputs, stages, and inter-skill dependencies.
+Reference for all CodePatrol skills — purpose, inputs/outputs, and how they integrate with Superpowers.
 
 ## When to read
 
 - Looking up what a specific skill does
-- Understanding skill inputs and outputs
-- Checking how skills connect to each other
+- Understanding how CodePatrol integrates with Superpowers workflow
 - Adding or modifying a skill
 
 ## Scope
 
-All skills in `templates/`. For build mechanics see [Architecture](../shared/architecture.md). For workflow overview see [Workflow](../shared/workflow.md).
+All skills in `templates/`. For build mechanics see [Architecture](../shared/architecture.md).
 
 ## Related docs
 
-- [Workflow](../shared/workflow.md) — pipeline and artifact storage
 - [Review System](review-system.md) — detailed review mechanics
 - [Architecture](../shared/architecture.md) — template system
 
 ---
 
+## Integration Model
+
+CodePatrol **enhances** the Superpowers workflow chain instead of replacing it:
+
+```mermaid
+flowchart TD
+    BS["brainstorming (superpowers)"] -->|"+ project rules, docs"| WP["writing-plans (superpowers)"]
+    WP -->|"+ project rules, docs, self-check"| EP["executing-plans (superpowers)"]
+    EP -->|"user decides"| CR["/cp-review"]
+    CR -->|"if findings"| CF["/cp-fix"]
+```
+
+`using-codepatrol` defines the enhancements that are applied to brainstorming and writing-plans.
+
 ## Skills Overview
 
 | Skill | Purpose | Detailed doc |
 |-------|---------|-------------|
-| [using-codepatrol](skills/using-codepatrol.md) | Маршрутизация задач к скиллам CodePatrol вместо генерических | [details](skills/using-codepatrol.md) |
-| [cp-idea](skills/cp-idea.md) | Research и design для новой задачи (entry point) | [details](skills/cp-idea.md) |
-| [cp-plan](skills/cp-plan.md) | Написание плана реализации из утверждённого дизайна | [details](skills/cp-plan.md) |
-| [cp-plan-review](skills/cp-plan-review.md) | Валидация плана перед реализацией | [details](skills/cp-plan-review.md) |
-| [cp-plan-fix](skills/cp-plan-fix.md) | Исправление findings из plan review | [details](skills/cp-plan-fix.md) |
-| [cp-execute](skills/cp-execute.md) | Реализация кода из утверждённого плана | [details](skills/cp-execute.md) |
-| [cp-review](skills/cp-review.md) | Двухпроходный code review (compliance + quality) | [details](skills/cp-review.md) |
-| [cp-fix](skills/cp-fix.md) | Исправление findings из code review | [details](skills/cp-fix.md) |
-| [cp-docs](skills/cp-docs.md) | Создание/обновление AI-facing документации | [details](skills/cp-docs.md) |
-| [cp-resume](skills/cp-resume.md) | Восстановление прерванной работы | [details](skills/cp-resume.md) |
-| [cp-rules](skills/cp-rules.md) | Улучшение правил проекта из паттернов | [details](skills/cp-rules.md) |
+| [using-codepatrol](skills/using-codepatrol.md) | Enhancements for brainstorming and writing-plans | [details](skills/using-codepatrol.md) |
+| [cp-review](skills/cp-review.md) | Two-pass code review (compliance + quality) | [details](skills/cp-review.md) |
+| [cp-fix](skills/cp-fix.md) | Fix code review findings | [details](skills/cp-fix.md) |
 
-## Workflow Pipeline
+## Task Artifacts
+
+All task artifacts are stored in `.ai/tasks/`:
 
 ```
-/cp-idea → /cp-plan → /cp-plan-review → /cp-plan-fix (if findings) → /cp-execute → /cp-review → /cp-fix (if findings) → /cp-docs → /cp-rules (optional)
+.ai/tasks/YYYY-MM-DD-HHMM-slug/
+├── design.md    — approved design (saved by brainstorming)
+├── plan.md      — implementation plan (saved by writing-plans)
+└── review.md    — code review report (saved by /cp-review)
 ```
 
-Cross-cutting: `/cp-resume` — resume с любого этапа. `/using-codepatrol` — routing при старте.
+Ad-hoc review reports (no task context): `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.md`
 
 ## Shared Mechanics
 
-| Механика | Где используется | Описание |
-|----------|------------------|----------|
-| Progress tracking | Все скиллы | Mandatory — progress items до старта работы |
-| Incremental report mutation | cp-plan-fix, cp-fix | Обновление отчёта после каждого finding (не batch) |
-| Ad hoc save gate | cp-plan-review, cp-review, cp-plan-fix, cp-fix | Файл не сохраняется без explicit user approval |
-| Model policy | cp-idea, cp-plan, cp-plan-review, cp-execute, cp-review, cp-docs | Subagent tiers: fast/default/powerful + ceiling rule |
-| Bounded revalidation | cp-plan-fix, cp-fix | Revalidation только изменённых секций |
-| Blocker policy | Все скиллы | Stop и ask при conflicts, ambiguity, verification failure |
-
-## Inter-Skill Dependencies
-
-```mermaid
-flowchart TD
-    UC[using-codepatrol] -.->|routes to| CP[cp-idea]
-    CP -->|design.md| PL[cp-plan]
-    PL -->|plan.md| PPR[cp-plan-review]
-    PPR -->|findings| PPF[cp-plan-fix]
-    PPF -->|re-check| PPR
-    PPR -->|approved| EX[cp-execute]
-    EX -->|code| CR[cp-review]
-    CR -->|findings| CF[cp-fix]
-    CF -->|re-check| CR
-    CR -->|approved| CD[cp-docs]
-    CD --> CRL[cp-rules]
-    RES[cp-resume] -.->|any stage| CP
-    RES -.-> PL
-    RES -.-> PPR
-    RES -.-> EX
-    RES -.-> CR
-    RES -.-> CD
-```
+| Mechanic | Used by | Description |
+|----------|---------|-------------|
+| Progress tracking | cp-review, cp-fix | Mandatory — progress items before starting work |
+| Incremental report mutation | cp-fix | Report updated after each finding (not batched) |
+| Ad hoc save gate | cp-review, cp-fix | File not saved without explicit user approval |
+| Model policy | cp-review | Subagent tiers: fast/default/powerful + ceiling rule |
+| Bounded revalidation | cp-fix | Revalidation only of impacted sections |
+| Blocker policy | All skills | Stop and ask on conflicts, ambiguity, verification failure |
 
 ## Change Impact
 
-- Adding a new skill: create template dir, add SKILL.md with frontmatter, rebuild, update using-codepatrol mapping, add doc in `skills/`
-- Modifying skill stages: update the skill doc + workflow doc + cp-resume detection logic
-- Changing report format: update cp-fix/cp-plan-fix parsing + cp-resume detection + cp-rules analysis
+- Adding a new skill: create template dir, add SKILL.md with frontmatter, rebuild, update using-codepatrol if routing needed
+- Changing report format: impacts cp-fix parsing
+- Modifying enhancement definitions: update using-codepatrol template

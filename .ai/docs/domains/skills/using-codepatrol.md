@@ -2,70 +2,63 @@
 
 ## Purpose
 
-Устанавливает приоритет скиллов CodePatrol над генерическими аналогами. При получении задачи агент сначала проверяет, есть ли подходящий скилл CodePatrol, и использует его вместо стандартного.
+Enhances the Superpowers workflow (brainstorming, writing-plans) with project rules and documentation awareness. Routes review, fix, docs, and rules tasks to CodePatrol skills.
 
 ## When to read
 
-- Понимание маршрутизации задач к скиллам
-- Добавление нового скилла в систему приоритизации
-- Отладка ситуаций, когда вызывается не тот скилл
-
-## Scope
-
-Только маппинг intent-to-skill. Не описывает поведение самих скиллов.
+- Understanding how project awareness is injected into brainstorming and writing-plans
+- Adding new enhancements to the workflow
+- Understanding skill routing
 
 ## Related docs
 
-- [Skills Reference](../skills-reference.md) — обзор всех скиллов
-- [Workflow](../../shared/workflow.md) — порядок выполнения скиллов
+- [Skills Reference](../skills-reference.md) — all skills overview
 
 ---
 
 ## Role
 
-Маршрутизатор задач. Не выполняет никакой работы сам — только перенаправляет на правильный скилл.
+Enhancement layer for Superpowers workflow + router for CodePatrol-specific skills.
+
+## Enhancements
+
+### brainstorming enhancement
+
+Applied at three points in the standard brainstorming flow:
+
+1. **Explore project context** — reads `.claude/rules/`, `CLAUDE.md`, `.ai/docs/` (relevant parts), recent commits
+2. **Propose approaches** — verifies each approach against project rules and conventions
+3. **Present design** — references relevant project rules in the design
+
+Design is saved to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` instead of `docs/plans/`.
+
+### writing-plans enhancement
+
+Applied before, during, and after plan writing:
+
+1. **Before** — reads project rules, `.ai/docs/` (relevant parts), and design file
+2. **During** — includes `.ai/docs` update step if task affects documented architecture/APIs
+3. **After** — self-checks plan against project rules and documentation
+
+Plan is saved to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
 
 ## Routing Table
 
-| Intent пользователя | CodePatrol скилл | Заменяет генерический |
-|---------------------|------------------|-----------------------|
-| Новая задача / идея / дизайн | `/cp-idea` | brainstorming |
-| Написание плана реализации | `/cp-plan` | writing-plans |
-| Реализация по плану | `/cp-execute` | executing-plans |
-| Code review | `/cp-review` | requesting-code-review |
-| Документация | `/cp-docs` | — |
-| Продолжить работу | `/cp-resume` | — |
-| Проверка плана | `/cp-plan-review` | — |
-| Исправление плана | `/cp-plan-fix` | — |
-| Исправление кода | `/cp-fix` | — |
-| Улучшение правил | `/cp-rules` | — |
-
-## Trigger Examples
-
-- "let's plan/design/build X" → `/cp-idea`
-- "implement the plan" → `/cp-execute`
-- "review the code" → `/cp-review`
-- "update docs" → `/cp-docs`
-- "continue yesterday's work" → `/cp-resume`
-
-## Key Rule
-
-Перед вызовом любого генерического скилла (brainstorming, writing-plans, executing-plans, requesting-code-review) — проверить таблицу маршрутизации. Если есть CodePatrol-аналог, использовать его.
-
-## Inputs / Outputs
-
-- **Input:** сообщение пользователя (intent)
-- **Output:** вызов соответствующего скилла CodePatrol
+| Intent | Skill |
+|--------|-------|
+| New task / idea / design | brainstorming (superpowers) + enhancements |
+| Write implementation plan | writing-plans (superpowers) + enhancements |
+| Implement from plan | executing-plans / subagent-driven-development (superpowers) |
+| Code review | `/cp-review` |
+| Fix review findings | `/cp-fix` |
+| Documentation | `/cp-docs` |
+| Improve rules | `/cp-rules` |
 
 ## Dependencies
 
-Нет зависимостей. Это entry-point скилл, загружаемый при старте сессии.
-
-## Subagents
-
-Не использует субагентов.
+None. This is an entry-point skill loaded at session start.
 
 ## Change Impact
 
-- Добавление нового скилла CodePatrol требует обновления routing table
-- Изменение имени скилла требует обновления маппинга
+- Adding a new enhancement point: update the relevant enhancement section
+- Adding a new CodePatrol skill: update routing table

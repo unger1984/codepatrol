@@ -32,14 +32,14 @@ Must not:
 
 Determine the operating mode before any other work:
 
-- **Workflow mode** — an active workflow task exists with a completed code path. Brief is formed from task artifacts. The skill decides autonomously what and where to document — no clarification questions about scope or target.
-  - **Detection:** scan `.ai/tasks/` for a task with `Status: in-progress` where the "Code-review fixes" or "Code review" stage is marked `done` in `workflow.md`. Alternatively, accept a `workflow.md` path as argument.
-- **Ad hoc mode** — no active workflow task. Brief is formed via Intent Resolution from the user's phrase. Asks the user only when genuine ambiguity exists.
+- **Task-aware mode** — a task folder exists in `.ai/tasks/` with design and/or plan files. Brief is formed from task artifacts. The skill decides autonomously what and where to document.
+  - **Detection:** accept a task folder path as argument, or scan `.ai/tasks/` for recent task folders with design/plan files.
+- **Ad hoc mode** — no task context. Brief is formed via Intent Resolution from the user's phrase. Asks the user only when genuine ambiguity exists.
 
 When invoked without arguments:
-- if a workflow task is active and code path is complete → workflow mode
+- if a task folder with design/plan exists → task-aware mode
 - if `.ai/docs/` does not exist → offer to initialize it
-- if recent code changes exist but no active task → offer to update docs for those changes
+- if recent code changes exist → offer to update docs for those changes
 - otherwise → ask the user with concrete options
 
 ## Ad Hoc Intent Resolution
@@ -231,10 +231,6 @@ Scope-aware validation before completion.
 - changed section is consistent with the rest of the file
 - table of contents is updated to reflect any heading changes
 
-## Workflow Log
-
-{{@include:_shared/workflow-log.md}}
-
 ## Blocker Policy
 
 Stop and ask the user when:
@@ -262,14 +258,4 @@ Do NOT:
 
 This stage is complete only after the docs validation pass succeeds.
 
-### Within a workflow task
-
-After `/cp-docs` completes, the workflow task is fully complete. Update workflow state accordingly.
-Do not automatically clean up branches, worktrees, or execution environment unless explicitly decided.
-Post-workflow actions (merge, PR, branch retention, cleanup) should be either already resolved or left as an explicit post-workflow decision.
-
-### Ad hoc docs update (no active workflow task)
-
 After docs validation pass succeeds, the work is complete. Present the user with a summary of what was updated.
-
-No stage can be marked `done` without fresh verification evidence. No workflow status can become `done` without confirmation that all mandatory stages passed relevant checks.
