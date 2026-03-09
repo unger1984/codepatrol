@@ -54,9 +54,7 @@ If the phrase is unclear, ask the user to clarify. Offer concrete interpretation
 
 ### Step 2 — Read docs structure
 
-Read `.ai/docs/README.md` to understand existing documentation and navigation structure. This is mandatory even for narrow-scope requests — the skill must know where the new content fits.
-
-If `.ai/docs/` does not exist, note that initialization is needed before writing.
+Read `.ai/docs/README.md` to understand existing documentation and navigation structure. This is mandatory when `.ai/docs/` exists, even for narrow-scope requests — the skill must know where the new content fits. If `.ai/docs/` does not exist, skip this step and note that initialization is needed before writing.
 
 ### Step 3 — Scope decomposition
 
@@ -132,7 +130,7 @@ Read only the targeted docs, then the relevant code needed for the documentation
 
 ## Initialization
 
-Initialization is part of the **Writing phase** — it happens at the start of step 6, before any doc file writes. Research (analysis phase) proceeds without docs context when `.ai/docs/` does not exist.
+Initialization is part of the **Writing phase** — it happens at the start of step 5, before any doc file writes. Research (analysis phase) proceeds without docs context when `.ai/docs/` does not exist.
 
 If `.ai/docs/` does not exist:
 - create directories with `mkdir -p` (idempotent — do not check existence separately or ask permission): `.ai/docs/`, `.ai/docs/domains/`, `.ai/docs/shared/`
@@ -272,6 +270,6 @@ Do NOT:
 
 ## Completion Criteria
 
-This stage is complete only after the docs validation pass succeeds.
+This skill is complete only after the docs validation pass succeeds.
 
 After docs validation pass succeeds, the work is complete. Present the user with a summary of what was updated.

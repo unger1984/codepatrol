@@ -98,10 +98,11 @@ Review engineering quality after compliance is acceptable:
 
 ## Execution Model
 
-- **simple scopes** — the orchestrator runs both compliance and quality passes directly
-- **medium and large scopes** — the orchestrator may:
-  - dispatch a dedicated compliance reviewer subagent
-  - dispatch quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
+- **simple scope** (≤5 reviewable files) — the orchestrator runs all passes directly
+- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch subagents at its discretion
+- **large scope** (>20 reviewable files) — the orchestrator must dispatch subagents:
+  - a dedicated compliance reviewer subagent
+  - quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
 - {{DISPATCH_AGENT}}
 - all findings from subagents must be normalized into one report
 

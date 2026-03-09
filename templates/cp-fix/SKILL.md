@@ -146,4 +146,4 @@ Do NOT:
 
 ## Completion Criteria
 
-This skill is complete when selected findings are resolved with evidence and final verification passes.
+This skill is complete when selected findings are resolved with evidence and final verification passes. If a blocker is hit mid-process, the skill stops with a summary of what was resolved, what remains, and what caused the stop.
