@@ -25,8 +25,8 @@ $RepoUrl = 'https://github.com/unger1984/codepatrol.git'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ClonedDir = $null
 
-# Удалённая установка: если templates/ нет рядом со скриптом — клонируем репо
-if (-not (Test-Path (Join-Path $ScriptDir 'templates'))) {
+# Удалённая установка: если templates/_shared нет рядом со скриптом — клонируем репо
+if (-not (Test-Path (Join-Path $ScriptDir 'templates' '_shared'))) {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Write-Error 'Error: git is required for remote installation'
         exit 1
