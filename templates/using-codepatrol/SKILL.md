@@ -39,7 +39,7 @@ CodePatrol enhances the standard superpowers workflow (brainstorming → writing
 
 ## Enhancement: brainstorming
 
-When `superpowers:brainstorming` is invoked, apply these enhancements **in addition to** the standard brainstorming flow.
+When `superpowers:brainstorming` is invoked, the following enhancements are mandatory and must be applied **in addition to** the standard brainstorming flow.
 
 ### At "Explore project context" step
 
@@ -70,7 +70,7 @@ In the design, explicitly reference relevant project rules and constraints that 
 
 Save the approved design to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` instead of `docs/plans/`.
 
-Before generating the folder name, run `date +%H%M` to get the current time. Use the real output. Never hardcode or guess the time. Use `mkdir -p` to create the directory.
+The task folder is created on demand — only when saving the first artifact (design or plan). Before generating the folder name, run `date +%H%M` to get the current time. Use the real output. Never hardcode or guess the time. Use `mkdir -p` to create the directory (idempotent — do not check existence separately or ask permission).
 
 ### Handoff to writing-plans
 
@@ -80,7 +80,7 @@ After the design is saved, invoke `superpowers:writing-plans` as usual. The enha
 
 ## Enhancement: writing-plans
 
-When `superpowers:writing-plans` is invoked, apply these enhancements **in addition to** the standard writing-plans flow.
+When `superpowers:writing-plans` is invoked, the following enhancements are mandatory and must be applied **in addition to** the standard writing-plans flow.
 
 ### Before writing the plan
 
@@ -107,7 +107,7 @@ If conflicts are found, fix them before presenting the plan to the user.
 
 ### Save plan
 
-Save the plan to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md` (same task folder as design.md).
+Save the plan to the same task folder as the design. If the design was saved in the current session, reuse its folder path. If the design path is unknown, search `.ai/tasks/` for the most recent `design.md` without a `plan.md` and save alongside it. If no design exists, create a new task folder with `mkdir -p` using the current timestamp.
 
 ### Execution handoff
 
@@ -117,7 +117,7 @@ After the plan is saved, follow the standard writing-plans execution handoff (of
 
 ## Task Folder Structure
 
-All task artifacts are stored in `.ai/tasks/`:
+All task artifacts are stored in `.ai/tasks/`. Task folders are created on demand when the first artifact is saved, not upfront.
 
 ```
 .ai/tasks/YYYY-MM-DD-HHMM-slug/
