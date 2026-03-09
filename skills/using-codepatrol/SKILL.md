@@ -1,6 +1,6 @@
 ---
 name: using-codepatrol
-description: Use when starting any conversation - enhances brainstorming and writing-plans with project awareness, routes review and fix tasks to CodePatrol skills
+description: MUST invoke BEFORE superpowers:brainstorming or superpowers:writing-plans — required when building features, designing systems, planning changes, creating functionality, adding components, or any creative/implementation task. Also routes review/fix/docs requests to CodePatrol skills. Adds mandatory project rules and documentation context.
 ---
 
 # CodePatrol — Project-Aware Enhancements
