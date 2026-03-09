@@ -140,7 +140,7 @@ For file discovery: For file discovery, use Glob, Grep, or MCP filesystem tools 
 
 ### Web sources
 
-{{WEB_RESEARCH}}
+Use WebSearch to find information and WebFetch to read specific pages. Prefer official documentation over blog posts.
 
 ## Source Selection
 
