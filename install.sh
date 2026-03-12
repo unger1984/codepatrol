@@ -201,11 +201,11 @@ case "${1:-}" in
         done
         ;;
     codex)
-        local_dir="$HOME/.agents/skills"
-        legacy_dir="$HOME/.codex/skills"
+        local_dir="$HOME/.codex/skills"
+        legacy_dir="$HOME/.agents/skills"
         tmp_dir=$(mktemp -d)
         generate "codex" "$tmp_dir"
-        # Clean legacy install path (~/.codex/skills) from previous versions
+        # Clean legacy install path (~/.agents/skills) from previous versions
         clean_installed_skills "$legacy_dir"
         # Copy to Codex skills directory
         clean_installed_skills "$local_dir"

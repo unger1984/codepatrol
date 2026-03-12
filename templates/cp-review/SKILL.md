@@ -153,7 +153,7 @@ Violating this gate (saving before asking) is a critical workflow error.
 
 Before generating the filename, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output in the HHMM part. Never hardcode or guess the time.
 
-Use `mkdir -p` (Unix) or `New-Item -ItemType Directory -Force` (PowerShell) when creating directories. Both are idempotent — do not check existence separately or ask permission.
+Save files using the Write tool — it creates parent directories automatically. Do not use shell commands (`mkdir`, `New-Item`) to create directories.
 
 ## Report Format
 
@@ -202,7 +202,15 @@ After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it a
 
 ## Scope Detection Commands
 
-Default (no args) — committed diff vs main:
+### Task-scoped (plan/design review)
+
+When the user passes a path to `.ai/tasks/` (plan, design, or task folder):
+1. Read the referenced plan and/or design documents
+2. Check whether implementation code already exists (look for files mentioned in the plan)
+3. If **no implementation yet** — the scope is the documents themselves. Review the plan/design for completeness, consistency, and alignment with project rules. Do NOT run git diff or look for branch changes.
+4. If **implementation exists** — use the plan to determine which files to review, then proceed with normal scope detection for those files.
+
+### Default (no args) — committed diff vs main:
 ```bash
 MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
 git diff --name-only ${MAIN_BRANCH}...HEAD

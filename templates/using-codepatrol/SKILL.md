@@ -66,7 +66,7 @@ In the design, explicitly reference relevant project rules and constraints that 
 
 Save the approved design to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` instead of `docs/plans/`.
 
-The task folder is created on demand — only when saving the first artifact (design or plan). Before generating the folder name, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output. Never hardcode or guess the time. Create the directory using `mkdir -p` (Unix) or `New-Item -ItemType Directory -Force` (PowerShell) — both are idempotent, do not check existence separately or ask permission.
+The task folder is created on demand — only when saving the first artifact (design or plan). Before generating the folder name, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output. Never hardcode or guess the time. Save the file using the Write tool — it creates parent directories automatically. Do not use shell commands (`mkdir`, `New-Item`) to create directories.
 
 ### Handoff to writing-plans
 
@@ -103,7 +103,7 @@ If conflicts are found, fix them before presenting the plan to the user.
 
 ### Save plan
 
-Save the plan to the same task folder as the design. If the design was saved in the current session, reuse its folder path. If the design path is unknown, search `.ai/tasks/` for the most recent `design.md` without a `plan.md` and save alongside it. If no design exists, create a new task folder using `mkdir -p` (Unix) or `New-Item -ItemType Directory -Force` (PowerShell) with the current timestamp.
+Save the plan to the same task folder as the design. If the design was saved in the current session, reuse its folder path. If the design path is unknown, search `.ai/tasks/` for the most recent `design.md` without a `plan.md` and save alongside it. If no design exists, save the plan to a new task folder with the current timestamp — the Write tool creates parent directories automatically.
 
 ### Execution handoff
 
