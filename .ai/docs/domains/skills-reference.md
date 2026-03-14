@@ -42,6 +42,7 @@ flowchart TD
 | [using-codepatrol](skills/using-codepatrol.md) | Enhancements for brainstorming and writing-plans | [details](skills/using-codepatrol.md) |
 | [cp-review](skills/cp-review.md) | Two-pass code review (compliance + quality) | [details](skills/cp-review.md) |
 | [cp-fix](skills/cp-fix.md) | Fix code review findings | [details](skills/cp-fix.md) |
+| [cp-docs](skills/cp-docs.md) | Create and maintain AI-facing project documentation | [details](skills/cp-docs.md) |
 
 ## Task Artifacts
 

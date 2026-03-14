@@ -213,7 +213,7 @@ skills/                # Generated output (do not edit)
 ```bash
 ./install.sh build   # Regenerate skills/ from templates
 ./install.sh claude  # Generate and install to ~/.claude/skills/
-./install.sh codex   # Generate and install to ~/.agents/skills/
+./install.sh codex   # Generate and install to ~/.codex/skills/
 ./install.sh cursor  # Generate and install to ~/.cursor/skills/
 ```
 
@@ -221,7 +221,7 @@ skills/                # Generated output (do not edit)
 ```powershell
 .\install.ps1 build   # Regenerate skills/ from templates
 .\install.ps1 claude  # Generate and install to ~/.claude/skills/
-.\install.ps1 codex   # Generate and install to ~/.agents/skills/
+.\install.ps1 codex   # Generate and install to ~/.codex/skills/
 .\install.ps1 cursor  # Generate and install to ~/.cursor/skills/
 ```
 
