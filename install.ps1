@@ -9,11 +9,12 @@
     .\install.ps1 claude
     .\install.ps1 codex
     .\install.ps1 cursor
+    .\install.ps1 opencode
 #>
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('build', 'claude', 'codex', 'cursor')]
+    [ValidateSet('build', 'claude', 'codex', 'cursor', 'opencode')]
     [string]$Command
 )
 
@@ -55,6 +56,7 @@ function Show-Usage {
     Write-Host "  claude   Generate and install skills to ~/.claude/skills/"
     Write-Host "  codex    Generate and install skills to ~/.codex/skills/"
     Write-Host "  cursor   Generate and install skills to ~/.cursor/skills/"
+    Write-Host "  opencode Generate and install skills to ~/.config/opencode/skills/"
     Write-Host ""
     exit 1
 }
@@ -259,6 +261,19 @@ switch ($Command) {
         $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "codepatrol-$(Get-Random)"
         New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
         Invoke-Generate -Platform 'cursor' -OutputDir $tmpDir
+        Remove-InstalledSkills -TargetDir $localDir
+        foreach ($skillDir in Get-ChildItem -Path $tmpDir -Directory) {
+            $target = Join-Path $localDir $skillDir.Name
+            Copy-Item -Recurse -Force -Path $skillDir.FullName -Destination $target
+            Write-Host "Installed: $target"
+        }
+        Remove-Item -Recurse -Force $tmpDir
+    }
+    'opencode' {
+        $localDir = Join-Path $HOME '.config\opencode\skills'
+        $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "codepatrol-$(Get-Random)"
+        New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
+        Invoke-Generate -Platform 'opencode' -OutputDir $tmpDir
         Remove-InstalledSkills -TargetDir $localDir
         foreach ($skillDir in Get-ChildItem -Path $tmpDir -Directory) {
             $target = Join-Path $localDir $skillDir.Name

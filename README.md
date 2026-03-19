@@ -2,7 +2,7 @@
 
 # CodePatrol
 
-Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), and [Cursor](https://cursor.com). Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
+Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com), and [OpenCode](https://opencode.ai). Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
 
 ## Table of Contents
 
@@ -13,6 +13,7 @@ Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/cla
   - [Claude Code](#claude-code)
   - [Codex CLI](#codex-cli)
   - [Cursor](#cursor)
+  - [OpenCode](#opencode)
 - [Usage](#usage)
 - [Development](#development)
 - [CI/CD](#cicd)
@@ -149,6 +150,32 @@ cd codepatrol
 .\install.ps1 cursor
 ```
 
+### OpenCode
+
+**From latest release (Unix/macOS):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- opencode
+```
+
+**From latest release (Windows):**
+```powershell
+irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 opencode
+```
+
+**From source (Unix/macOS):**
+```bash
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+./install.sh opencode
+```
+
+**From source (Windows):**
+```powershell
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+.\install.ps1 opencode
+```
+
 ## Usage
 
 ### Start a new task
@@ -202,7 +229,8 @@ templates/             # Source templates (edit these)
 platforms/             # Platform-specific env files
 ├── claude.env
 ├── codex.env
-└── cursor.env
+├── cursor.env
+└── opencode.env
 
 skills/                # Generated output (do not edit)
 ```
@@ -215,6 +243,7 @@ skills/                # Generated output (do not edit)
 ./install.sh claude  # Generate and install to ~/.claude/skills/
 ./install.sh codex   # Generate and install to ~/.codex/skills/
 ./install.sh cursor  # Generate and install to ~/.cursor/skills/
+./install.sh opencode # Generate and install to ~/.config/opencode/skills/
 ```
 
 **Windows (PowerShell):**
@@ -223,6 +252,7 @@ skills/                # Generated output (do not edit)
 .\install.ps1 claude  # Generate and install to ~/.claude/skills/
 .\install.ps1 codex   # Generate and install to ~/.codex/skills/
 .\install.ps1 cursor  # Generate and install to ~/.cursor/skills/
+.\install.ps1 opencode # Generate and install to ~/.config/opencode/skills/
 ```
 
 ### Template rules
@@ -242,8 +272,7 @@ skills/                # Generated output (do not edit)
 ## Known Limitations
 
 - Tested on macOS only
-- Codex CLI support is experimental
-- Cursor support is experimental
+- OpenCode support is experimental
 
 ## License
 
