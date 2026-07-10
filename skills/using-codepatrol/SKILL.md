@@ -43,6 +43,8 @@ CodePatrol enhances the standard superpowers workflow (brainstorming → writing
 
 When `superpowers:brainstorming` is invoked, the following enhancements are mandatory and must be applied **in addition to** the standard brainstorming flow.
 
+The standard flow may include steps CodePatrol does not override — a just-in-time visual companion offer, a spec self-review, and a user-review gate before planning. Leave those intact. The enhancements here only add project-context reads and redirect where the artifact is saved; they do not replace or re-order the standard flow.
+
 ### At "Explore project context" step
 
 Read project-specific context before asking clarifying questions:
@@ -68,15 +70,17 @@ Before presenting approaches, verify each candidate against project rules and co
 
 In the design, explicitly reference relevant project rules and constraints that shaped design decisions. The user should see that the design was informed by the project's own conventions, not just general best practices.
 
-### Save design
+### Save design (location override)
 
-Save the approved design to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` instead of `docs/plans/`.
+Wherever the standard flow would write the design/spec, CodePatrol redirects it to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`. This override applies regardless of the standard flow's default location (as of Superpowers 6.1.x that default is `docs/superpowers/specs/`). Do not also write a copy to the default path — `.ai/tasks/` is the single home for the artifact.
 
 The task folder is created on demand — only when saving the first artifact (design or plan). Before generating the folder name, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output. Never hardcode or guess the time. Save the file using the Write tool — it creates parent directories automatically. Do not use shell commands (`mkdir`, `New-Item`) to create directories.
 
+Whatever the standard flow does with the artifact after saving (its spec self-review, committing it) still applies — it just operates on the `.ai/tasks/` file.
+
 ### Handoff to writing-plans
 
-After the design is saved, invoke `superpowers:writing-plans` as usual. The enhancements below will apply automatically.
+Do not jump straight to writing-plans after saving. Continue through the standard flow's remaining steps — its spec self-review and the user-review gate — operating on the `.ai/tasks/` design file. The flow itself transitions to `superpowers:writing-plans` once the user approves the spec, and the enhancements below apply automatically at that point.
 
 ---
 
@@ -98,22 +102,22 @@ If `.ai/docs/` exists and the task changes architecture, APIs, data structures, 
 
 If `.ai/docs/` does not exist and the user chose "add a documentation step to the plan" during brainstorming, include a final step to initialize project documentation via `/cp-docs`.
 
-### Self-check after writing
+### Project self-check after writing
 
-After the plan is written, review it against:
+The standard flow already runs its own generic self-review (spec coverage, placeholder scan, type consistency). This is the CodePatrol layer on top of it — a project-specific pass, not a replacement. After the plan is written, additionally review it against:
 - project rules — no step should violate a known rule or convention
 - project documentation — no step should contradict documented architecture
 - design file — all design decisions should be reflected in the plan
 
 If conflicts are found, fix them before presenting the plan to the user.
 
-### Save plan
+### Save plan (location override)
 
-Save the plan to the same task folder as the design. If the design was saved in the current session, reuse its folder path. If the design path is unknown, search `.ai/tasks/` for the most recent `design.md` without a `plan.md` and save alongside it. If no design exists, save the plan to a new task folder with the current timestamp — the Write tool creates parent directories automatically.
+Redirect the plan to the same `.ai/tasks/` task folder as the design, regardless of the standard flow's default location (as of Superpowers 6.1.x that default is `docs/superpowers/plans/`). If the design was saved in the current session, reuse its folder path. If the design path is unknown, search `.ai/tasks/` for the most recent `design.md` without a `plan.md` and save alongside it. If no design exists, save the plan to a new task folder with the current timestamp — the Write tool creates parent directories automatically.
 
 ### Execution handoff
 
-After the plan is saved, follow the standard writing-plans execution handoff (offer subagent-driven or parallel session). Do NOT automatically invoke review after execution — the user decides when to review.
+After the plan is saved, follow the standard writing-plans execution handoff — it offers Subagent-Driven execution (`superpowers:subagent-driven-development`) or Inline Execution (`superpowers:executing-plans`). Do NOT automatically invoke review after execution — the user decides when to review.
 
 ---
 

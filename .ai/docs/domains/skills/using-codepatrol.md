@@ -30,7 +30,7 @@ Applied at three points in the standard brainstorming flow:
 2. **Propose approaches** — verifies each approach against project rules and conventions
 3. **Present design** — references relevant project rules in the design
 
-Design is saved to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` instead of `docs/plans/`.
+The design artifact is redirected to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` — a location override applied regardless of the standard flow's default (as of Superpowers 6.1.x, `docs/superpowers/specs/`). Enhancements are deltas layered on top: steps CodePatrol does not override (visual companion offer, spec self-review, user-review gate) are left intact, and the flow is not re-narrated or re-ordered.
 
 ### writing-plans enhancement
 
@@ -38,9 +38,9 @@ Applied before, during, and after plan writing:
 
 1. **Before** — reads project rules, `.ai/docs/` (relevant parts), and design file
 2. **During** — includes `.ai/docs` update step if task affects documented architecture/APIs
-3. **After** — self-checks plan against project rules and documentation
+3. **After** — a project-specific self-check (rules, docs, design file) layered on top of the standard flow's own generic self-review — not a replacement
 
-Plan is saved to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
+The plan artifact is redirected to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md` (override of the standard default, as of Superpowers 6.1.x `docs/superpowers/plans/`).
 
 ## Routing Table
 
