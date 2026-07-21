@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('build', 'claude', 'codex', 'cursor', 'opencode')]
+    [ValidateSet('build', 'claude', 'codex', 'cursor', 'opencode', 'omp')]
     [string]$Command
 )
 
@@ -57,6 +57,7 @@ function Show-Usage {
     Write-Host "  codex    Generate and install skills to ~/.codex/skills/"
     Write-Host "  cursor   Generate and install skills to ~/.cursor/skills/"
     Write-Host "  opencode Generate and install skills to ~/.config/opencode/skills/"
+    Write-Host "  omp      Generate and install skills to ~/.omp/agent/skills/"
     Write-Host ""
     exit 1
 }
@@ -278,6 +279,26 @@ switch ($Command) {
         foreach ($skillDir in Get-ChildItem -Path $tmpDir -Directory) {
             $target = Join-Path $localDir $skillDir.Name
             Copy-Item -Recurse -Force -Path $skillDir.FullName -Destination $target
+            Write-Host "Installed: $target"
+        }
+        Remove-Item -Recurse -Force $tmpDir
+    }
+    'omp' {
+        $localDir = Join-Path $HOME '.omp\agent\skills'
+        $agentsDir = Join-Path $HOME '.omp\agent\agents'
+        $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "codepatrol-$(Get-Random)"
+        New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
+        Invoke-Generate -Platform 'omp' -OutputDir $tmpDir
+        Remove-InstalledSkills -TargetDir $localDir
+        foreach ($skillDir in Get-ChildItem -Path $tmpDir -Directory) {
+            $target = Join-Path $localDir $skillDir.Name
+            Copy-Item -Recurse -Force -Path $skillDir.FullName -Destination $target
+            Write-Host "Installed: $target"
+        }
+        New-Item -ItemType Directory -Path $agentsDir -Force | Out-Null
+        foreach ($agentFile in Get-ChildItem -Path (Join-Path $PlatformsDir 'omp-agents') -Filter '*.md') {
+            $target = Join-Path $agentsDir $agentFile.Name
+            Copy-Item -Force -Path $agentFile.FullName -Destination $target
             Write-Host "Installed: $target"
         }
         Remove-Item -Recurse -Force $tmpDir

@@ -103,7 +103,7 @@ Review engineering quality after compliance is acceptable:
 - **large scope** (>20 reviewable files) — the orchestrator must dispatch subagents:
   - a dedicated compliance reviewer subagent
   - quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
-- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to set the model tier for each subagent.
+- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to select the configured tier for each subagent.
 - all findings from subagents must be normalized into one report
 
 ## Subagent Model Policy
@@ -118,13 +118,21 @@ Choose the cheapest model that can handle the task. If the platform supports mod
 | **default** | Mid-range | Most subagent work requiring comprehension and judgment |
 | **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
 
+### Platform Model Selection
+
+Tiers are logical task categories, not platform model-role names. In particular, `default` does not
+refer to a platform's `default` role or imply a fixed capability level. When a platform dispatches a
+named agent definition, that definition selects the model or role.
+
 ### Ceiling Rule
 
-The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
+Respect a capability ceiling only when the platform enforces one. Do not infer a ceiling from model-role
+names or override the model selected by a platform agent definition.
 
 ### User Override
 
-If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`,
+`default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
 
 ### Escalation on Failure
 
@@ -149,6 +157,10 @@ Starting tier by reviewer role:
 - **Conventions / Compatibility** → fast
 - **Architecture / Security / Testing** → default
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
+
+These are CodePatrol execution tiers, not platform model-role names. Platform adapters map
+them to their available subagent and model-selection mechanisms; `default` here never refers
+to a platform's `default` model role.
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
@@ -204,8 +216,10 @@ Structure the report as:
 - Assessment: NEEDS_CHANGES | APPROVED | APPROVED_WITH_NOTES
 
 ### Critical Issues
-1. [CATEGORY] `file:line` — description
+1. [CATEGORY] `file:line` — concise title
    **Finding type:** compliance | quality
+   **Problem:** observed condition and triggering scenario
+   **Why it matters:** causal chain to concrete impact
    **Fix:** concrete solution with code snippet where applicable
    **Status:** open
    **Resolved via:**
@@ -227,7 +241,28 @@ Rules:
 - assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only Important/Minor quality findings, APPROVED if no issues
 - deduplicate: if two reviewers found the same issue, keep one with both tags
 - severity disagreement between reviewers: take the highest
-- when aggregating subagent results, always preserve Fix and code snippets from subagent output
+- when aggregating subagent results, always preserve the finding explanation, Fix, and code snippets
+## Finding Communication
+
+Before drafting findings, determine the language required by project rules. Write the finding's title,
+problem, impact, and fix in that language. If rules do not specify a language, use the language of the
+user's current conversation; a bare review command inherits the preceding user messages. If conversation
+language is unavailable, use the active user-facing language. Keep identifiers, API names, paths, and code
+unchanged.
+
+Make every non-trivial finding understandable without reading the reviewed code first:
+- describe the observed behavior or code condition;
+- explain the triggering scenario and causal chain to the concrete impact;
+- state why that impact matters to the user, system, or future maintainer;
+- give an actionable fix, including a code snippet where it removes ambiguity.
+
+When more than one reasonable fix exists for a non-trivial finding, list each as `A)` / `B)` and state:
+- what changes;
+- advantages and disadvantages;
+- when to choose it.
+
+Do not invent alternatives for a simple, unambiguous repair, such as adding a clearly missing test. State
+the direct fix instead.
 
 ## Handoff
 

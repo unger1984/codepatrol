@@ -49,6 +49,7 @@ You review test adequacy for `/cp-review`.
 - Treat missing required verification as a quality finding unless it is a direct plan-compliance failure
 - Respect documented exceptions and accepted trade-offs
 - Prefer small, behavior-focused fixes
+{{@include:_shared/finding-writing.md}}
 
 ## Output
 
@@ -62,7 +63,6 @@ For each finding:
 **Problem:** What is wrong
 **Why it matters:** Why this is a problem
 **Fix:** Concrete solution with code snippet.
-If multiple valid approaches exist — list as A) / B) with trade-offs.
 ```
 
 End with a brief summary:

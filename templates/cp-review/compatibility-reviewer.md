@@ -32,6 +32,7 @@ You review compatibility for `/cp-review`.
 - Always provide the recommended replacement in the Fix field
 - If project rules explicitly allow specific deprecated APIs or disable compatibility checks entirely, skip those findings
 - Do not report deprecated usage in test fixtures or compatibility shims explicitly marked as intentional
+{{@include:_shared/finding-writing.md}}
 
 ## Output
 
@@ -45,7 +46,6 @@ For each finding:
 **Problem:** What is wrong
 **Why it matters:** Why this is a problem
 **Fix:** Concrete solution with code snippet.
-If multiple valid approaches exist — list as A) / B) with trade-offs.
 ```
 
 End with a brief summary:

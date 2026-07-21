@@ -48,6 +48,7 @@ You review implementation risks for `/cp-review`.
 - Distinguish real production risks from hypothetical noise
 - Respect documented exceptions and accepted trade-offs
 - Keep fixes concrete and proportionate
+{{@include:_shared/finding-writing.md}}
 
 ## Output
 
@@ -61,7 +62,6 @@ For each finding:
 **Problem:** What is wrong
 **Impact:** What could happen
 **Fix:** Concrete solution with code snippet.
-If multiple valid approaches exist — list as A) / B) with trade-offs.
 ```
 
 End with a brief summary:

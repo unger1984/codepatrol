@@ -1,5 +1,16 @@
 # Skills Reference
 
+## Table of Contents
+- [Purpose](#purpose)
+- [When to read](#when-to-read)
+- [Scope](#scope)
+- [Related docs](#related-docs)
+- [Integration Model](#integration-model)
+- [Skills Overview](#skills-overview)
+- [Task Artifacts](#task-artifacts)
+- [Shared Mechanics](#shared-mechanics)
+- [Change Impact](#change-impact)
+
 ## Purpose
 
 Reference for all CodePatrol skills — purpose, inputs/outputs, and how they integrate with Superpowers.
@@ -35,11 +46,14 @@ flowchart TD
 
 `using-codepatrol` defines the enhancements that are applied to brainstorming and writing-plans.
 
+`using-codepatrol` activates only for explicit planning or a pre-edit decision requiring user approval. Direct,
+well-scoped work bypasses this chain.
+
 ## Skills Overview
 
 | Skill | Purpose | Detailed doc |
 |-------|---------|-------------|
-| [using-codepatrol](skills/using-codepatrol.md) | Enhancements for brainstorming and writing-plans | [details](skills/using-codepatrol.md) |
+| [using-codepatrol](skills/using-codepatrol.md) | Gated planning enhancements and delegated self-checks | [details](skills/using-codepatrol.md) |
 | [cp-review](skills/cp-review.md) | Two-pass code review (compliance + quality) | [details](skills/cp-review.md) |
 | [cp-fix](skills/cp-fix.md) | Fix code review findings | [details](skills/cp-fix.md) |
 | [cp-docs](skills/cp-docs.md) | Create and maintain AI-facing project documentation | [details](skills/cp-docs.md) |
@@ -64,12 +78,12 @@ Ad-hoc review reports (no task context): `.ai/reports/YYYY-MM-DD-HHMM-<scope>.re
 | Progress tracking | cp-review, cp-fix | Mandatory — progress items before starting work |
 | Incremental report mutation | cp-fix | Report updated after each finding (not batched) |
 | Ad hoc save gate | cp-review, cp-fix | File not saved without explicit user approval |
-| Model policy | cp-review | Subagent tiers: fast/default/powerful + ceiling rule |
 | Bounded revalidation | cp-fix | Revalidation only of impacted sections |
-| Blocker policy | All skills | Stop and ask on conflicts, ambiguity, verification failure |
+| Model policy | cp-review, cp-fix | Logical subagent tiers with platform-specific model mapping |
+| Delegated planning self-checks | using-codepatrol | Artifact integrity on fast, plan feasibility on default, compliance on powerful |
 
 ## Change Impact
 
-- Adding a new skill: create template dir, add SKILL.md with frontmatter, rebuild, update using-codepatrol if routing needed
+- Changing planning enhancements or task-artifact storage: update using-codepatrol
 - Changing report format: impacts cp-fix parsing
 - Modifying enhancement definitions: update using-codepatrol template

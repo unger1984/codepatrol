@@ -1,0 +1,4 @@
+- When dispatching a fixer, use `Task` with `quick-fixer` for simple findings, `quality-fixer` for standard findings, and `deep-fixer` for complex findings.
+- Their definitions select `@smol`, `@task`, and `@slow`; do not override those models. The roles resolve through the user's `modelRoles` configuration.
+- Dispatch exactly one finding per fixer. Preserve report order unless the user explicitly approved an independent parallel group.
+- If the selected agent is unavailable or disabled, stop with a blocker. Never silently substitute an unspecified task agent.
