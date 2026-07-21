@@ -1,0 +1,1 @@
+- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to select the configured tier for each subagent.

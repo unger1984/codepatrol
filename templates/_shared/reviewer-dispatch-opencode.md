@@ -1,0 +1,1 @@
+- Use the platform's specialized review skills or Task tool to run independent quality passes in parallel when available. Select the configured model tier for each reviewer role.

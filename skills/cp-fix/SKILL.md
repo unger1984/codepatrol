@@ -64,13 +64,21 @@ Choose the cheapest model that can handle the task. If the platform supports mod
 | **default** | Mid-range | Most subagent work requiring comprehension and judgment |
 | **powerful** | Most capable available | Complex reasoning, ambiguous constraints, tasks that failed at a lower tier |
 
+### Platform Model Selection
+
+Tiers are logical task categories, not platform model-role names. In particular, `default` does not
+refer to a platform's `default` role or imply a fixed capability level. When a platform dispatches a
+named agent definition, that definition selects the model or role.
+
 ### Ceiling Rule
 
-The current session model is the ceiling. Subagents cannot use a more capable model than the orchestrator.
+Respect a capability ceiling only when the platform enforces one. Do not infer a ceiling from model-role
+names or override the model selected by a platform agent definition.
 
 ### User Override
 
-If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`, `default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
+If project rules (CLAUDE.md, AGENTS.md) define a model mapping for tiers (e.g., `fast: haiku`,
+`default: sonnet`), use it. User-defined mapping takes priority over automatic selection.
 
 ### Escalation on Failure
 
@@ -90,6 +98,18 @@ Every dispatched subagent is bounded:
 3. Blocker handling: present partial results to the user, explain what the subagent could not complete, and offer options (continue manually, narrow scope, skip this pass)
 
 Do not retry a subagent at the same tier. Do not wait indefinitely for a subagent response.
+
+## Fixer Selection
+
+Classify every finding before dispatching a fixer. Severity alone does not determine the execution tier:
+- **simple** — an isolated, unambiguous repair with no public-contract change;
+- **standard** — a local behavior change that requires code comprehension and focused verification;
+- **complex** — security, concurrency, public API, migration, multi-module, or unclear-root-cause work.
+
+Use the lowest tier that can safely handle the finding. On a failed or insufficient result, escalate once:
+simple → standard → complex. Do not retry the same tier.
+
+- When delegating a fix, launch one Agent with the matching configured model tier: simple → fast, standard → default, complex → powerful. Keep findings sequential unless the user approved an independent parallel group.
 
 ## Fix Policy
 
@@ -135,7 +155,26 @@ Update the report file **immediately after each finding** is resolved or skipped
 For each processed finding, update in the report file:
 - **Status:** `open` → `resolved` | `skipped`
 - **Resolved via:** what was changed (file:line, commit, or "skipped")
-- **Resolution notes:** brief explanation
+- **Resolution notes:** for a non-trivial fix, what changed, why it closes the finding, verification, and material trade-offs or risks
+
+## Resolution Communication
+
+Before explaining a fix, determine the language required by project rules. Write the explanation,
+verification result, blocker, and report-resolution fields in that language. If rules do not specify a
+language, use the language of the user's current conversation; a bare fix command inherits the preceding
+user messages. If conversation language is unavailable, use the active user-facing language. Keep
+identifiers, API names, paths, and code unchanged.
+
+For every non-trivial fix, make the outcome understandable without reading the diff first:
+- what changed;
+- why that change closes the finding;
+- which behavior or failure scenarios were verified;
+- real trade-offs and risks introduced by the chosen fix, such as API or UX changes, compatibility,
+  performance, operational complexity, or stricter validation.
+
+When several reasonable fixes exist before editing, present each as `A)` / `B)` with what changes,
+advantages, disadvantages, and when to choose it. Do not invent alternatives or trade-offs for a simple,
+unambiguous repair, such as adding a clearly missing test.
 
 Order of operations per finding:
 1. Apply fix (or decide to skip)

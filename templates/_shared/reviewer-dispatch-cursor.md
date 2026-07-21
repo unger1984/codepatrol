@@ -1,0 +1,1 @@
+- Define reviewers as `.md` agents with YAML frontmatter. Use `background: true` for independent quality passes and set each reviewer's configured model tier.

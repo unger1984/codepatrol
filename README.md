@@ -14,6 +14,7 @@ Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/cla
   - [Codex CLI](#codex-cli)
   - [Cursor](#cursor)
   - [OpenCode](#opencode)
+  - [Oh My Pi](#oh-my-pi)
 - [Usage](#usage)
 - [Development](#development)
 - [CI/CD](#cicd)
@@ -175,6 +176,36 @@ git clone https://github.com/unger1984/codepatrol.git
 cd codepatrol
 .\install.ps1 opencode
 ```
+
+### Oh My Pi
+
+**From latest release (Unix/macOS):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- omp
+```
+
+**From latest release (Windows):**
+```powershell
+irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
+```
+
+**From source:**
+```bash
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+./install.sh omp
+```
+
+**From source (Windows):**
+```powershell
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+.\install.ps1 omp
+```
+
+The installer adds skills to `~/.omp/agent/skills` and eight CodePatrol agents to
+`~/.omp/agent/agents`: three reviewers, three fixers, and two planning self-checkers. They resolve
+`@slow`, `@task`, and `@smol` through your `modelRoles`.
 
 ## Usage
 

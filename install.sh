@@ -35,6 +35,7 @@ usage() {
     echo "  codex    Generate and install skills to ~/.codex/skills/"
     echo "  cursor   Generate and install skills to ~/.cursor/skills/"
     echo "  opencode Generate and install skills to ~/.config/opencode/skills/"
+    echo "  omp      Generate and install skills to ~/.omp/agent/skills/"
     echo ""
     exit 1
 }
@@ -240,6 +241,27 @@ case "${1:-}" in
             skill_name=$(basename "$skill_dir")
             target="$local_dir/$skill_name"
             cp -r "$skill_dir" "$target"
+            echo "Installed: $target"
+        done
+        rm -rf "$tmp_dir"
+        ;;
+    omp)
+        local_dir="$HOME/.omp/agent/skills"
+        agents_dir="$HOME/.omp/agent/agents"
+        tmp_dir=$(mktemp -d)
+        generate "omp" "$tmp_dir"
+        clean_installed_skills "$local_dir"
+        for skill_dir in "$tmp_dir"/*/; do
+            skill_name=$(basename "$skill_dir")
+            target="$local_dir/$skill_name"
+            cp -r "$skill_dir" "$target"
+            echo "Installed: $target"
+        done
+        mkdir -p "$agents_dir"
+        for agent_file in "$PLATFORMS_DIR/omp-agents/"*.md; do
+            [ -f "$agent_file" ] || continue
+            target="$agents_dir/$(basename "$agent_file")"
+            cp "$agent_file" "$target"
             echo "Installed: $target"
         done
         rm -rf "$tmp_dir"

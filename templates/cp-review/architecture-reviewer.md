@@ -45,6 +45,7 @@ You review implementation quality for `/cp-review` after compliance concerns are
 - Do not report plan or design mismatches as plain quality issues if they belong to the compliance pass
 - Prefer actionable findings with concrete remediation
 - Respect documented exceptions and accepted trade-offs
+{{@include:_shared/finding-writing.md}}
 
 ## Output
 
@@ -58,7 +59,6 @@ For each finding:
 **Problem:** What is wrong
 **Why it matters:** Why this is a problem
 **Fix:** Concrete solution with code snippet.
-If multiple valid approaches exist — list as A) / B) with trade-offs.
 ```
 
 End with a brief summary:

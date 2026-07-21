@@ -1,14 +1,28 @@
 # using-codepatrol
 
+## Table of Contents
+- [Purpose](#purpose)
+- [When to read](#when-to-read)
+- [Related docs](#related-docs)
+- [Activation](#activation)
+- [Enhancements](#enhancements)
+  - [brainstorming](#brainstorming)
+  - [writing-plans](#writing-plans)
+- [Artifact Rules](#artifact-rules)
+- [Related Skills](#related-skills)
+- [Change Impact](#change-impact)
+
 ## Purpose
 
-Enhances the Superpowers workflow (brainstorming, writing-plans) with project rules and documentation awareness. Routes review, fix, docs, and rules tasks to CodePatrol skills.
+Enhances Superpowers brainstorming and writing-plans with mandatory project rules, relevant existing
+documentation, delegated planning self-checks, and a single task-artifact location. It does not route ordinary
+requests or replace Superpowers.
 
 ## When to read
 
-- Understanding how project awareness is injected into brainstorming and writing-plans
-- Adding new enhancements to the workflow
-- Understanding skill routing
+- Changing planning enhancements or artifact storage
+- Understanding when Superpowers planning should start
+- Diagnosing design or plan artifact placement
 
 ## Related docs
 
@@ -16,49 +30,54 @@ Enhances the Superpowers workflow (brainstorming, writing-plans) with project ru
 
 ---
 
-## Role
+## Activation
 
-Enhancement layer for Superpowers workflow + router for CodePatrol-specific skills.
+The skill loads before `superpowers:brainstorming` or `superpowers:writing-plans` when the user explicitly
+requests brainstorming, design, or a plan, or when a pre-edit decision requires user approval.
+
+It must not activate for clear direct work: localized changes, known-cause bug fixes, mechanical refactors,
+review, documentation, investigation, or execution of an approved plan. Uncertainty is resolved in favor of
+direct implementation; planning starts later only if a real design fork emerges.
 
 ## Enhancements
 
-### brainstorming enhancement
+### brainstorming
 
-Applied at three points in the standard brainstorming flow:
+1. Reads applicable project rules and relevant existing `.ai/docs`.
+2. Checks proposed approaches against rules and conventions.
+3. Runs parallel self-checks: artifact integrity on `@smol` and rules/docs/requirement compliance on `@slow`.
+4. Corrects non-material findings through the matching fixer tier before the user-review gate.
+5. Saves the only design artifact at `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`.
 
-1. **Explore project context** — reads `.claude/rules/`, `CLAUDE.md`, `.ai/docs/` (relevant parts), recent commits
-2. **Propose approaches** — verifies each approach against project rules and conventions
-3. **Present design** — references relevant project rules in the design
+Absent `.ai/docs` is a no-op. The skill does not ask to initialize docs or add such work to a plan solely
+because docs are absent.
 
-The design artifact is redirected to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md` — a location override applied regardless of the standard flow's default (as of Superpowers 6.1.x, `docs/superpowers/specs/`). Enhancements are deltas layered on top: steps CodePatrol does not override (visual companion offer, spec self-review, user-review gate) are left intact, and the flow is not re-narrated or re-ordered.
+### writing-plans
 
-### writing-plans enhancement
+1. Reads project rules, relevant existing docs, and the approved current-task design.
+2. Includes a documentation update step only when existing docs cover changed architecture, APIs, data
+   structures, or conventions.
+3. Runs parallel self-checks: artifact integrity on `@smol`, plan completeness/dependencies/verification on
+   `@task`, and rules/docs/design compliance on `@slow`.
+4. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design
+   decision is presented to the user instead.
+5. Saves the only plan artifact beside its design at `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
 
-Applied before, during, and after plan writing:
+A design is current only if it was approved in the same session or its path was explicitly supplied. The skill
+never searches for the most recent design lacking a plan.
 
-1. **Before** — reads project rules, `.ai/docs/` (relevant parts), and design file
-2. **During** — includes `.ai/docs` update step if task affects documented architecture/APIs
-3. **After** — a project-specific self-check (rules, docs, design file) layered on top of the standard flow's own generic self-review — not a replacement
+## Artifact Rules
 
-The plan artifact is redirected to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md` (override of the standard default, as of Superpowers 6.1.x `docs/superpowers/plans/`).
+No design or plan copy is written to Superpowers default directories. If a plan refers to an existing design
+whose path is unknown, ask for the path. If no design is in scope, create a new task folder when saving the
+plan.
 
-## Routing Table
+## Related Skills
 
-| Intent | Skill |
-|--------|-------|
-| New task / idea / design | brainstorming (superpowers) + enhancements |
-| Write implementation plan | writing-plans (superpowers) + enhancements |
-| Implement from plan | executing-plans / subagent-driven-development (superpowers) |
-| Code review | `/cp-review` |
-| Fix review findings | `/cp-fix` |
-| Documentation | `/cp-docs` |
-| Improve rules | `/cp-rules` |
-
-## Dependencies
-
-None. This is an entry-point skill loaded at session start.
+`/cp-review`, `/cp-fix`, and `/cp-docs` remain explicit workflows. Short aliases such as `/fix` and `/docs`
+are independent convenience mappings, not planning triggers.
 
 ## Change Impact
 
-- Adding a new enhancement point: update the relevant enhancement section
-- Adding a new CodePatrol skill: update routing table
+- Changing planning enhancements or artifact paths: update this document and the template.
+- Adding a related CodePatrol skill: update its own documentation; do not add a planning route here.

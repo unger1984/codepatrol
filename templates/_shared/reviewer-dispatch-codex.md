@@ -1,0 +1,1 @@
+- Enable multi-agent tools (spawn_agent, wait, close_agent). Launch subagents in parallel, wait for all results, and use the configured model tier for each reviewer role. Use send_input for follow-ups if needed.

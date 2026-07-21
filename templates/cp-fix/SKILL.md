@@ -58,6 +58,18 @@ Before dispatching fix agents, read project rules from `{{RULES_SOURCE}}`. Pass 
 
 {{@include:_shared/subagent-limits.md}}
 
+## Fixer Selection
+
+Classify every finding before dispatching a fixer. Severity alone does not determine the execution tier:
+- **simple** — an isolated, unambiguous repair with no public-contract change;
+- **standard** — a local behavior change that requires code comprehension and focused verification;
+- **complex** — security, concurrency, public API, migration, multi-module, or unclear-root-cause work.
+
+Use the lowest tier that can safely handle the finding. On a failed or insufficient result, escalate once:
+simple → standard → complex. Do not retry the same tier.
+
+{{@platform-include:fixer-dispatch}}
+
 ## Fix Policy
 
 Before starting fixes, determine:
@@ -102,7 +114,9 @@ Update the report file **immediately after each finding** is resolved or skipped
 For each processed finding, update in the report file:
 - **Status:** `open` → `resolved` | `skipped`
 - **Resolved via:** what was changed (file:line, commit, or "skipped")
-- **Resolution notes:** brief explanation
+- **Resolution notes:** for a non-trivial fix, what changed, why it closes the finding, verification, and material trade-offs or risks
+
+{{@include:_shared/resolution-writing.md}}
 
 Order of operations per finding:
 1. Apply fix (or decide to skip)

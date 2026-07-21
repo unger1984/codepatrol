@@ -49,6 +49,7 @@ You review conventions and local code quality for `/cp-review`.
 - Respect project naming and comment language rules
 - Respect documented exceptions and accepted trade-offs
 - Keep findings specific and actionable
+{{@include:_shared/finding-writing.md}}
 
 ## Output
 
@@ -62,7 +63,6 @@ For each finding:
 **Problem:** What is wrong
 **Why it matters:** Why this is a problem
 **Fix:** Concrete solution with code snippet.
-If multiple valid approaches exist — list as A) / B) with trade-offs.
 ```
 
 End with a brief summary:

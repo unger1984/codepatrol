@@ -14,6 +14,7 @@ AI-скиллы с осведомлённостью о проекте для [Cl
   - [Codex CLI](#codex-cli)
   - [Cursor](#cursor)
   - [OpenCode](#opencode)
+  - [Oh My Pi](#oh-my-pi)
 - [Использование](#использование)
 - [Разработка](#разработка)
 - [CI/CD](#cicd)
@@ -175,6 +176,36 @@ git clone https://github.com/unger1984/codepatrol.git
 cd codepatrol
 .\install.ps1 opencode
 ```
+
+### Oh My Pi
+
+**Из последнего релиза (Unix/macOS):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- omp
+```
+
+**Из последнего релиза (Windows):**
+```powershell
+irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
+```
+
+**Из исходников:**
+```bash
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+./install.sh omp
+```
+
+**Из исходников (Windows):**
+```powershell
+git clone https://github.com/unger1984/codepatrol.git
+cd codepatrol
+.\install.ps1 omp
+```
+
+Установщик добавляет скиллы в `~/.omp/agent/skills` и восемь агентов CodePatrol в
+`~/.omp/agent/agents`: три для ревью, три для исправлений и два для self-check планирования. Они разрешают
+`@slow`, `@task` и `@smol` через ваши `modelRoles`.
 
 ## Использование
 

@@ -103,7 +103,7 @@ Review engineering quality after compliance is acceptable:
 - **large scope** (>20 reviewable files) — the orchestrator must dispatch subagents:
   - a dedicated compliance reviewer subagent
   - quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
-- {{DISPATCH_AGENT}}
+{{@platform-include:reviewer-dispatch}}
 - all findings from subagents must be normalized into one report
 
 ## Subagent Model Policy
@@ -116,6 +116,10 @@ Starting tier by reviewer role:
 - **Conventions / Compatibility** → fast
 - **Architecture / Security / Testing** → default
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
+
+These are CodePatrol execution tiers, not platform model-role names. Platform adapters map
+them to their available subagent and model-selection mechanisms; `default` here never refers
+to a platform's `default` model role.
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
@@ -171,8 +175,10 @@ Structure the report as:
 - Assessment: NEEDS_CHANGES | APPROVED | APPROVED_WITH_NOTES
 
 ### Critical Issues
-1. [CATEGORY] `file:line` — description
+1. [CATEGORY] `file:line` — concise title
    **Finding type:** compliance | quality
+   **Problem:** observed condition and triggering scenario
+   **Why it matters:** causal chain to concrete impact
    **Fix:** concrete solution with code snippet where applicable
    **Status:** open
    **Resolved via:**
@@ -194,7 +200,8 @@ Rules:
 - assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only Important/Minor quality findings, APPROVED if no issues
 - deduplicate: if two reviewers found the same issue, keep one with both tags
 - severity disagreement between reviewers: take the highest
-- when aggregating subagent results, always preserve Fix and code snippets from subagent output
+- when aggregating subagent results, always preserve the finding explanation, Fix, and code snippets
+{{@include:_shared/finding-writing.md}}
 
 ## Handoff
 

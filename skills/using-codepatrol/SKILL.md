@@ -1,24 +1,18 @@
 ---
 name: using-codepatrol
-description: MUST invoke BEFORE superpowers:brainstorming or superpowers:writing-plans — required when building features, designing systems, planning changes, creating functionality, adding components, or any creative/implementation task. Also routes review/fix/docs requests to CodePatrol skills. Adds mandatory project rules and documentation context.
+description: MUST invoke BEFORE superpowers:brainstorming or superpowers:writing-plans whenever a brainstorm, design, or plan workflow for a feature or change is about to start. Loads mandatory project-rules and documentation enhancements. Not for direct well-scoped edits, localized fixes, execution, reviews, investigations, or documentation tasks.
 ---
 
 # CodePatrol — Project-Aware Enhancements
 
-CodePatrol enhances the standard superpowers workflow (brainstorming → writing-plans → executing-plans) with project rules and documentation awareness. It also provides specialized code review and fix skills.
+CodePatrol enhances the standard Superpowers planning workflow with project rules, relevant documentation,
+and centralized task artifacts. Superpowers remains the primary workflow: these enhancements do not replace
+or reorder its steps.
 
-**CRITICAL — Enhancement Gate:** Before invoking `superpowers:brainstorming` or `superpowers:writing-plans`, you MUST ensure this skill's enhancement sections are loaded in context. If you are unsure whether they are — invoke `using-codepatrol` via the Skill tool first. Never invoke brainstorming or writing-plans without the enhancements below being active. This applies regardless of how the invocation was triggered (user request, slash command, or handoff from another skill).
-
-## Skill Routing
-
-| Task type | Skill | Notes |
-|-----------|-------|-------|
-| New task, idea, feature, or change | brainstorming (superpowers) | Enhanced — see below |
-| Write implementation plan | writing-plans (superpowers) | Enhanced — see below |
-| Implement from a plan | executing-plans / subagent-driven-development (superpowers) | As-is |
-| Code review | `/cp-review` | CodePatrol skill |
-| Fix code review findings | `/cp-fix` | CodePatrol skill |
-| Create or update project documentation | `/cp-docs` | CodePatrol skill |
+**CRITICAL — Enhancement Gate:** Before invoking `superpowers:brainstorming` or
+`superpowers:writing-plans`, you MUST ensure this skill's enhancement sections are loaded in context. If you
+are unsure whether they are, invoke `using-codepatrol` first. Never invoke brainstorming or writing-plans
+without the enhancements below being active.
 
 ## Short Aliases
 
@@ -28,128 +22,143 @@ CodePatrol enhances the standard superpowers workflow (brainstorming → writing
 | `/fix` | `/cp-fix` |
 | `/docs` | `/cp-docs` |
 
-## When the user says...
+## Related CodePatrol Skills
 
-- "let's plan/design/build/add/create X" / "brainstorm" / "I have an idea" → brainstorming (with enhancements)
-- "write the plan" / "create implementation plan" → writing-plans (with enhancements)
-- "implement/execute the plan" / "let's build it" → executing-plans or subagent-driven-development
-- "review the code/changes" / "check my code" → `/cp-review`
-- "fix the findings" / "fix review issues" → `/cp-fix`
-- "add/update/write docs/documentation" → `/cp-docs`
+Use `/cp-review`, `/cp-fix`, and `/cp-docs` only for their explicit workflows. They do not start or replace
+Superpowers planning.
+
+## Planning Threshold
+
+Start the Superpowers `brainstorming → writing-plans` flow only when:
+
+1. the user explicitly asks to brainstorm, design, or write an implementation plan; or
+2. before editing there is a decision requiring user approval: viable approaches have materially different
+   cost or risk, or the requirement cannot be resolved from project rules, documentation, and code.
+
+Do **not** start planning solely because the user says “add”, “build”, “create”, “change”, or “fix”. Directly
+execute work with a clear scope, including:
+
+- one-file or other localized changes;
+- bug fixes with a known cause;
+- mechanical refactors;
+- review, documentation, or investigation tasks;
+- execution of an approved plan.
+
+When uncertain, prefer direct implementation. Start planning later only if a real design decision emerges.
 
 ---
 
 ## Enhancement: brainstorming
 
-When `superpowers:brainstorming` is invoked, the following enhancements are mandatory and must be applied **in addition to** the standard brainstorming flow.
+When `superpowers:brainstorming` is invoked, apply these requirements in addition to the standard flow.
 
-The standard flow may include steps CodePatrol does not override — a just-in-time visual companion offer, a spec self-review, and a user-review gate before planning. Leave those intact. The enhancements here only add project-context reads and redirect where the artifact is saved; they do not replace or re-order the standard flow.
+### Explore project context
 
-### At "Explore project context" step
-
-Read project-specific context before asking clarifying questions:
+Before asking clarifying questions:
 
 1. **Project rules** — ``.claude/rules/*.md` and `CLAUDE.md``
-2. **Project documentation** — if `.ai/docs/README.md` exists, read it as a navigation hub. Follow links only to docs relevant to the task scope.
-3. **Recent commits** — `git log --oneline -20` for recent activity context
+2. **Project documentation** — if `.ai/docs/README.md` exists, read it as a navigation hub and follow only
+   links relevant to the task scope.
 
-If `.ai/docs/` does not exist, ask the user (multiple choice, one question at a time):
-- Create project documentation now before designing (invoke `/cp-docs`)
-- Add a documentation initialization step to the plan after implementation
-- Proceed without project documentation
+If `.ai/docs/` does not exist, continue without it. Do not ask the user to initialize documentation or add a
+documentation task solely because it is absent.
 
-Recommend the second option for most cases. Remember the user's choice — it affects the writing-plans enhancement.
+### Propose approaches
 
-This context informs all subsequent steps: questions, approaches, and design.
+Verify each proposed approach against the discovered project rules and conventions. Discard conflicting
+approaches or explicitly explain why a rule must be overridden.
 
-### At "Propose approaches" step
+### Present design
 
-Before presenting approaches, verify each candidate against project rules and conventions discovered during context exploration. If an approach conflicts with a project rule, either discard it or explicitly note the conflict and why the rule should be overridden.
+Reference the relevant project rules and constraints that shaped the design.
 
-### At "Present design" step
+### CodePatrol design self-check
 
-In the design, explicitly reference relevant project rules and constraints that shaped design decisions. The user should see that the design was informed by the project's own conventions, not just general best practices.
+Before the standard Superpowers user-review gate, run independent read-only checks for the design's artifact
+integrity and its compliance with project rules, documentation, and explicit user requirements. Normalize the
+findings, then correct them before presenting the design unless a correction changes a material design choice.
+Present material choices to the user instead of silently choosing one.
 
-### Save design (location override)
+- Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
+- Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
 
-Wherever the standard flow would write the design/spec, CodePatrol redirects it to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`. This override applies regardless of the standard flow's default location (as of Superpowers 6.1.x that default is `docs/superpowers/specs/`). Do not also write a copy to the default path — `.ai/tasks/` is the single home for the artifact.
+### Save design
 
-The task folder is created on demand — only when saving the first artifact (design or plan). Before generating the folder name, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output. Never hardcode or guess the time. Save the file using the Write tool — it creates parent directories automatically. Do not use shell commands (`mkdir`, `New-Item`) to create directories.
+Save the design only to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`. This location overrides the standard
+Superpowers spec path; never write a second copy to a default Superpowers directory.
 
-Whatever the standard flow does with the artifact after saving (its spec self-review, committing it) still applies — it just operates on the `.ai/tasks/` file.
-
-### Handoff to writing-plans
-
-Do not jump straight to writing-plans after saving. Continue through the standard flow's remaining steps — its spec self-review and the user-review gate — operating on the `.ai/tasks/` design file. The flow itself transitions to `superpowers:writing-plans` once the user approves the spec, and the enhancements below apply automatically at that point.
+Create the task folder only when saving the first artifact. Before generating its timestamp, run `date +%H%M`
+on Unix/macOS or `Get-Date -Format 'HHmm'` on PowerShell. Save with the Write tool; do not create directories
+through shell commands.
 
 ---
 
 ## Enhancement: writing-plans
 
-When `superpowers:writing-plans` is invoked, the following enhancements are mandatory and must be applied **in addition to** the standard writing-plans flow.
+When `superpowers:writing-plans` is invoked, apply these requirements in addition to the standard flow.
 
 ### Before writing the plan
 
-Read project-specific context:
+Read:
 
 1. **Project rules** — ``.claude/rules/*.md` and `CLAUDE.md``
-2. **Project documentation** — if `.ai/docs/README.md` exists, read it and follow links to docs relevant to the task. This reveals architecture details, conventions, and constraints not captured in rules. It also shows what documentation will need updating after implementation.
-3. **Design file** — the approved design from `.ai/tasks/` for the current task
+2. **Project documentation** — if `.ai/docs/README.md` exists, follow only relevant linked docs.
+3. **Approved design** — the design for the current task, if one exists.
 
-### Include .ai/docs update step
+### Include documentation updates
 
-If `.ai/docs/` exists and the task changes architecture, APIs, data structures, or conventions documented there, include an explicit step in the plan to update the affected documentation. Reference the specific docs that need changes and what should change.
+If existing `.ai/docs` documents architecture, APIs, data structures, or conventions changed by the task,
+include an explicit update step naming the affected document and required update. Do not add an initialization
+step when `.ai/docs` is absent.
 
-If `.ai/docs/` does not exist and the user chose "add a documentation step to the plan" during brainstorming, include a final step to initialize project documentation via `/cp-docs`.
+### CodePatrol plan self-check
 
-### Project self-check after writing
+After the standard Superpowers plan review, run independent read-only checks for:
 
-The standard flow already runs its own generic self-review (spec coverage, placeholder scan, type consistency). This is the CodePatrol layer on top of it — a project-specific pass, not a replacement. After the plan is written, additionally review it against:
-- project rules — no step should violate a known rule or convention
-- project documentation — no step should contradict documented architecture
-- design file — all design decisions should be reflected in the plan
+- artifact integrity, links, and placeholders;
+- plan completeness, dependency order, verification, and scope;
+- compliance with project rules, relevant documentation, and the approved design.
 
-If conflicts are found, fix them before presenting the plan to the user.
+Normalize findings and correct them before presenting the plan. A correction that changes an approved design
+decision is a blocker: present the conflict to the user rather than silently changing the design.
 
-### Save plan (location override)
+- Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
+- Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
 
-Redirect the plan to the same `.ai/tasks/` task folder as the design, regardless of the standard flow's default location (as of Superpowers 6.1.x that default is `docs/superpowers/plans/`). If the design was saved in the current session, reuse its folder path. If the design path is unknown, search `.ai/tasks/` for the most recent `design.md` without a `plan.md` and save alongside it. If no design exists, save the plan to a new task folder with the current timestamp — the Write tool creates parent directories automatically.
+### Save plan
 
-### Execution handoff
+Save the plan only to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`, beside the current task's design. Never write
+a second copy to a default Superpowers plan directory.
 
-After the plan is saved, follow the standard writing-plans execution handoff — it offers Subagent-Driven execution (`superpowers:subagent-driven-development`) or Inline Execution (`superpowers:executing-plans`). Do NOT automatically invoke review after execution — the user decides when to review.
+A design is current only when it was approved in this session or the user explicitly supplied its path. If the
+user asks for a plan based on an existing design but its path is not known, ask for that path. Otherwise create
+a new task folder with the current timestamp. Never search `.ai/tasks/` for the most recent design without a
+plan.
 
 ---
 
 ## Task Folder Structure
 
-All task artifacts are stored in `.ai/tasks/`. Task folders are created on demand when the first artifact is saved, not upfront.
-
 ```
 .ai/tasks/YYYY-MM-DD-HHMM-slug/
 ├── design.md    — approved design
 ├── plan.md      — implementation plan
-└── review.md    — code review report (created by /cp-review)
+└── review.md    — code review report, created by /cp-review when applicable
 ```
 
-The slug should be short and descriptive, derived from the task subject.
-
-## Blocker Policy
-
-Stop and ask the user when:
-- the user's request does not clearly map to any skill or enhancement
-- multiple skills could apply and the choice affects the outcome
-
-Do not guess which skill to invoke. Present concrete options and let the user choose.
-When asking the user, use `AskUserQuestion` if available on the current platform.
+The slug is short, descriptive, and derived from the task subject.
 
 ## Anti-patterns
 
 Do NOT:
-- **Invoke multiple skills simultaneously without explicit user request** — route to one skill at a time
-- **Skip enhancements when invoking brainstorming or writing-plans** — enhancements are mandatory when CodePatrol is active
-- **Auto-invoke execution or review after planning** — the user decides when to proceed to the next stage
+
+- activate this skill for direct implementation that does not use brainstorming or writing-plans;
+- skip these enhancements once brainstorming or writing-plans is invoked;
+- create duplicate design or plan artifacts in default Superpowers directories;
+- infer a task design by searching for the most recent unmatched design;
+- automatically invoke execution or review after planning.
 
 ## Completion Criteria
 
-This skill is complete when the target skill or enhanced workflow has been identified and invoked. If the skill acts as a router, completion is the successful handoff to the target skill.
+This skill is complete when the enhanced Superpowers workflow has been invoked with these requirements active
+and any design or plan artifact has been saved in its single `.ai/tasks/` location.

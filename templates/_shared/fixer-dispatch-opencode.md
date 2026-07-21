@@ -1,0 +1,1 @@
+- When delegating a fix, use one platform task agent with the matching configured model tier: simple → fast, standard → default, complex → powerful. Keep findings sequential unless the user approved an independent parallel group.
