@@ -43,17 +43,19 @@ writing-plans                        executing-plans / subagent-driven
 
 **Что добавляет CodePatrol:**
 - Правила и документация проекта читаются **до** дизайна и планирования
-- Подходы проверяются на соответствие конвенциям проекта
-- Планы включают шаги обновления документации
-- Планы проходят self-check на соответствие правилам
-- Специализированное двухпроходное ревью (compliance + quality)
+- Planning self-check использует цитируемый prepared context: путь и тип артефакта, явные требования, только применимые выдержки из правил и доков, выдержки из утверждённого дизайна для планов и blockers по недостающему контексту
+- Шаг обновления документации попадает в план только когда существующие доки действительно надо менять
+- `/cp-review` сохраняет приоритет compliance, использует adaptive quality routing для большого low-risk scope и не сливает independent security review с architecture-risk review
+- `/cp-fix` использует Manual Per Item Gate и `auto safe fixes` только для одного изолированного безопасного варианта
+- Для docs/rules-исследований используются source maps (`path:line`, точная цитата, relevance), а progress tracking батчится с ближайшим реальным действием, если платформа это умеет
+- Для OMP дублирование output schema оставлено намеренно; CodePatrol **не** добавляет YAML frontmatter include/preprocessor для этого случая
 
 ## Скиллы
 
 | Скилл | Назначение |
 |-------|-----------|
 | `using-codepatrol` | Расширяет brainstorming и writing-plans осведомлённостью о проекте |
-| `/cp-review` | Двухпроходное ревью: compliance (дизайн + план + правила), затем quality (5 специализированных ревьюеров) |
+| `/cp-review` | Обязательный локальный compliance triage, затем quality после чистого compliance; powerful compliance review только для применимых контрактов или high-risk scope |
 | `/cp-fix` | Обработка и исправление findings с инкрементальным трекингом |
 | `/cp-docs` | Создание и ведение AI-документации проекта |
 
@@ -85,19 +87,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 claude
 ```
 
-**Из исходников (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh claude
-```
-
-**Из исходников (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 claude
-```
 
 ### Codex CLI
 
@@ -111,19 +100,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 codex
 ```
 
-**Из исходников (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh codex
-```
-
-**Из исходников (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 codex
-```
 
 ### Cursor
 
@@ -137,19 +113,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 cursor
 ```
 
-**Из исходников (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh cursor
-```
-
-**Из исходников (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 cursor
-```
 
 ### OpenCode
 
@@ -163,19 +126,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 opencode
 ```
 
-**Из исходников (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh opencode
-```
-
-**Из исходников (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 opencode
-```
 
 ### Oh My Pi
 
@@ -189,23 +139,10 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
 ```
 
-**Из исходников:**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh omp
-```
-
-**Из исходников (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 omp
-```
 
 Установщик добавляет скиллы в `~/.omp/agent/skills` и восемь агентов CodePatrol в
 `~/.omp/agent/agents`: три для ревью, три для исправлений и два для self-check планирования. Они разрешают
-`@slow`, `@task` и `@smol` через ваши `modelRoles`.
+`@slow`, `@task` и `@smol` через ваши `modelRoles`; дублирование OMP output schema сохранено намеренно, потому что CodePatrol не добавляет YAML frontmatter include/preprocessor для них.
 
 ## Использование
 
@@ -251,11 +188,11 @@ cd codepatrol
 
 ```
 templates/             # Исходные шаблоны (редактировать здесь)
-├── _shared/           # Общие частичные файлы
+├── _shared/           # Общие partials: reviewer/fixer dispatch, planning self-checks, research contract
 ├── cp-review/         # Скилл ревью + промпты ревьюеров
 ├── cp-fix/            # Скилл фиксов + промпт агента
 ├── cp-docs/           # Скилл документации
-└── using-codepatrol/  # Определения расширений
+└── using-codepatrol/  # Расширения планирования
 
 platforms/             # Платформенные env-файлы
 ├── claude.env
@@ -266,33 +203,24 @@ platforms/             # Платформенные env-файлы
 skills/                # Сгенерированный вывод (не редактировать)
 ```
 
-### Сборка
+### Валидация для разработчиков
 
-**Unix/macOS:**
+Локальная генерация предназначена только для разработки репозитория. Пользователи устанавливают CodePatrol только командами удалённой установки выше.
+
 ```bash
-./install.sh build   # Пересобрать skills/ из шаблонов
-./install.sh claude  # Собрать и установить в ~/.claude/skills/
-./install.sh codex   # Собрать и установить в ~/.codex/skills/
-./install.sh cursor  # Собрать и установить в ~/.cursor/skills/
-./install.sh opencode # Собрать и установить в ~/.config/opencode/skills/
+./install.sh build      # Пересобрать Claude skills/ из шаблонов
+./install.sh validate   # Сгенерировать все платформы во временных каталогах и проверить контракты
 ```
 
-**Windows (PowerShell):**
-```powershell
-.\install.ps1 build   # Пересобрать skills/ из шаблонов
-.\install.ps1 claude  # Собрать и установить в ~/.claude/skills/
-.\install.ps1 codex   # Собрать и установить в ~/.codex/skills/
-.\install.ps1 cursor  # Собрать и установить в ~/.cursor/skills/
-.\install.ps1 opencode # Собрать и установить в ~/.config/opencode/skills/
-```
+`install.ps1` поддерживается для удалённой установки на Windows; локальная валидация разработки выполняется POSIX-скриптом.
 
 ### Правила шаблонов
 
 - Шаблоны должны быть универсальными — без привязки к языкам или фреймворкам
 - Платформенные значения в `platforms/*.env`, ссылки через `{{VAR_NAME}}`
-- Общий контент в `templates/_shared/`, ссылки через `{{@include:path}}`
-- Платформенные варианты через `{{@platform-include:name}}` → `_shared/{name}-{platform}.md`
-- Контент скиллов на английском; LLM адаптируется к языку пользователя в рантайме
+- Общий контент в `templates/_shared/`, ссылки через `{{@include:path}}` или `{{@platform-include:name}}`
+- Контент скиллов остаётся на английском; в рантайме модель адаптируется к языку пользователя
+- Не добавляйте YAML frontmatter include/preprocessor для дублирующегося OMP output-schema текста; это дублирование должно оставаться явным
 
 ## CI/CD
 

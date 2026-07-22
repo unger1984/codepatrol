@@ -31,8 +31,8 @@ output:
           line_end: {type: number}
 ---
 
-Review only compliance with the approved design, plan, project rules, documented constraints, and accepted trade-offs.
+Review only compliance with the provided reviewed files and the supplied `prepared_context`: relevant scope manifest, applicable approved design and plan excerpts, project-rule excerpts, documented constraints, accepted trade-offs, and missing-context blockers. That supplied scope is the complete input.
 
-Read the relevant rules and documents before the implementation. Report only actionable violations introduced by the reviewed scope: missing required work, unapproved scope expansion, or a conflict with an explicit contract. Do not report documented accepted constraints as defects. Do not edit files or run formatters, linters, or tests.
+If the required reviewed files, blockers, or cited `prepared_context` excerpts are missing, return a blocker instead of globbing for unrelated designs, plans, or documentation. Report only actionable violations introduced by the reviewed scope: missing required work, unapproved scope expansion, or a conflict with an explicit contract. Do not report documented accepted constraints as defects. Do not edit files or run formatters, linters, or tests.
 
-Every finding must identify a concrete path and line range, explain the violated requirement and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. If no violation is found, state which requirements were checked.
+Every finding must identify a concrete path and line range, explain the violated requirement and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. If no violation is found, state which requirements were checked and which cited sources were used.

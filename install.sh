@@ -31,6 +31,7 @@ usage() {
     echo ""
     echo "Commands:"
     echo "  build    Generate skills/ from templates using Claude platform values"
+    echo "  validate Generate all supported platforms to temp output and verify generated markdown"
     echo "  claude   Generate and install skills to ~/.claude/skills/"
     echo "  codex    Generate and install skills to ~/.codex/skills/"
     echo "  cursor   Generate and install skills to ~/.cursor/skills/"
@@ -46,7 +47,8 @@ clean_installed_skills() {
 
     # Clean current skills (derived from templates)
     for skill_dir in "$TEMPLATES_DIR"/*/; do
-        local skill_name=$(basename "$skill_dir")
+        local skill_name
+        skill_name=$(basename "$skill_dir")
         [[ "$skill_name" == _* ]] && continue
         rm -rf "$target_dir/$skill_name"
     done
@@ -66,8 +68,11 @@ resolve_platform_includes() {
 
     while grep -q '{{@platform-include:' "$file"; do
         local include_name
+        local full_path
+        local tmp
+
         include_name=$(grep -m1 -o '{{@platform-include:[^}]*}}' "$file" | sed 's/{{@platform-include://;s/}}//')
-        local full_path="$base_dir/_shared/${include_name}-${platform}.md"
+        full_path="$base_dir/_shared/${include_name}-${platform}.md"
 
         if [ ! -f "$full_path" ]; then
             echo "Error: platform include file not found: $full_path"
@@ -75,7 +80,7 @@ resolve_platform_includes() {
         fi
 
         # Replace the include line with file contents (portable across GNU/BSD)
-        local tmp="$file.pinc.tmp"
+        tmp="$file.pinc.tmp"
         awk -v pattern="{{@platform-include:${include_name}}}" -v inc="$full_path" '
             $0 ~ pattern { while ((getline line < inc) > 0) print line; close(inc); next }
             { print }
@@ -91,8 +96,11 @@ resolve_includes() {
 
     while grep -q '{{@include:' "$file"; do
         local include_path
+        local full_path
+        local tmp
+
         include_path=$(grep -m1 -o '{{@include:[^}]*}}' "$file" | sed 's/{{@include://;s/}}//')
-        local full_path="$base_dir/$include_path"
+        full_path="$base_dir/$include_path"
 
         if [ ! -f "$full_path" ]; then
             echo "Error: include file not found: $full_path"
@@ -100,7 +108,7 @@ resolve_includes() {
         fi
 
         # Replace the include line with file contents (portable across GNU/BSD)
-        local tmp="$file.inc.tmp"
+        tmp="$file.inc.tmp"
         awk -v pattern="{{@include:${include_path}}}" -v inc="$full_path" '
             $0 ~ pattern { while ((getline line < inc) > 0) print line; close(inc); next }
             { print }
@@ -128,6 +136,7 @@ substitute() {
         [ -z "$key" ] && continue
         [[ "$key" == \#* ]] && continue
 
+        local placeholder
         placeholder="{{${key}}}"
 
         if [ -z "$value" ]; then
@@ -148,11 +157,11 @@ substitute() {
 }
 
 # Generate skills from templates for a given platform
-# Usage: generate <platform>
+# Usage: generate <platform> <output_dir>
 generate() {
     local platform="$1"
-    local env_file="$PLATFORMS_DIR/${platform}.env"
     local output_dir="$2"
+    local env_file="$PLATFORMS_DIR/${platform}.env"
 
     if [ ! -f "$env_file" ]; then
         echo "Error: platform file not found: $env_file"
@@ -165,16 +174,20 @@ generate() {
 
     # Process each template directory (skip _shared — it contains include-only files)
     for skill_dir in "$TEMPLATES_DIR"/*/; do
-        local skill_name=$(basename "$skill_dir")
+        local skill_name
+        local out_skill_dir
+
+        skill_name=$(basename "$skill_dir")
         [[ "$skill_name" == _* ]] && continue
-        local out_skill_dir="$output_dir/$skill_name"
+        out_skill_dir="$output_dir/$skill_name"
 
         mkdir -p "$out_skill_dir"
 
         # Process each file in the skill directory
         for template_file in "$skill_dir"*.md; do
+            local filename
             [ -f "$template_file" ] || continue
-            local filename=$(basename "$template_file")
+            filename=$(basename "$template_file")
             substitute "$template_file" "$env_file" "$out_skill_dir/$filename" "$platform"
         done
 
@@ -184,17 +197,96 @@ generate() {
     echo "Generated to: $output_dir"
 }
 
+validate_generated_markdown() {
+    local platform="$1"
+    local output_dir="$2"
+    local file
+
+    while IFS= read -r -d '' file; do
+        if grep -Eq '{{@include:|{{@platform-include:|{{[A-Z][A-Z0-9_]*}}' "$file"; then
+            echo "Error: unresolved template markers in $platform output: $file"
+            exit 1
+        fi
+    done < <(find "$output_dir" -type f -name '*.md' -print0)
+
+    grep -Fq 'requires_deep_compliance' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing requires_deep_compliance marker in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'prepared_context' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing prepared_context marker in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'architecture_risk' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing architecture_risk marker in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'compare every extracted requirement locally' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing local comparison marker in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'stop before quality with `NEEDS_CHANGES`' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing compliance gate marker in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'explicit verdict for every dimension' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing grouped verdict coverage in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'independent security review' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing independent security routing in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Fix Decision Brief' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing Fix Decision Brief in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Manual Per Item Gate' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing Manual Per Item Gate in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'auto safe fixes' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing safe-auto policy in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'prepared planning context' "$output_dir/using-codepatrol/SKILL.md" || {
+        echo "Error: missing prepared planning context in $platform using-codepatrol/SKILL.md"
+        exit 1
+    }
+}
+
+validate() {
+    (
+        local tmp_dir
+        local output_dir
+        local platform
+
+        tmp_dir=$(mktemp -d)
+        trap 'rm -rf "$tmp_dir"' EXIT
+
+        for platform in claude codex cursor omp opencode; do
+            output_dir="$tmp_dir/$platform"
+            generate "$platform" "$output_dir"
+            validate_generated_markdown "$platform" "$output_dir"
+        done
+
+        echo "Validation passed."
+    )
+}
+
 case "${1:-}" in
     build)
         rm -rf "$SKILLS_DIR"
         generate "claude" "$SKILLS_DIR"
+        ;;
+    validate)
+        validate
         ;;
     claude)
         local_dir="$HOME/.claude/skills"
         rm -rf "$SKILLS_DIR"
         generate "claude" "$SKILLS_DIR"
         clean_installed_skills "$local_dir"
-        # Copy to Claude skills directory
         for skill_dir in "$SKILLS_DIR"/*/; do
             skill_name=$(basename "$skill_dir")
             target="$local_dir/$skill_name"
@@ -207,9 +299,7 @@ case "${1:-}" in
         legacy_dir="$HOME/.agents/skills"
         tmp_dir=$(mktemp -d)
         generate "codex" "$tmp_dir"
-        # Clean legacy install path (~/.agents/skills) from previous versions
         clean_installed_skills "$legacy_dir"
-        # Copy to Codex skills directory
         clean_installed_skills "$local_dir"
         for skill_dir in "$tmp_dir"/*/; do
             skill_name=$(basename "$skill_dir")

@@ -31,8 +31,10 @@ output:
           line_end: {type: number}
 ---
 
-Identify bugs the author would want fixed before merge in the assigned quality dimension.
+Review only the assigned quality dimensions from the supplied `prepared_context`, including an approved low-risk grouped assignment of architecture, security/reliability, and testing.
 
-Read the diff and the changed code in context. Report only findings with provable impact, a concrete trigger, and a discrete fix. Check cross-boundary dispatch and error paths when a changed value crosses a module boundary. Do not report style preferences as defects, and do not edit files.
+Use the provided scope manifest, cited rule excerpts, cited constraints and trade-offs, assigned dimensions, and missing-context blockers as the complete input. If any required scope or citations are missing for an assigned dimension, return a blocker instead of searching broadly or guessing.
 
-Every finding must identify a concrete path and line range, explain the bug, trigger, and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. If no defect is found, state what was checked.
+Read the diff and changed code in context. Report only findings with provable impact, a concrete trigger, and a discrete fix. Do not report style preferences as defects, do not duplicate accepted constraints, and do not edit files.
+
+Every finding must identify a concrete path and line range, explain the bug, trigger, and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. Whether or not findings exist, explicitly state a separate verdict for every assigned dimension and what was checked.

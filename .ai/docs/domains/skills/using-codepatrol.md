@@ -15,8 +15,8 @@
 ## Purpose
 
 Enhances Superpowers brainstorming and writing-plans with mandatory project rules, relevant existing
-documentation, delegated planning self-checks, and a single task-artifact location. It does not route ordinary
-requests or replace Superpowers.
+documentation, cited prepared planning context, delegated self-checks, and a single task-artifact location.
+It does not route ordinary requests or replace Superpowers.
 
 ## When to read
 
@@ -45,26 +45,24 @@ direct implementation; planning starts later only if a real design fork emerges.
 
 1. Reads applicable project rules and relevant existing `.ai/docs`.
 2. Checks proposed approaches against rules and conventions.
-3. Runs parallel self-checks: artifact integrity on `@smol` and rules/docs/requirement compliance on `@slow`.
-4. Corrects non-material findings through the matching fixer tier before the user-review gate.
-5. Saves the only design artifact at `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`.
+3. Builds one cited prepared planning context: artifact path/type, explicit requirements, only applicable rule/doc excerpts, approved-design excerpts for plans, and missing-context blockers.
+4. Uses that context to keep artifact-integrity checks narrow and to give plan/compliance checks only the cited subsets they need.
+5. Allows one fast read-only preparer only for broad context assembled from multiple source sets.
+6. Corrects non-material findings through the matching fixer tier before the user-review gate.
+7. Saves the only design artifact at `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`.
 
-Absent `.ai/docs` is a no-op. The skill does not ask to initialize docs or add such work to a plan solely
-because docs are absent.
+Absent `.ai/docs` is a no-op. The skill does not ask to initialize docs or add such work to a plan solely because docs are absent.
 
 ### writing-plans
 
 1. Reads project rules, relevant existing docs, and the approved current-task design.
-2. Includes a documentation update step only when existing docs cover changed architecture, APIs, data
-   structures, or conventions.
-3. Runs parallel self-checks: artifact integrity on `@smol`, plan completeness/dependencies/verification on
-   `@task`, and rules/docs/design compliance on `@slow`.
-4. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design
-   decision is presented to the user instead.
+2. Includes a documentation update step only when existing docs cover changed architecture, APIs, data structures, or conventions.
+3. Reuses the same cited prepared planning context pattern for artifact integrity, plan completeness/dependencies/verification, and rules/docs/design compliance checks.
+4. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design decision is presented to the user instead.
 5. Saves the only plan artifact beside its design at `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
 
-A design is current only if it was approved in the same session or its path was explicitly supplied. The skill
-never searches for the most recent design lacking a plan.
+A design is current only if it was approved in the same session or its path was explicitly supplied. The skill never searches for the most recent design lacking a plan.
+
 
 ## Artifact Rules
 

@@ -1,1 +1,1 @@
-- When delegating a fix, launch one subagent with the matching configured model tier: simple → fast, standard → default, complex → powerful. Keep findings sequential unless the user approved an independent parallel group.
+- After the user selects an option in the Fix Decision Brief, launch one subagent with the matching configured model tier: simple → fast, standard → default, complex → powerful. Pass exactly one finding, its selected option, and cited applicable rules; keep findings sequential unless the user approved an independent parallel group.

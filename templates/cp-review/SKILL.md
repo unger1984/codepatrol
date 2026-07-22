@@ -13,6 +13,8 @@ Before dispatching reviewers, you MUST create {{PROGRESS_TOOL}} items for all re
 Mark each as `in_progress` when dispatching and `completed` when results are collected.
 This provides visual progress to the user.
 
+Create and update {{PROGRESS_TOOL}} items in the same tool batch as the first scope read, review dispatch, or report action when the platform supports batching. Otherwise update them with the nearest real action; never spend a separate turn only on tracking.
+
 Required items:
 - [ ] Compliance pass
 - [ ] Architecture review
@@ -71,6 +73,32 @@ For the compliance pass, mandatory sources are:
 - current plan (if exists in `.ai/tasks/`)
 - documented constraints and accepted trade-offs
 
+### Prepared Context
+
+Before the compliance pass or any quality dispatch, prepare one cited `prepared_context` package.
+
+`prepared_context` must contain:
+- `review_scope`: exact reviewed files, grouped scope manifest, changed public surfaces, and the routing predicates evaluated for this review
+- `applicable_rules`: only relevant rule excerpts with source citations
+- `applicable_constraints`: only relevant design, plan, and documentation excerpts plus accepted trade-offs, each with source citations
+- `missing_context_blockers`: required context that could not be located or cited
+
+Each excerpt must carry a concrete source citation (`path:line` or the platform's equivalent). Reviewers receive only the scope manifest, excerpts, and blockers relevant to their assigned pass. If required context is missing, return a blocker instead of assuming.
+
+Prepare `prepared_context` inline for normal scope. You may dispatch one fast read-only context preparer only when the review scope exceeds 20 files or the applicable context must be assembled from multiple rule, design, or documentation sources. The preparer must return cited excerpts and blockers only; it must not review code, widen scope, or replace compliance or quality judgment.
+
+### Compliance Triage
+
+Before the compliance pass:
+1. Collect reviewed files and changed public surfaces.
+2. Build the cited `prepared_context` package.
+3. Mark `security_sensitive_scope` true when the scope touches authentication, authorization, secrets, payments, personal data, or another explicit security boundary.
+4. Mark `architecture_risk` true when any of these predicates apply: cross-package or cross-service boundary, storage or data-model consistency, authentication or authorization boundary, concurrency or background work, public API or SDK compatibility, or a cross-cutting multi-module refactor.
+5. Set `requires_deep_compliance` to true if an applicable approved design or plan exists, the scope changes a public API, `security_sensitive_scope` is true, or triage finds a potential conflict with an explicit requirement.
+6. Record the evaluated predicates, cited excerpts, and any blockers in the unified report context.
+
+No broad discovery of unrelated documents occurs after triage.
+
 ## Review Order
 
 The order is mandatory:
@@ -79,30 +107,29 @@ The order is mandatory:
 
 ### Compliance Pass
 
-Check that the implementation matches:
-- approved design (if exists)
-- current plan (if exists)
-- project rules
-- documented constraints
-
-Catch missing required work, scope creep, or violations of explicit intent before deeper quality review starts.
+- If `requires_deep_compliance` is true, dispatch the powerful compliance reviewer before quality.
+- If false, compare every extracted requirement locally against the reviewed scope, record each checked requirement and finding in the unified report, and stop before quality with `NEEDS_CHANGES` for any compliance violation.
 
 ### Quality Pass
 
-Review engineering quality after compliance is acceptable:
+Review engineering quality after compliance is acceptable. Preserve all five dimensions and record an explicit verdict for each one:
 - architecture and maintainability
-- conventions and local code quality
-- testing and verification adequacy
 - security and reliability risks
+- testing and verification adequacy
+- conventions and local code quality
 - compatibility and deprecated API usage
+
+For every dispatched reviewer, pass only the assigned `prepared_context` excerpts, scope manifest, and blockers. Missing required context is a blocker, not permission to guess.
 
 ## Execution Model
 
-- **simple scope** (≤5 reviewable files) — the orchestrator runs all passes directly
-- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch subagents at its discretion
-- **large scope** (>20 reviewable files) — the orchestrator must dispatch subagents:
-  - a dedicated compliance reviewer subagent
-  - quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
+- **simple scope** (≤5 reviewable files) — the orchestrator runs compliance directly after triage and may run quality directly when compliance is clean
+- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch quality subagents at its discretion after compliance is clean
+- **large scope** (>20 reviewable files) — the orchestrator must dispatch quality-oriented reviewer agents after compliance is clean
+  - for large low-risk scope (`architecture_risk` false and `security_sensitive_scope` false), use adaptive grouping: one `quality-reviewer` assignment may cover architecture, security/reliability, and testing together, and one `quick-reviewer` assignment may cover conventions and compatibility together
+  - if `architecture_risk` is true, dispatch a separate powerful architecture reviewer for the architecture dimension
+  - if `security_sensitive_scope` is true, dispatch an independent security review; do not treat deep compliance as a substitute for quality security review
+  - grouped reviewers must still return an explicit verdict for every dimension they were assigned
 {{@platform-include:reviewer-dispatch}}
 - all findings from subagents must be normalized into one report
 
@@ -114,7 +141,8 @@ Review engineering quality after compliance is acceptable:
 
 Starting tier by reviewer role:
 - **Conventions / Compatibility** → fast
-- **Architecture / Security / Testing** → default
+- **Testing / Security / grouped low-risk quality** → default
+- **Architecture** → powerful when `architecture_risk` is true, otherwise default
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 
 These are CodePatrol execution tiers, not platform model-role names. Platform adapters map
@@ -125,6 +153,11 @@ The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
 - run a broad noisy review without proper scoping
 - treat every deviation from plan/design as an error without evaluating context
+- skip local compliance when deep routing is false
+- send unrelated discovery work to a deep reviewer
+- dispatch quality review after an open compliance violation
+- invent missing context instead of returning a blocker
+- conflate quality security review with deep compliance
 
 ## Reports
 

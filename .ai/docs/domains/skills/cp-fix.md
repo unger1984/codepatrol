@@ -41,19 +41,25 @@ Determined before starting:
 | Parameter | Options |
 |-----------|---------|
 | Severity scope | critical only / critical + important / all |
-| Processing style | manual per item / auto simple (ask for complex) / custom |
+| Processing style | manual per item / auto safe fixes, ask before consequential or ambiguous fixes / custom |
+
+For each finding, `/cp-fix` prepares a Fix Decision Brief: plain-language problem and trigger, recommended fix, materially different alternatives, and for each option the changes, benefits, drawbacks or risks, affected files, and verification.
+
+`manual per item` is a hard gate. After preparing the brief, the workflow must not dispatch a fixer, edit files, run a fix command, or mutate finding status until the user chooses an option, skips, or stops for that finding.
+
+`auto safe fixes` apply only when there is one isolated simple repair, one safe option, no observable behavior/public API/schema/config change, and trivial rollback. Standard, complex, ambiguous, unclear-root-cause, unclear-verification, or otherwise high-risk findings require the full brief and explicit user choice.
 
 ## Incremental Report Mutation (mandatory)
 
 After each finding (not batched):
-1. Apply fix or decide to skip
+1. Apply the selected fix or decide to skip
 2. Run bounded revalidation
-3. **Immediately update report file** (if exists)
+3. **Immediately update report file** (if it exists)
 4. Mark progress item as completed
 
 ## Documentation Check
 
-After all fixes, check if changes affect `.ai/docs/`. If so, inform user and suggest `/cp-docs`. Do not invoke automatically.
+After all fixes, check if changes affect `.ai/docs/`. If so, inform the user and suggest `/cp-docs`. Do not invoke automatically.
 
 ## Parallelization
 
@@ -64,7 +70,7 @@ After all fixes, check if changes affect `.ai/docs/`. If so, inform user and sug
 
 | Role | Tier | Purpose |
 |------|------|---------|
-| Fix agent | By complexity | Fix a single finding |
+| Fix agent | By complexity | Fix a single finding using the selected brief option and cited applicable rules |
 
 ## Change Impact
 

@@ -58,7 +58,9 @@ Key variables:
 | `{{PROGRESS_TOOL}}` | `TodoWrite` | `checklist` | Checkpoints |
 | `{{FILE_DISCOVERY}}` | Glob, Grep, MCP tools | Available search tools | Semantic Search + Search Files |
 | `{{RULES_SOURCE}}` | `.claude/rules/*.md` + `CLAUDE.md` | `AGENTS.md` only | `.cursor/rules/*.mdc` + `AGENTS.md` |
-| `{{SKILLS_DIR}}` | `~/.claude/skills` | `~/.agents/skills` | `~/.cursor/skills` |
+| `{{SKILLS_DIR}}` | `~/.claude/skills` | `~/.codex/skills` | `~/.cursor/skills` |
+
+OMP and OpenCode also consume the same templates through their platform env files; OMP keeps some output-schema prose duplicated deliberately because CodePatrol does not add a YAML frontmatter include/preprocessor for agent schema blocks.
 
 ### Include Directives
 
@@ -72,20 +74,19 @@ The build script resolves these by inlining the referenced file content.
 
 #### Platform-specific includes
 
-`{{@platform-include:name}}` — inlines `_shared/${name}-${platform}.md` where `${platform}` is determined by the build target (claude/codex/cursor). Used in `cp-rules` for rules authoring guidelines and in `using-codepatrol` for platform-specific short aliases.
+`{{@platform-include:name}}` — inlines `_shared/${name}-${platform}.md` where `${platform}` is determined by the build target (claude/codex/cursor). Used for platform-specific aliases, reviewer dispatch, fixer dispatch, planning self-checks, and rules authoring guidance.
 
 ### Shared Partials (`templates/_shared/`)
 
 Reusable content included by multiple skills:
 
-- **model-policy.md** — Subagent model tier selection policy (fast/default/powerful), ceiling rule, escalation on failure. Included by: `cp-review`, `cp-docs`.
-- **researcher.md** — Research subagent contract and output format. Included by: `cp-docs`, `cp-rules`.
-- **rules-authoring-claude.md** — Rules authoring guidelines for Claude Code platform.
-- **rules-authoring-codex.md** — Rules authoring guidelines for Codex CLI platform.
-- **rules-authoring-cursor.md** — Rules authoring guidelines for Cursor platform (MDC format).
-- **aliases-claude.md** — Short slash-command aliases for Claude Code (includes `/review`).
-- **aliases-codex.md** — Short slash-command aliases for Codex CLI (`/review` excluded — built-in conflict).
-- **aliases-cursor.md** — Short slash-command aliases for Cursor (includes `/review`).
+- **model-policy.md** — subagent model tier selection policy (fast/default/powerful), ceiling rule, escalation on failure
+- **researcher.md** — research subagent contract, cited source-map output, and narrow re-read discipline
+- **reviewer-dispatch-*.md** — platform-specific reviewer routing adapters, including adaptive quality grouping, cited `prepared_context`, and blocker handling
+- **fixer-dispatch-*.md** — platform-specific fixer routing adapters, one finding per fixer, and cited applicable-rules payloads
+- **planning-self-check-*.md** — platform-specific planning/design self-check dispatch using prepared context subsets
+- **rules-authoring-*.md** — platform-specific rule authoring guidance
+- **aliases-*.md** — platform-specific short command aliases
 
 ## Build Pipeline
 
@@ -103,8 +104,9 @@ flowchart LR
 | Command | Action |
 |---------|--------|
 | `./install.sh build` | Regenerate `skills/` from templates using Claude env |
+| `./install.sh validate` | Generate all five platforms in isolated temporary output, validate resolved Markdown and routing contracts; does not mutate `skills/` or installation directories |
 | `./install.sh claude` | Generate and install to `~/.claude/skills/` |
-| `./install.sh codex` | Generate and install to `~/.agents/skills/` |
+| `./install.sh codex` | Generate and install to `~/.codex/skills/`; also removes legacy CodePatrol skills from `~/.agents/skills/` |
 | `./install.sh cursor` | Generate and install to `~/.cursor/skills/` |
 
 ### Build Steps
@@ -112,7 +114,8 @@ flowchart LR
 1. **resolve_includes(file, base_dir)** — finds `{{@include:...}}` directives, replaces with file content (portable awk)
 2. **substitute(template, env_file, output)** — copies template, resolves includes, replaces `{{KEY}}` with env values. Empty values → entire line removed
 3. **generate(platform, output_dir)** — iterates `templates/` subdirs (excluding `_shared`), processes all `.md` files
-4. **clean_installed_skills(target_dir)** — removes old skills before install (including legacy names)
+4. **validate()** — generates Claude, Codex, Cursor, OMP, and OpenCode in a temporary directory; rejects unresolved template markers and missing generated routing contracts without installing or mutating `skills/`
+5. **clean_installed_skills(target_dir)** — removes old skills before install (including legacy names)
 
 ### Portability
 

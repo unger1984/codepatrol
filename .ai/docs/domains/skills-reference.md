@@ -44,18 +44,17 @@ flowchart TD
     CR -->|"if findings"| CF["/cp-fix"]
 ```
 
-`using-codepatrol` defines the enhancements that are applied to brainstorming and writing-plans.
+`using-codepatrol` defines the planning enhancements: cited prepared planning context, delegated self-checks, and single-location task artifacts.
 
-`using-codepatrol` activates only for explicit planning or a pre-edit decision requiring user approval. Direct,
-well-scoped work bypasses this chain.
+It activates only for explicit planning or a pre-edit decision requiring user approval. Direct, well-scoped work bypasses this chain.
 
 ## Skills Overview
 
 | Skill | Purpose | Detailed doc |
 |-------|---------|-------------|
-| [using-codepatrol](skills/using-codepatrol.md) | Gated planning enhancements and delegated self-checks | [details](skills/using-codepatrol.md) |
-| [cp-review](skills/cp-review.md) | Two-pass code review (compliance + quality) | [details](skills/cp-review.md) |
-| [cp-fix](skills/cp-fix.md) | Fix code review findings | [details](skills/cp-fix.md) |
+| [using-codepatrol](skills/using-codepatrol.md) | Gated planning enhancements with cited prepared context and delegated self-checks | [details](skills/using-codepatrol.md) |
+| [cp-review](skills/cp-review.md) | Two-pass code review with compliance-first routing and adaptive quality dispatch | [details](skills/cp-review.md) |
+| [cp-fix](skills/cp-fix.md) | Fix review findings with Manual Per Item Gate, safe-auto policy, and incremental tracking | [details](skills/cp-fix.md) |
 | [cp-docs](skills/cp-docs.md) | Create and maintain AI-facing project documentation | [details](skills/cp-docs.md) |
 
 ## Task Artifacts
@@ -75,15 +74,17 @@ Ad-hoc review reports (no task context): `.ai/reports/YYYY-MM-DD-HHMM-<scope>.re
 
 | Mechanic | Used by | Description |
 |----------|---------|-------------|
-| Progress tracking | cp-review, cp-fix | Mandatory — progress items before starting work |
+| Progress tracking | cp-review, cp-fix, cp-docs, cp-rules | Mandatory; batch tracking updates with the nearest real action when the platform supports it |
+| Prepared review context | cp-review | Cited `prepared_context` with scope manifest, applicable excerpts, and blockers only |
+| Prepared planning context | using-codepatrol | Cited artifact path/type, explicit requirements, applicable excerpts, approved-design excerpts for plans, and blockers |
 | Incremental report mutation | cp-fix | Report updated after each finding (not batched) |
+| Manual Per Item Gate / safe-auto policy | cp-fix | Manual gate blocks all mutation before user choice; `auto safe fixes` apply only to one isolated safe option |
+| Source maps | cp-docs, cp-rules | Research outputs keep only draft-relevant claims with `path:line`, exact excerpt, and relevance |
 | Ad hoc save gate | cp-review, cp-fix | File not saved without explicit user approval |
-| Bounded revalidation | cp-fix | Revalidation only of impacted sections |
-| Model policy | cp-review, cp-fix | Logical subagent tiers with platform-specific model mapping |
-| Delegated planning self-checks | using-codepatrol | Artifact integrity on fast, plan feasibility on default, compliance on powerful |
+| Model policy | cp-review, cp-fix, cp-docs, cp-rules | Logical subagent tiers with platform-specific model mapping |
 
 ## Change Impact
 
 - Changing planning enhancements or task-artifact storage: update using-codepatrol
-- Changing report format: impacts cp-fix parsing
-- Modifying enhancement definitions: update using-codepatrol template
+- Changing review or fix routing/report contracts: update cp-review, cp-fix, and review-system together
+- OMP output-schema duplication remains intentional; do not add a YAML frontmatter include/preprocessor for it

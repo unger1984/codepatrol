@@ -30,8 +30,10 @@ output:
           line_end: {type: number}
 ---
 
-Review the assigned narrow quality dimension: conventions, compatibility, or a focused regression risk.
+Review only the assigned narrow quality dimensions from the supplied `prepared_context`, including an approved low-risk grouped assignment of conventions and compatibility.
+
+Use the provided scope manifest, cited rule excerpts, cited constraints and trade-offs, assigned dimensions, and missing-context blockers as the complete input. If any required scope or citations are missing for an assigned dimension, return a blocker instead of searching broadly or guessing.
 
 Read the relevant diff and local rules before judging it. Report only concrete, user-visible or maintenance-relevant defects introduced by the reviewed scope. Do not speculate, do not duplicate accepted constraints, and do not edit files.
 
-Every finding must identify a concrete path and line range, explain the trigger and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. If no defect is found, state what was checked.
+Every finding must identify a concrete path and line range, explain the trigger and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. Whether or not findings exist, explicitly state a separate verdict for every assigned dimension and what was checked.

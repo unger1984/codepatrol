@@ -25,7 +25,7 @@ jobs:
             exit 1
           fi
 
-      - name: Validate generated workflow skills
+      - name: Validate generated Claude skills
         run: |
           test -f skills/using-codepatrol/SKILL.md
           test -f skills/cp-docs/SKILL.md

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Two-pass code review: compliance first (design + plan + rules), then quality (architecture, security, testing, conventions, compatibility).
+Two-pass code review: build cited `prepared_context`, run compliance first, then quality after clean compliance.
 
 ## When to read
 
@@ -35,24 +35,23 @@ Default (no args): committed diff vs main.
 
 ## Two-Pass Review Model
 
-### Pass 1 — Compliance (mandatory first)
+### Compliance Triage
 
-Checks adherence to:
-- Approved design (`design.md` from `.ai/tasks/`, if exists)
-- Implementation plan (`plan.md` from `.ai/tasks/`, if exists)
-- Project rules (`.claude/rules/`, `CLAUDE.md` / `AGENTS.md`)
+Triage builds one cited `prepared_context` package with the exact reviewed files, grouped scope manifest, changed public surfaces, evaluated routing predicates, only applicable rule excerpts, only applicable design/plan/documentation/accepted-trade-off excerpts, and missing-context blockers.
+
+`requires_deep_compliance` is true for an applicable approved design or plan, a public API change, a security-sensitive boundary, or a potential explicit-contract conflict. `architecture_risk` is true for cross-package or cross-service boundaries, storage or data-model consistency, auth/authz boundaries, concurrency or background work, public API or SDK compatibility, or cross-cutting multi-module refactors.
+
+For normal scope the orchestrator prepares this package inline. One fast read-only context preparer is allowed only for review scope above 20 files or when relevant rules, design, and docs come from multiple sources. Missing required context blocks the review instead of widening discovery or guessing.
+
+If deep routing is required, the powerful compliance reviewer receives only the relevant `prepared_context` excerpts, scope manifest, and blockers. Otherwise the orchestrator compares extracted requirements locally and stops before quality with `NEEDS_CHANGES` on any violation.
 
 ### Pass 2 — Quality
 
-Five dimensions, each with optional specialized reviewer:
+Five dimensions remain mandatory: architecture, security/reliability, testing/verification, conventions, and compatibility.
 
-| Dimension | Reviewer file | Starting tier |
-|-----------|--------------|---------------|
-| Architecture | `architecture-reviewer.md` | default |
-| Security | `security-reviewer.md` | default |
-| Testing | `testing-reviewer.md` | default |
-| Conventions | `codestyle-reviewer.md` | fast |
-| Compatibility | `compatibility-reviewer.md` | fast |
+For large low-risk scope, routing becomes adaptive: one grouped `quality-reviewer` may cover architecture, security/reliability, and testing, and one grouped `quick-reviewer` may cover conventions and compatibility. Each grouped reviewer must still return an explicit verdict for every assigned dimension.
+
+If `architecture_risk` is true, route architecture to a separate powerful architecture reviewer. If the scope is security-sensitive, keep an independent security quality review; deep compliance never replaces it.
 
 ## Report Storage
 
@@ -76,12 +75,12 @@ After presenting the report, offer `/cp-fix`. Do not invoke automatically — us
 
 | Role | Tier | Purpose |
 |------|------|---------|
-| Compliance reviewer | powerful | Design/plan/rules alignment |
-| Architecture reviewer | default | Architecture quality |
-| Security reviewer | default | Security risks |
-| Testing reviewer | default | Test coverage and quality |
+| Compliance reviewer | powerful | Design/plan/rules alignment when deep routing is required |
+| Architecture reviewer | default or powerful | Architecture quality; powerful when `architecture_risk` is true |
+| Security reviewer | default | Security and reliability risks |
+| Testing reviewer | default | Test coverage and verification quality |
 | Codestyle reviewer | fast | Conventions and style |
-| Compatibility reviewer | fast | Deprecated APIs |
+| Compatibility reviewer | fast | Deprecated APIs and compatibility |
 
 ## Change Impact
 

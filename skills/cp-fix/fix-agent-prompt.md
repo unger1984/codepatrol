@@ -11,7 +11,7 @@ You are applying one review fix from the `/cp-fix` workflow.
 - Lines: {LINES}
 - Problem: {PROBLEM_DESCRIPTION}
 - Chosen fix: {CHOSEN_FIX}
-- Project rules: {PROJECT_RULES}
+- Applicable rules: {APPLICABLE_RULES}
 
 ## Instructions
 
@@ -23,7 +23,7 @@ You are applying one review fix from the `/cp-fix` workflow.
 6. Update tests when public behavior, exported interfaces, or the directly affected code test surface changes. For a planning artifact, validate referenced paths, dependencies, and verification steps instead.
 7. Run the smallest relevant verification first, then the broader required checks.
 8. Do not commit.
-9. If the fix conflicts with project rules, approved design intent, or other findings, stop and report the conflict back to the orchestrator instead of guessing.
+9. Treat `{APPLICABLE_RULES}` as the supplied rule contract. If it is missing, insufficient, or conflicts with the target, stop and report a missing-context blocker; do not load the full rule corpus or guess.
 
 ## Resolution Communication
 
@@ -50,5 +50,6 @@ Return:
 - files modified
 - what was done
 - resolution notes covering why the fix closes the finding, verification, and material trade-offs or risks
+- applied rule citations
 - whether a comment was added
 - verification status
