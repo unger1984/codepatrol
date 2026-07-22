@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate all generated platform skills
+        run: ./install.sh validate
       - name: Rebuild skills from templates
         run: ./install.sh build
 
