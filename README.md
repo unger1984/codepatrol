@@ -46,14 +46,14 @@ writing-plans                        executing-plans / subagent-driven
 - Approaches are verified against project conventions
 - Plans include documentation update steps
 - Plans are self-checked against project rules
-- Specialized two-pass code review (compliance + quality)
+- Mandatory local compliance triage; powerful compliance review only for an applicable design/plan, public API change, high-risk domain, or explicit-contract conflict
 
 ## Skills
 
 | Skill | Purpose |
 |-------|---------|
 | `using-codepatrol` | Enhances brainstorming and writing-plans with project awareness |
-| `/cp-review` | Two-pass code review: compliance (design + plan + rules) then quality (5 specialized reviewers) |
+| `/cp-review` | Mandatory local compliance triage, then quality after clean compliance; powerful compliance review only for applicable contracts or high-risk scopes |
 | `/cp-fix` | Process and fix review findings with incremental tracking |
 | `/cp-docs` | Create and maintain AI-facing project documentation |
 
@@ -271,6 +271,7 @@ skills/                # Generated output (do not edit)
 **Unix/macOS:**
 ```bash
 ./install.sh build   # Regenerate skills/ from templates
+./install.sh validate # Generate every platform in temporary directories and validate generated skill contracts
 ./install.sh claude  # Generate and install to ~/.claude/skills/
 ./install.sh codex   # Generate and install to ~/.codex/skills/
 ./install.sh cursor  # Generate and install to ~/.cursor/skills/

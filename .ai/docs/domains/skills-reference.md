@@ -80,7 +80,7 @@ Ad-hoc review reports (no task context): `.ai/reports/YYYY-MM-DD-HHMM-<scope>.re
 | Ad hoc save gate | cp-review, cp-fix | File not saved without explicit user approval |
 | Bounded revalidation | cp-fix | Revalidation only of impacted sections |
 | Model policy | cp-review, cp-fix | Logical subagent tiers with platform-specific model mapping |
-| Delegated planning self-checks | using-codepatrol | Artifact integrity on fast, plan feasibility on default, compliance on powerful |
+| Delegated planning self-checks | using-codepatrol | Artifact integrity on fast, plan feasibility on default, compliance on powerful using only the current artifact, applicable excerpts, and explicit requirements |
 
 ## Change Impact
 

@@ -51,7 +51,8 @@ If scope is ambiguous or empty, ask before reviewing.
 
 ### When in doubt — ask, do not guess
 
-If you cannot confidently determine scope, OR if the determined scope is empty — stop and ask with concrete options. Use `AskUserQuestion` if available.
+If you cannot confidently determine scope, OR if the determined scope is empty — stop and ask with
+concrete options. Use `AskUserQuestion` if available.
 
 Never guess scope. Never review 0 files silently. Wrong scope = wasted review.
 Do not run diffs, merge branches, or take any destructive action unless explicitly requested.
@@ -87,6 +88,30 @@ Check that the implementation matches:
 
 Catch missing required work, scope creep, or violations of explicit intent before deeper quality review starts.
 
+### Compliance Triage
+
+Before deciding whether to dispatch a deep reviewer:
+- collect the reviewed scope and extract only applicable rule excerpts, design/plan excerpts,
+  documented constraints, and accepted trade-offs
+- record the evaluated predicates locally in the review notes or report preparation
+- evaluate exactly these four predicates:
+  1. an approved design or plan is applicable
+  2. the scope changes a public API
+  3. the scope touches authentication, authorization, security, payments, personal data, or a
+     data migration
+  4. triage finds a potential conflict with an explicit requirement
+
+Set `requires_deep_compliance` to true when any predicate matches.
+
+If `requires_deep_compliance` is false:
+- compare every extracted requirement locally against the reviewed scope
+- record each compliance check and finding in the unified report
+- stop before quality with `NEEDS_CHANGES` when any compliance violation remains open
+
+If `requires_deep_compliance` is true:
+- dispatch one powerful compliance reviewer with the reviewed files and minimal prepared context only
+- do not send unrelated files or broad repository context
+
 ### Quality Pass
 
 Review engineering quality after compliance is acceptable:
@@ -98,12 +123,19 @@ Review engineering quality after compliance is acceptable:
 
 ## Execution Model
 
-- **simple scope** (≤5 reviewable files) — the orchestrator runs all passes directly
-- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch subagents at its discretion
-- **large scope** (>20 reviewable files) — the orchestrator must dispatch subagents:
-  - a dedicated compliance reviewer subagent
-  - quality-oriented reviewer agents by dimension (architecture, testing, security, conventions, compatibility)
-- Launch reviewers in parallel using Agent tool with `run_in_background=true`. Send all Agent calls in a single message for true parallelism. Use the `model` parameter to select the configured tier for each subagent.
+- compliance triage always runs locally first
+- `requires_deep_compliance` governs whether the powerful compliance reviewer is dispatched
+- file-count thresholds govern quality only
+- **simple scope** (≤5 reviewable files) — the orchestrator runs quality passes directly
+- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch quality subagents at its
+  discretion
+- **large scope** (>20 reviewable files) — the orchestrator must dispatch quality subagents by
+  dimension (architecture, testing, security, conventions, compatibility)
+- When `requires_deep_compliance` is true, dispatch the powerful compliance reviewer first with only the
+  reviewed files and minimal prepared context.
+- After compliance is acceptable, launch only the needed quality reviewers in parallel using Agent tool
+  with `run_in_background=true`. Send all Agent calls in a single message for true parallelism.
+- Use the `model` parameter to select the configured tier for each subagent.
 - all findings from subagents must be normalized into one report
 
 ## Subagent Model Policy
@@ -159,7 +191,7 @@ Starting tier by reviewer role:
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 
 These are CodePatrol execution tiers, not platform model-role names. Platform adapters map
-them to their available subagent and model-selection mechanisms; `default` here never refers
+these to their available subagent and model-selection mechanisms; `default` here never refers
 to a platform's `default` model role.
 
 The orchestrator must not:
@@ -182,7 +214,8 @@ When there is no task folder, you are in ad hoc mode.
 
 **STOP — Ad Hoc Save Gate (mandatory)**
 
-In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to save. This is a hard gate — no exceptions.
+In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to
+save. This is a hard gate — no exceptions.
 
 Flow:
 1. Generate the report content **in conversation only** (do not call Write/Edit/create file).
@@ -196,13 +229,18 @@ Violating this gate (saving before asking) is a critical workflow error.
 
 ### Filename rules
 
-Before generating the filename, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output in the HHMM part. Never hardcode or guess the time.
+Before generating the filename, get the current time by running a shell command: `date +%H%M`
+(Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output in the HHMM part.
+Never hardcode or guess the time.
 
-Save files using the Write tool — it creates parent directories automatically. Do not use shell commands (`mkdir`, `New-Item`) to create directories.
+Save files using the Write tool — it creates parent directories automatically. Do not use shell commands
+(`mkdir`, `New-Item`) to create directories.
 
 ## Report Format
 
-The first line of every report file is reserved for processing metadata (e.g. `<!-- cp-rules: processed YYYY-MM-DD -->`). When creating a new report, leave the first line empty. When editing an existing report, never modify or remove the first line.
+The first line of every report file is reserved for processing metadata (e.g.
+`<!-- cp-rules: processed YYYY-MM-DD -->`). When creating a new report, leave the first line empty.
+When editing an existing report, never modify or remove the first line.
 
 Structure the report as:
 
@@ -238,7 +276,8 @@ What was done well.
 Rules:
 - every issue MUST include a Fix field with a concrete solution — an issue without a Fix is useless
 - group by severity: Critical → Important → Minor
-- assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only Important/Minor quality findings, APPROVED if no issues
+- assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only
+  Important/Minor quality findings, APPROVED if no issues
 - deduplicate: if two reviewers found the same issue, keep one with both tags
 - severity disagreement between reviewers: take the highest
 - when aggregating subagent results, always preserve the finding explanation, Fix, and code snippets
@@ -266,7 +305,8 @@ the direct fix instead.
 
 ## Handoff
 
-After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it automatically — the user decides.
+After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it automatically — the user
+decides.
 
 ## Scope Detection Commands
 
@@ -275,8 +315,11 @@ After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it a
 When the user passes a path to `.ai/tasks/` (plan, design, or task folder):
 1. Read the referenced plan and/or design documents
 2. Check whether implementation code already exists (look for files mentioned in the plan)
-3. If **no implementation yet** — the scope is the documents themselves. Review the plan/design for completeness, consistency, and alignment with project rules. Do NOT run git diff or look for branch changes.
-4. If **implementation exists** — use the plan to determine which files to review, then proceed with normal scope detection for those files.
+3. If **no implementation yet** — the scope is the documents themselves. Review the plan/design for
+   completeness, consistency, and alignment with project rules. Do NOT run git diff or look for branch
+   changes.
+4. If **implementation exists** — use the plan to determine which files to review, then proceed with
+   normal scope detection for those files.
 
 ### Default (no args) — committed diff vs main:
 ```bash
@@ -284,14 +327,16 @@ MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^re
 git diff --name-only ${MAIN_BRANCH}...HEAD
 ```
 
-If diff is empty — ask the user for scope (offer: review specific files, review full project, or cancel). Use `AskUserQuestion` if available.
+If diff is empty — ask the user for scope (offer: review specific files, review full project, or cancel).
+Use `AskUserQuestion` if available.
 
 Uncommitted changes:
 ```bash
 (git diff --name-only HEAD; git ls-files --others --exclude-standard) | sort -u
 ```
 
-Entire project — detect primary language(s) from existing files, collect all source files. Exclude: build output, dependencies, generated files, lock files.
+Entire project — detect primary language(s) from existing files, collect all source files. Exclude:
+build output, dependencies, generated files, lock files.
 
 Specific paths — use as-is. If a directory — find all source files inside it.
 
@@ -311,7 +356,8 @@ When asking the user, use `AskUserQuestion` if available on the current platform
 ## Anti-patterns
 
 Do NOT:
-- **Report accepted constraints as defects** — if something is documented as an accepted trade-off, it is not a finding
+- **Report accepted constraints as defects** — if something is documented as an accepted trade-off, it is
+  not a finding
 - **Run quality pass before compliance pass** — compliance must come first, always
 - **Review 0 files silently** — if scope is empty, stop and ask
 - **Guess scope** — when ambiguous, ask with concrete options
@@ -320,4 +366,5 @@ Do NOT:
 
 ## Completion Criteria
 
-This skill is complete when the compliance pass and quality pass are both finished and the report is either presented inline or saved to file.
+This skill is complete when the compliance pass and quality pass are both finished and the report is
+whether presented inline or saved to file.

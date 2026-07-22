@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Two-pass code review: compliance first (design + plan + rules), then quality (architecture, security, testing, conventions, compatibility).
+Two-pass code review: mandatory local compliance triage first, then quality after clean compliance.
 
 ## When to read
 
@@ -35,12 +35,13 @@ Default (no args): committed diff vs main.
 
 ## Two-Pass Review Model
 
-### Pass 1 — Compliance (mandatory first)
+### Compliance Triage
 
-Checks adherence to:
-- Approved design (`design.md` from `.ai/tasks/`, if exists)
-- Implementation plan (`plan.md` from `.ai/tasks/`, if exists)
-- Project rules (`.claude/rules/`, `CLAUDE.md` / `AGENTS.md`)
+Triage collects reviewed files and changed public surfaces, then extracts only applicable rule excerpts, approved design/plan excerpts, documented constraints, and accepted trade-offs. It records the predicates and extracted contract in report context without broad unrelated discovery.
+
+`requires_deep_compliance` is true for an applicable approved design or plan, public API change, high-risk domain change (authentication, authorization, security, payments, personal data, or data migration), or a potential explicit-contract conflict. The powerful compliance reviewer receives only the minimal prepared context: reviewed files and applicable excerpts.
+
+Otherwise the orchestrator compares every extracted requirement locally, records each check and finding, and stops before quality with `NEEDS_CHANGES` for any violation.
 
 ### Pass 2 — Quality
 

@@ -36,11 +36,11 @@ flowchart TD
 
 ### Pass 1 — Compliance (mandatory first)
 
-Checks adherence to:
-- Approved design (`design.md` from `.ai/tasks/`, if exists)
-- Implementation plan (`plan.md` from `.ai/tasks/`, if exists)
-- Project rules (`.claude/rules/`, `CLAUDE.md` / `AGENTS.md`)
+Local triage collects reviewed files, changed public surfaces, and only applicable rule excerpts, approved design/plan excerpts, documented constraints, and accepted trade-offs. It records the evaluated predicates and extracted contract in the unified report context.
 
+`requires_deep_compliance` is true only when the scope has an applicable approved design or plan, changes a public API, touches authentication, authorization, security, payments, personal data, or a data migration, or potentially conflicts with an explicit requirement. The powerful compliance reviewer receives only this minimal prepared context.
+
+When false, the orchestrator compares every extracted requirement locally and records each check and finding. Any violation stops before quality with `NEEDS_CHANGES`.
 ### Pass 2 — Quality
 
 Five review dimensions, each with optional specialized reviewer:
@@ -55,12 +55,14 @@ Five review dimensions, each with optional specialized reviewer:
 
 ## Execution Models
 
-| Scope | Strategy |
-|-------|----------|
-| Simple (few files) | Orchestrator handles both passes |
-| Medium/Large | Dispatch specialized subagent reviewers in parallel (Claude) or sequentially (Codex) |
+Quality begins only after clean compliance. File-count thresholds apply to quality-reviewer dispatch only:
 
-Compliance pass always uses **powerful** tier (most critical check).
+| Scope | Quality strategy |
+|-------|------------------|
+| Simple (few files) | Orchestrator handles quality |
+| Medium/Large | Dispatch specialized quality reviewers in parallel (Claude) or sequentially (Codex) |
+
+Compliance routing is determined by triage, not scope size.
 
 ## Specialized Reviewers
 

@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate generated workflow skills
+        run: ./install.sh validate
+
       - name: Rebuild skills from templates
         run: ./install.sh build
 
@@ -23,7 +26,7 @@ jobs:
             exit 1
           fi
 
-      - name: Validate generated workflow skills
+      - name: Validate generated Claude skills
         run: |
           test -f skills/using-codepatrol/SKILL.md
           test -f skills/cp-docs/SKILL.md

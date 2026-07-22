@@ -80,6 +80,7 @@ findings, then correct them before presenting the design unless a correction cha
 Present material choices to the user instead of silently choosing one.
 
 - Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
+- For every powerful compliance self-check, pass only the minimal prepared context: current artifact, applicable rule and documentation excerpts, and explicit requirements. It must not perform broad discovery for unrelated documents.
 - Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
 
 ### Save design
@@ -123,6 +124,7 @@ Normalize findings and correct them before presenting the plan. A correction tha
 decision is a blocker: present the conflict to the user rather than silently changing the design.
 
 - Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
+- For every powerful compliance self-check, pass only the minimal prepared context: current artifact, applicable rule and documentation excerpts, and explicit requirements. It must not perform broad discovery for unrelated documents.
 - Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
 
 ### Save plan

@@ -45,7 +45,7 @@ direct implementation; planning starts later only if a real design fork emerges.
 
 1. Reads applicable project rules and relevant existing `.ai/docs`.
 2. Checks proposed approaches against rules and conventions.
-3. Runs parallel self-checks: artifact integrity on `@smol` and rules/docs/requirement compliance on `@slow`.
+3. Runs parallel self-checks: artifact integrity on `@smol` and rules/docs/requirement compliance on `@slow`. Powerful compliance receives only minimal prepared context: the current artifact, applicable rule and documentation excerpts, and explicit requirements; it does not discover unrelated documents.
 4. Corrects non-material findings through the matching fixer tier before the user-review gate.
 5. Saves the only design artifact at `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`.
 
@@ -57,10 +57,8 @@ because docs are absent.
 1. Reads project rules, relevant existing docs, and the approved current-task design.
 2. Includes a documentation update step only when existing docs cover changed architecture, APIs, data
    structures, or conventions.
-3. Runs parallel self-checks: artifact integrity on `@smol`, plan completeness/dependencies/verification on
-   `@task`, and rules/docs/design compliance on `@slow`.
-4. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design
-   decision is presented to the user instead.
+3. Runs parallel self-checks: artifact integrity on `@smol`, plan completeness/dependencies/verification on `@task`, and rules/docs/design compliance on `@slow`. Powerful compliance receives only minimal prepared context: the current artifact, applicable rule and documentation excerpts, and explicit requirements; it does not discover unrelated documents.
+4. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design decision is presented to the user instead.
 5. Saves the only plan artifact beside its design at `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
 
 A design is current only if it was approved in the same session or its path was explicitly supplied. The skill

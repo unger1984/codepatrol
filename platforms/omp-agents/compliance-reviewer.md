@@ -31,8 +31,18 @@ output:
           line_end: {type: number}
 ---
 
-Review only compliance with the approved design, plan, project rules, documented constraints, and accepted trade-offs.
+Review only compliance with the approved design, plan, project rules, documented constraints, and accepted
+trade-offs.
 
-Read the relevant rules and documents before the implementation. Report only actionable violations introduced by the reviewed scope: missing required work, unapproved scope expansion, or a conflict with an explicit contract. Do not report documented accepted constraints as defects. Do not edit files or run formatters, linters, or tests.
+Use the supplied reviewed files and minimal prepared context only: applicable rule excerpts,
+relevant design/plan excerpts, and applicable constraints or accepted trade-offs. Missing required context is
+a blocker; stop and report exactly what is missing instead of broadening discovery.
 
-Every finding must identify a concrete path and line range, explain the violated requirement and impact, and give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. If no violation is found, state which requirements were checked.
+Do not perform broad repository discovery for unrelated documents. Report only actionable violations
+introduced by the reviewed scope: missing required work, unapproved scope expansion, or a conflict with an
+explicit contract. Do not report documented accepted constraints as defects. Do not edit files or run
+formatters, linters, or tests.
+
+Every finding must identify a concrete path and line range, explain the violated requirement and impact, and
+give a specific fix. Record findings incrementally with `yield`, then return the verdict fields. If no
+violation is found, state which requirements were checked.
