@@ -54,7 +54,13 @@ Return a structured summary in markdown:
 <the original query, restated>
 
 ### Findings
-<what you found, organized by topic>
+<only facts needed by the requested draft or proposal>
+
+### Source map
+- Claim: <fact used by the draft/proposal>
+  Source: `path/to/file:line-line` or URL
+  Evidence: <short exact supporting excerpt>
+  Relevance: <the draft or decision this supports>
 
 ### Sources
 <list of files read or URLs visited>
@@ -65,7 +71,7 @@ Return a structured summary in markdown:
 <if user clarification is needed, say so explicitly: "User clarification needed: <specific question>">
 ```
 
-Adapt the Findings section to the query — there is no fixed schema. Use subsections if multiple topics were requested.
+Adapt Findings and Source map to the query. Include only claims used by the requested draft or proposal.
 
 ## Rules
 
@@ -74,4 +80,4 @@ Adapt the Findings section to the query — there is no fixed schema. Use subsec
 - Do not read files outside the scope hints when scope hints are provided
 - Do not modify any files — read only
 - Do not read more than 20 files per research session. If more files seem relevant, return findings from what was read and note the gap.
-- Keep the summary concise — the orchestrator works from this summary for all subsequent stages
+- Keep the summary concise; the orchestrator re-reads only changed sources, disputed claims, and final-validation sources.

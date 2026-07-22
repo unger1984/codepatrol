@@ -36,33 +36,46 @@ flowchart TD
 
 ### Pass 1 — Compliance (mandatory first)
 
-Local triage collects reviewed files, changed public surfaces, and only applicable rule excerpts, approved design/plan excerpts, documented constraints, and accepted trade-offs. It records the evaluated predicates and extracted contract in the unified report context.
+Local triage builds one cited `prepared_context` package before any compliance or quality work. That package contains:
 
-`requires_deep_compliance` is true only when the scope has an applicable approved design or plan, changes a public API, touches authentication, authorization, security, payments, personal data, or a data migration, or potentially conflicts with an explicit requirement. The powerful compliance reviewer receives only this minimal prepared context.
+- exact reviewed files, grouped scope manifest, changed public surfaces, and evaluated routing predicates
+- only applicable rule excerpts
+- only applicable design, plan, documentation, and accepted-trade-off excerpts
+- missing-context blockers
 
-When false, the orchestrator compares every extracted requirement locally and records each check and finding. Any violation stops before quality with `NEEDS_CHANGES`.
+Each excerpt carries a concrete citation and exact text. Reviewers get only the subset relevant to their pass; missing required context is a blocker, not permission to infer.
+
+`requires_deep_compliance` is true only when the scope has an applicable approved design or plan, changes a public API, touches a security-sensitive boundary, or potentially conflicts with an explicit requirement. `architecture_risk` is true for cross-package or cross-service boundaries, storage or data-model consistency, auth/authz boundaries, concurrency or background work, public API or SDK compatibility, or cross-cutting multi-module refactors.
+
+For normal scope the orchestrator prepares `prepared_context` inline. A single fast read-only context preparer is allowed only for review scope above 20 files or when the relevant rules, design, and docs come from multiple sources.
+
+When deep routing is not required, the orchestrator checks extracted requirements locally and stops before quality on any compliance violation.
+
 ### Pass 2 — Quality
 
-Five review dimensions, each with optional specialized reviewer:
+Five review dimensions remain mandatory, but large low-risk scope can route them adaptively:
 
 | Dimension | Reviewer file | Subagent tier |
 |-----------|--------------|---------------|
-| Architecture | `architecture-reviewer.md` | default |
+| Architecture | `architecture-reviewer.md` | default, or powerful when `architecture_risk` is true |
 | Security | `security-reviewer.md` | default |
 | Testing | `testing-reviewer.md` | default |
 | Conventions | `codestyle-reviewer.md` | fast |
 | Compatibility | `compatibility-reviewer.md` | fast |
 
+For large low-risk scope, one grouped `quality-reviewer` may cover architecture, security/reliability, and testing, and one grouped `quick-reviewer` may cover conventions and compatibility. Grouped reviewers still owe an explicit verdict for every assigned dimension. Security-sensitive scope still requires an independent security quality review; deep compliance never substitutes for it.
+
 ## Execution Models
 
-Quality begins only after clean compliance. File-count thresholds apply to quality-reviewer dispatch only:
+Quality begins only after clean compliance.
 
 | Scope | Quality strategy |
 |-------|------------------|
-| Simple (few files) | Orchestrator handles quality |
-| Medium/Large | Dispatch specialized quality reviewers in parallel (Claude) or sequentially (Codex) |
-
-Compliance routing is determined by triage, not scope size.
+| Simple (few files) | Orchestrator handles quality directly |
+| Medium (6–20 files) | Orchestrator may dispatch quality subagents selectively |
+| Large low-risk (>20 files) | Adaptive grouping: `quality-reviewer` + `quick-reviewer` |
+| Large with `architecture_risk` | Separate powerful architecture reviewer plus other assigned reviewers |
+| Large security-sensitive | Independent security reviewer in addition to other assigned reviewers |
 
 ## Specialized Reviewers
 
@@ -157,13 +170,13 @@ This is **not batched** — each finding updates the report as it's resolved.
 
 ### Fix Agent
 
-For subagent-dispatched fixes, the fix agent receives:
-- Issue title, severity, finding type
-- File path, problem description
-- Chosen fix approach
-- Project rules
+For subagent-dispatched fixes, the fix agent receives one finding, the chosen option from its Fix Decision Brief, and only the cited applicable rules for that finding.
 
-The agent reads the target file, applies the fix, adds why-comments for non-trivial changes, updates tests if needed, and runs verification. Does not commit.
+`manual per item` is a hard gate: after preparing the brief, `/cp-fix` must not dispatch a fixer, edit files, run fix commands, or mutate report status until the user chooses an option, skips, or stops for that finding.
+
+`auto safe fixes` are allowed only for one isolated simple repair with one safe option, no observable behavior/public API/schema/config change, and trivial rollback. Standard, complex, ambiguous, or high-risk findings require the full brief and explicit user choice.
+
+The agent reads the target file, applies the selected fix, updates tests if needed, and runs verification. Does not commit.
 
 ### Bounded Revalidation
 

@@ -78,15 +78,23 @@ Before the standard Superpowers user-review gate, run independent read-only chec
 integrity and its compliance with project rules, documentation, and explicit user requirements. Normalize the
 findings, then correct them before presenting the design unless a correction changes a material design choice.
 Present material choices to the user instead of silently choosing one.
+### Prepared planning context
+
+Prepare one cited context package before self-check dispatch: artifact path and type, explicit requirements,
+applicable rule and documentation excerpts, approved-design excerpts for a plan, and missing-context blockers.
+An excerpt includes its `path:line` citation, exact text, and relevance. For broad context with multiple source
+sets, one fast read-only preparer may assemble this package; otherwise prepare it inline. Do not merge the
+independent checks. Give artifact integrity only artifact structure, links, and placeholder inputs; give plan and
+compliance checks only their relevant cited subsets. A missing required source is a blocker, never a reason for
+broad discovery or an assumption.
 
 - Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
-- For every powerful compliance self-check, pass only the minimal prepared context: current artifact, applicable rule and documentation excerpts, and explicit requirements. It must not perform broad discovery for unrelated documents.
+- Pass the prepared planning context: artifact path/type, explicit requirements, cited applicable rule/documentation excerpts, approved-design excerpts for plans, and missing-context blockers. Give artifact integrity only structure/link/placeholder inputs; give plan and compliance checks only their relevant cited subsets. Missing context blocks the check; no check performs broad discovery.
 - Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
 
 ### Save design
 
-Save the design only to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`. This location overrides the standard
-Superpowers spec path; never write a second copy to a default Superpowers directory.
+Save the design only to `.ai/tasks/YYYY-MM-DD-HHMM-slug/design.md`.
 
 Create the task folder only when saving the first artifact. Before generating its timestamp, run `date +%H%M`
 on Unix/macOS or `Get-Date -Format 'HHmm'` on PowerShell. Save with the Write tool; do not create directories
@@ -121,16 +129,16 @@ After the standard Superpowers plan review, run independent read-only checks for
 - compliance with project rules, relevant documentation, and the approved design.
 
 Normalize findings and correct them before presenting the plan. A correction that changes an approved design
-decision is a blocker: present the conflict to the user rather than silently changing the design.
+decision is a blocker: present the conflict to the user instead of silently changing the design. Use the prepared
+planning context described above for every self-check.
 
 - Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
-- For every powerful compliance self-check, pass only the minimal prepared context: current artifact, applicable rule and documentation excerpts, and explicit requirements. It must not perform broad discovery for unrelated documents.
+- Pass the prepared planning context: artifact path/type, explicit requirements, cited applicable rule/documentation excerpts, approved-design excerpts for plans, and missing-context blockers. Give artifact integrity only structure/link/placeholder inputs; give plan and compliance checks only their relevant cited subsets. Missing context blocks the check; no check performs broad discovery.
 - Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
 
 ### Save plan
 
-Save the plan only to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`, beside the current task's design. Never write
-a second copy to a default Superpowers plan directory.
+Save the plan only to `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`, beside the current task's design.
 
 A design is current only when it was approved in this session or the user explicitly supplied its path. If the
 user asks for a plan based on an existing design but its path is not known, ask for that path. Otherwise create

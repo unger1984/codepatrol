@@ -39,6 +39,8 @@ Before starting fixes, you MUST create {{PROGRESS_TOOL}} items **only for `open`
 
 Mark each as `in_progress` when working on it and `completed` when bounded revalidation confirms the fix.
 
+Create and update {{PROGRESS_TOOL}} items in the same tool batch as the first read, fix dispatch, report edit, or verification when the platform supports batching. Otherwise update them with the nearest real action; never spend a separate turn only on tracking.
+
 ### Parallelization approval
 
 After creating the full task list, if some findings are independent and can be fixed in parallel:
@@ -50,7 +52,7 @@ Sequential processing is the default. Parallel processing requires user confirma
 
 ## Context Gathering
 
-Before dispatching fix agents, read project rules from `{{RULES_SOURCE}}`. Pass the rules summary as `{PROJECT_RULES}` to each fix agent so it can respect codestyle, testing, and naming conventions.
+Before dispatching fix agents, read project rules from `{{RULES_SOURCE}}`. Extract only the rule excerpts that apply to the current finding and pass them as cited `{APPLICABLE_RULES}` so the fixer receives the relevant constraints without the full project-rules payload.
 
 ## Subagent Model Policy
 
@@ -81,17 +83,33 @@ Before starting fixes, determine:
 
 **Processing style:**
 - manual per item
-- auto simple, ask-user for complex cases
+- auto safe fixes, ask before consequential or ambiguous fixes
 - custom user-defined policy
 
 If policy is not already clear, ask the user.
 
+## Fix Decision Brief
+
+Before any fix decision, prepare a plain-language brief for the current finding that includes:
+- the problem and what triggered it
+- the recommended fix
+- any materially different alternative fixes
+- for each option: what changes, benefits, drawbacks or risks, affected files, and verification
+
+Use a concise brief only when the finding qualifies for an automatic safe fix. Use the full brief and require an explicit user choice for any standard or complex finding, any ambiguous fix, any unclear root cause or unclear verification, and any finding involving security, auth, payments, PII, migrations, public APIs, dependency upgrades, data deletion, performance, or availability.
+
+## Manual Per Item Gate
+
+When the processing style is `manual per item`, stop on each finding after preparing the Fix Decision Brief. Do not dispatch a fixer, edit files, run a fix command, or mutate finding status or resolution fields until the user explicitly chooses one option, skips the finding, or stops the workflow for that finding.
+
 ## Execution Rules
 
-- process findings in report order (see Parallelization approval for exceptions)
+- dispatch exactly one finding per fixer
 - update report tracking fields after each fix
-- allow alternative fixes when there are real trade-offs: auto-fix when intent is clear, ask the user when multiple valid fixes exist
 - run bounded revalidation before closing each finding
+- preserve alternative fixes when there are real trade-offs: auto-apply only the single safe option, ask the user when multiple valid fixes or materially different consequences exist
+
+An automatic safe fix is allowed only when there is one isolated simple repair, one safe option, no observable behavior, public API, schema, or config change, and rollback is trivial.
 
 ### Final Verification Pass
 

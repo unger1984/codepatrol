@@ -43,10 +43,12 @@ writing-plans                        executing-plans / subagent-driven
 
 **What CodePatrol adds:**
 - Project rules and documentation are read **before** design and planning
-- Approaches are verified against project conventions
-- Plans include documentation update steps
-- Plans are self-checked against project rules
-- Mandatory local compliance triage; powerful compliance review only for an applicable design/plan, public API change, high-risk domain, or explicit-contract conflict
+- Planning self-checks use a cited prepared context: artifact path/type, explicit requirements, only applicable rule/doc excerpts, approved-design excerpts for plans, and missing-context blockers
+- Plans include documentation update steps only when existing docs actually need them
+- `/cp-review` keeps compliance first, uses adaptive quality routing for large low-risk scope, and preserves independent security and architecture-risk review
+- `/cp-fix` uses a Manual Per Item Gate plus `auto safe fixes` for one isolated safe option only
+- Research-heavy docs/rules workflows use source maps (`path:line`, exact excerpt, relevance), and progress tracking is batched with the nearest real action when the platform supports it
+- OMP support keeps duplicated output-schema text intentionally; CodePatrol does **not** add a YAML frontmatter include/preprocessor for that case
 
 ## Skills
 
@@ -85,19 +87,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 claude
 ```
 
-**From source (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh claude
-```
-
-**From source (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 claude
-```
 
 ### Codex CLI
 
@@ -111,19 +100,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 codex
 ```
 
-**From source (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh codex
-```
-
-**From source (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 codex
-```
 
 ### Cursor
 
@@ -137,19 +113,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 cursor
 ```
 
-**From source (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh cursor
-```
-
-**From source (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 cursor
-```
 
 ### OpenCode
 
@@ -163,19 +126,6 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 opencode
 ```
 
-**From source (Unix/macOS):**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh opencode
-```
-
-**From source (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 opencode
-```
 
 ### Oh My Pi
 
@@ -189,23 +139,10 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
 ```
 
-**From source:**
-```bash
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-./install.sh omp
-```
-
-**From source (Windows):**
-```powershell
-git clone https://github.com/unger1984/codepatrol.git
-cd codepatrol
-.\install.ps1 omp
-```
 
 The installer adds skills to `~/.omp/agent/skills` and eight CodePatrol agents to
 `~/.omp/agent/agents`: three reviewers, three fixers, and two planning self-checkers. They resolve
-`@slow`, `@task`, and `@smol` through your `modelRoles`.
+`@slow`, `@task`, and `@smol` through your `modelRoles`; OMP output schemas remain duplicated on purpose because CodePatrol does not add a YAML frontmatter include/preprocessor for them.
 
 ## Usage
 
@@ -251,11 +188,11 @@ Just describe what you want to build. CodePatrol enhances brainstorming automati
 
 ```
 templates/             # Source templates (edit these)
-├── _shared/           # Shared partials
+├── _shared/           # Shared partials: reviewer/fixer dispatch, planning self-checks, research contract
 ├── cp-review/         # Code review skill + reviewer prompts
 ├── cp-fix/            # Fix skill + fix agent prompt
 ├── cp-docs/           # Documentation skill
-└── using-codepatrol/  # Enhancement definitions
+└── using-codepatrol/  # Planning enhancements
 
 platforms/             # Platform-specific env files
 ├── claude.env
@@ -266,34 +203,24 @@ platforms/             # Platform-specific env files
 skills/                # Generated output (do not edit)
 ```
 
-### Build
+### Developer validation
 
-**Unix/macOS:**
+Local generation commands are for repository development only. End users install through the remote commands above.
+
 ```bash
-./install.sh build   # Regenerate skills/ from templates
-./install.sh validate # Generate every platform in temporary directories and validate generated skill contracts
-./install.sh claude  # Generate and install to ~/.claude/skills/
-./install.sh codex   # Generate and install to ~/.codex/skills/
-./install.sh cursor  # Generate and install to ~/.cursor/skills/
-./install.sh opencode # Generate and install to ~/.config/opencode/skills/
+./install.sh build      # Regenerate Claude skills/ from templates
+./install.sh validate   # Generate every platform in temporary directories and validate contracts
 ```
 
-**Windows (PowerShell):**
-```powershell
-.\install.ps1 build   # Regenerate skills/ from templates
-.\install.ps1 claude  # Generate and install to ~/.claude/skills/
-.\install.ps1 codex   # Generate and install to ~/.codex/skills/
-.\install.ps1 cursor  # Generate and install to ~/.cursor/skills/
-.\install.ps1 opencode # Generate and install to ~/.config/opencode/skills/
-```
+`install.ps1` is maintained for remote Windows installation; local development validation runs through the POSIX build script.
 
 ### Template rules
 
 - Templates must be universal — no hardcoded languages or frameworks
 - Platform-specific values go in `platforms/*.env`, referenced as `{{VAR_NAME}}`
-- Shared content goes in `templates/_shared/`, referenced as `{{@include:path}}`
-- Platform variants use `{{@platform-include:name}}` → `_shared/{name}-{platform}.md`
-- Skill content in English; LLM adapts to user's language at runtime
+- Shared content goes in `templates/_shared/`, referenced as `{{@include:path}}` or `{{@platform-include:name}}`
+- Skill content stays in English; runtime adapts to the user's language
+- Do not add a YAML frontmatter include/preprocessor for duplicated OMP agent output-schema text; keep that duplication explicit
 
 ## CI/CD
 

@@ -1,9 +1,5 @@
-- When `requires_deep_compliance` is true, dispatch `compliance-reviewer` first with only the reviewed
-  files and minimal prepared context.
-- After compliance is acceptable, use `Task` with these registered agents: `quality-reviewer` for
-  architecture/security/testing and `quick-reviewer` for conventions/compatibility.
-- Send the needed quality passes in one `tasks[]` batch when parallel execution is allowed.
-- The agent definitions select `@task` and `@smol`; do not override their models. These roles resolve
-  through the user's `modelRoles` configuration.
-- If a required agent is unavailable or disabled, stop with a blocker. Never silently substitute the
-  built-in `reviewer` or an unspecified task agent.
+- When dispatching subagents, use `Task` with these registered agents: `compliance-reviewer` for compliance, `architecture-reviewer` for powerful architecture review, `quality-reviewer` for grouped architecture/security/testing quality, and `quick-reviewer` for conventions/compatibility.
+- Use those agents only for the reviewer assignments already decided by the shared routing contract. Pass each agent only its assigned `prepared_context` excerpts, scope manifest, assigned dimensions, and blockers.
+- Dispatch `compliance-reviewer` before quality whenever triage sets `requires_deep_compliance` to true. Dispatch independent quality reviewers only after compliance is clean, and preserve explicit verdict coverage for every assigned dimension.
+- The agent definitions select `@slow`, `@task`, and `@smol`; do not override their models. These roles resolve through the user's `modelRoles` configuration.
+- If a required agent is unavailable or disabled, stop with a blocker. Never silently substitute the built-in `reviewer` or an unspecified task agent.

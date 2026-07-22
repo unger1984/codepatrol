@@ -1,4 +1,1 @@
-- When `requires_deep_compliance` is true, dispatch the powerful compliance reviewer first with only the
-  reviewed files and minimal prepared context.
-- After compliance is acceptable, define quality reviewers as `.md` agents with YAML frontmatter.
-- Use `background: true` for independent quality passes and set each reviewer's configured model tier.
+- Define reviewers as `.md` agents with YAML frontmatter and dispatch only the reviewer assignments already decided by the shared routing contract. Pass each reviewer only its assigned `prepared_context` excerpts, scope manifest, and blockers. Use `background: true` only for independent quality passes after compliance is clean, and set each reviewer's configured model tier, including a powerful `architecture-reviewer` when common routing requires it.

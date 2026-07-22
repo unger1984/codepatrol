@@ -13,6 +13,8 @@ Before dispatching reviewers, you MUST create TodoWrite items for all review pas
 Mark each as `in_progress` when dispatching and `completed` when results are collected.
 This provides visual progress to the user.
 
+Create and update TodoWrite items in the same tool batch as the first scope read, review dispatch, or report action when the platform supports batching. Otherwise update them with the nearest real action; never spend a separate turn only on tracking.
+
 Required items:
 - [ ] Compliance pass
 - [ ] Architecture review
@@ -51,8 +53,7 @@ If scope is ambiguous or empty, ask before reviewing.
 
 ### When in doubt — ask, do not guess
 
-If you cannot confidently determine scope, OR if the determined scope is empty — stop and ask with
-concrete options. Use `AskUserQuestion` if available.
+If you cannot confidently determine scope, OR if the determined scope is empty — stop and ask with concrete options. Use `AskUserQuestion` if available.
 
 Never guess scope. Never review 0 files silently. Wrong scope = wasted review.
 Do not run diffs, merge branches, or take any destructive action unless explicitly requested.
@@ -72,6 +73,32 @@ For the compliance pass, mandatory sources are:
 - current plan (if exists in `.ai/tasks/`)
 - documented constraints and accepted trade-offs
 
+### Prepared Context
+
+Before the compliance pass or any quality dispatch, prepare one cited `prepared_context` package.
+
+`prepared_context` must contain:
+- `review_scope`: exact reviewed files, grouped scope manifest, changed public surfaces, and the routing predicates evaluated for this review
+- `applicable_rules`: only relevant rule excerpts with source citations
+- `applicable_constraints`: only relevant design, plan, and documentation excerpts plus accepted trade-offs, each with source citations
+- `missing_context_blockers`: required context that could not be located or cited
+
+Each excerpt must carry a concrete source citation (`path:line` or the platform's equivalent). Reviewers receive only the scope manifest, excerpts, and blockers relevant to their assigned pass. If required context is missing, return a blocker instead of assuming.
+
+Prepare `prepared_context` inline for normal scope. You may dispatch one fast read-only context preparer only when the review scope exceeds 20 files or the applicable context must be assembled from multiple rule, design, or documentation sources. The preparer must return cited excerpts and blockers only; it must not review code, widen scope, or replace compliance or quality judgment.
+
+### Compliance Triage
+
+Before the compliance pass:
+1. Collect reviewed files and changed public surfaces.
+2. Build the cited `prepared_context` package.
+3. Mark `security_sensitive_scope` true when the scope touches authentication, authorization, secrets, payments, personal data, or another explicit security boundary.
+4. Mark `architecture_risk` true when any of these predicates apply: cross-package or cross-service boundary, storage or data-model consistency, authentication or authorization boundary, concurrency or background work, public API or SDK compatibility, or a cross-cutting multi-module refactor.
+5. Set `requires_deep_compliance` to true if an applicable approved design or plan exists, the scope changes a public API, `security_sensitive_scope` is true, or triage finds a potential conflict with an explicit requirement.
+6. Record the evaluated predicates, cited excerpts, and any blockers in the unified report context.
+
+No broad discovery of unrelated documents occurs after triage.
+
 ## Review Order
 
 The order is mandatory:
@@ -80,62 +107,30 @@ The order is mandatory:
 
 ### Compliance Pass
 
-Check that the implementation matches:
-- approved design (if exists)
-- current plan (if exists)
-- project rules
-- documented constraints
-
-Catch missing required work, scope creep, or violations of explicit intent before deeper quality review starts.
-
-### Compliance Triage
-
-Before deciding whether to dispatch a deep reviewer:
-- collect the reviewed scope and extract only applicable rule excerpts, design/plan excerpts,
-  documented constraints, and accepted trade-offs
-- record the evaluated predicates locally in the review notes or report preparation
-- evaluate exactly these four predicates:
-  1. an approved design or plan is applicable
-  2. the scope changes a public API
-  3. the scope touches authentication, authorization, security, payments, personal data, or a
-     data migration
-  4. triage finds a potential conflict with an explicit requirement
-
-Set `requires_deep_compliance` to true when any predicate matches.
-
-If `requires_deep_compliance` is false:
-- compare every extracted requirement locally against the reviewed scope
-- record each compliance check and finding in the unified report
-- stop before quality with `NEEDS_CHANGES` when any compliance violation remains open
-
-If `requires_deep_compliance` is true:
-- dispatch one powerful compliance reviewer with the reviewed files and minimal prepared context only
-- do not send unrelated files or broad repository context
+- If `requires_deep_compliance` is true, dispatch the powerful compliance reviewer before quality.
+- If false, compare every extracted requirement locally against the reviewed scope, record each checked requirement and finding in the unified report, and stop before quality with `NEEDS_CHANGES` for any compliance violation.
 
 ### Quality Pass
 
-Review engineering quality after compliance is acceptable:
+Review engineering quality after compliance is acceptable. Preserve all five dimensions and record an explicit verdict for each one:
 - architecture and maintainability
-- conventions and local code quality
-- testing and verification adequacy
 - security and reliability risks
+- testing and verification adequacy
+- conventions and local code quality
 - compatibility and deprecated API usage
+
+For every dispatched reviewer, pass only the assigned `prepared_context` excerpts, scope manifest, and blockers. Missing required context is a blocker, not permission to guess.
 
 ## Execution Model
 
-- compliance triage always runs locally first
-- `requires_deep_compliance` governs whether the powerful compliance reviewer is dispatched
-- file-count thresholds govern quality only
-- **simple scope** (≤5 reviewable files) — the orchestrator runs quality passes directly
-- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch quality subagents at its
-  discretion
-- **large scope** (>20 reviewable files) — the orchestrator must dispatch quality subagents by
-  dimension (architecture, testing, security, conventions, compatibility)
-- When `requires_deep_compliance` is true, dispatch the powerful compliance reviewer first with only the
-  reviewed files and minimal prepared context.
-- After compliance is acceptable, launch only the needed quality reviewers in parallel using Agent tool
-  with `run_in_background=true`. Send all Agent calls in a single message for true parallelism.
-- Use the `model` parameter to select the configured tier for each subagent.
+- **simple scope** (≤5 reviewable files) — the orchestrator runs compliance directly after triage and may run quality directly when compliance is clean
+- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch quality subagents at its discretion after compliance is clean
+- **large scope** (>20 reviewable files) — the orchestrator must dispatch quality-oriented reviewer agents after compliance is clean
+  - for large low-risk scope (`architecture_risk` false and `security_sensitive_scope` false), use adaptive grouping: one `quality-reviewer` assignment may cover architecture, security/reliability, and testing together, and one `quick-reviewer` assignment may cover conventions and compatibility together
+  - if `architecture_risk` is true, dispatch a separate powerful architecture reviewer for the architecture dimension
+  - if `security_sensitive_scope` is true, dispatch an independent security review; do not treat deep compliance as a substitute for quality security review
+  - grouped reviewers must still return an explicit verdict for every dimension they were assigned
+- Use Agent only for the reviewer assignments already decided by the shared routing contract. Pass each reviewer only its assigned `prepared_context` excerpts, scope manifest, and blockers. Use `run_in_background=true` only for independent quality reviewers after compliance is clean, and use the `model` parameter for the configured tier, including a powerful `architecture-reviewer` when common routing requires it.
 - all findings from subagents must be normalized into one report
 
 ## Subagent Model Policy
@@ -187,17 +182,23 @@ Do not retry a subagent at the same tier. Do not wait indefinitely for a subagen
 
 Starting tier by reviewer role:
 - **Conventions / Compatibility** → fast
-- **Architecture / Security / Testing** → default
+- **Testing / Security / grouped low-risk quality** → default
+- **Architecture** → powerful when `architecture_risk` is true, otherwise default
 - **Compliance** → powerful (most critical pass — design/plan/rules alignment)
 
 These are CodePatrol execution tiers, not platform model-role names. Platform adapters map
-these to their available subagent and model-selection mechanisms; `default` here never refers
+them to their available subagent and model-selection mechanisms; `default` here never refers
 to a platform's `default` model role.
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
 - run a broad noisy review without proper scoping
 - treat every deviation from plan/design as an error without evaluating context
+- skip local compliance when deep routing is false
+- send unrelated discovery work to a deep reviewer
+- dispatch quality review after an open compliance violation
+- invent missing context instead of returning a blocker
+- conflate quality security review with deep compliance
 
 ## Reports
 
@@ -214,8 +215,7 @@ When there is no task folder, you are in ad hoc mode.
 
 **STOP — Ad Hoc Save Gate (mandatory)**
 
-In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to
-save. This is a hard gate — no exceptions.
+In ad hoc mode you MUST NOT write, create, or save any report file until the user explicitly chooses to save. This is a hard gate — no exceptions.
 
 Flow:
 1. Generate the report content **in conversation only** (do not call Write/Edit/create file).
@@ -229,18 +229,13 @@ Violating this gate (saving before asking) is a critical workflow error.
 
 ### Filename rules
 
-Before generating the filename, get the current time by running a shell command: `date +%H%M`
-(Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output in the HHMM part.
-Never hardcode or guess the time.
+Before generating the filename, get the current time by running a shell command: `date +%H%M` (Unix/macOS) or `Get-Date -Format 'HHmm'` (PowerShell/Windows). Use the real output in the HHMM part. Never hardcode or guess the time.
 
-Save files using the Write tool — it creates parent directories automatically. Do not use shell commands
-(`mkdir`, `New-Item`) to create directories.
+Save files using the Write tool — it creates parent directories automatically. Do not use shell commands (`mkdir`, `New-Item`) to create directories.
 
 ## Report Format
 
-The first line of every report file is reserved for processing metadata (e.g.
-`<!-- cp-rules: processed YYYY-MM-DD -->`). When creating a new report, leave the first line empty.
-When editing an existing report, never modify or remove the first line.
+The first line of every report file is reserved for processing metadata (e.g. `<!-- cp-rules: processed YYYY-MM-DD -->`). When creating a new report, leave the first line empty. When editing an existing report, never modify or remove the first line.
 
 Structure the report as:
 
@@ -276,8 +271,7 @@ What was done well.
 Rules:
 - every issue MUST include a Fix field with a concrete solution — an issue without a Fix is useless
 - group by severity: Critical → Important → Minor
-- assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only
-  Important/Minor quality findings, APPROVED if no issues
+- assessment: NEEDS_CHANGES if any Critical or open compliance findings, APPROVED_WITH_NOTES if only Important/Minor quality findings, APPROVED if no issues
 - deduplicate: if two reviewers found the same issue, keep one with both tags
 - severity disagreement between reviewers: take the highest
 - when aggregating subagent results, always preserve the finding explanation, Fix, and code snippets
@@ -305,8 +299,7 @@ the direct fix instead.
 
 ## Handoff
 
-After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it automatically — the user
-decides.
+After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it automatically — the user decides.
 
 ## Scope Detection Commands
 
@@ -315,11 +308,8 @@ decides.
 When the user passes a path to `.ai/tasks/` (plan, design, or task folder):
 1. Read the referenced plan and/or design documents
 2. Check whether implementation code already exists (look for files mentioned in the plan)
-3. If **no implementation yet** — the scope is the documents themselves. Review the plan/design for
-   completeness, consistency, and alignment with project rules. Do NOT run git diff or look for branch
-   changes.
-4. If **implementation exists** — use the plan to determine which files to review, then proceed with
-   normal scope detection for those files.
+3. If **no implementation yet** — the scope is the documents themselves. Review the plan/design for completeness, consistency, and alignment with project rules. Do NOT run git diff or look for branch changes.
+4. If **implementation exists** — use the plan to determine which files to review, then proceed with normal scope detection for those files.
 
 ### Default (no args) — committed diff vs main:
 ```bash
@@ -327,16 +317,14 @@ MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^re
 git diff --name-only ${MAIN_BRANCH}...HEAD
 ```
 
-If diff is empty — ask the user for scope (offer: review specific files, review full project, or cancel).
-Use `AskUserQuestion` if available.
+If diff is empty — ask the user for scope (offer: review specific files, review full project, or cancel). Use `AskUserQuestion` if available.
 
 Uncommitted changes:
 ```bash
 (git diff --name-only HEAD; git ls-files --others --exclude-standard) | sort -u
 ```
 
-Entire project — detect primary language(s) from existing files, collect all source files. Exclude:
-build output, dependencies, generated files, lock files.
+Entire project — detect primary language(s) from existing files, collect all source files. Exclude: build output, dependencies, generated files, lock files.
 
 Specific paths — use as-is. If a directory — find all source files inside it.
 
@@ -356,8 +344,7 @@ When asking the user, use `AskUserQuestion` if available on the current platform
 ## Anti-patterns
 
 Do NOT:
-- **Report accepted constraints as defects** — if something is documented as an accepted trade-off, it is
-  not a finding
+- **Report accepted constraints as defects** — if something is documented as an accepted trade-off, it is not a finding
 - **Run quality pass before compliance pass** — compliance must come first, always
 - **Review 0 files silently** — if scope is empty, stop and ask
 - **Guess scope** — when ambiguous, ask with concrete options
@@ -366,5 +353,4 @@ Do NOT:
 
 ## Completion Criteria
 
-This skill is complete when the compliance pass and quality pass are both finished and the report is
-whether presented inline or saved to file.
+This skill is complete when the compliance pass and quality pass are both finished and the report is either presented inline or saved to file.

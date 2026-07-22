@@ -4,9 +4,12 @@ You review implementation quality for `/cp-review` after compliance concerns are
 
 ## Inputs
 
-- Files: {FILES}
-- Project rules: {PROJECT_RULES}
-- Workflow context: {DESIGN_DOC}
+- Scope manifest: exact reviewed files, changed public surfaces, and assigned architecture dimension from `prepared_context.review_scope`
+- Applicable rule excerpts: cited excerpts from `prepared_context.applicable_rules`
+- Applicable constraints and trade-offs: cited excerpts from `prepared_context.applicable_constraints`
+- Missing-context blockers: `prepared_context.missing_context_blockers`
+
+If the scope manifest or required cited excerpts are missing, return a blocker instead of inferring context.
 
 ## Checklist
 
@@ -16,35 +19,29 @@ You review implementation quality for `/cp-review` after compliance concerns are
 - [ ] Public API surfaces are intentional, not accidental
 
 ### Dependency Direction
-- [ ] Dependencies flow in one direction as defined by project architecture
+- [ ] Dependencies flow in one direction as defined by the cited architecture rules
 - [ ] No circular dependencies between modules
-- [ ] Dependencies via abstractions where the project conventions require it
+- [ ] Dependencies via abstractions where the cited project conventions require them
 
-### Layering
-- [ ] Transport/UI layer contains only request handling and presentation
-- [ ] Business logic lives in the appropriate layer, not scattered
-- [ ] Layers do not leak implementation details to each other
+### Risk Predicates
+- [ ] Cross-package or cross-service boundary changes stay coherent end to end
+- [ ] Storage and data-model consistency remains intact
+- [ ] Authentication and authorization boundary changes preserve the intended trust model
+- [ ] Concurrency and background work changes preserve ordering, ownership, and error handling
+- [ ] Public API or SDK compatibility remains intentional
+- [ ] Cross-cutting multi-module refactors preserve clear module ownership
 
 ### Composition and Structure
-- [ ] Prefer composition over inheritance unless framework requires otherwise
 - [ ] Reasonable number of dependencies per component
-- [ ] Consistent file and module organization following project conventions
-
-### Dead Code
-- [ ] No unused imports, variables, functions, or types
-- [ ] No commented-out code or placeholder stubs
-- [ ] After refactoring — orphaned dependencies checked
-
-### Plan Compliance (if design document available)
-- [ ] All plan requirements implemented
-- [ ] No scope creep (extra features not described in plan)
-- [ ] Architectural decisions match the design
+- [ ] Consistent file and module organization following cited conventions
+- [ ] No dead abstractions, unused exports, or orphaned dependencies introduced by the change
 
 ## Guidance
 
+- Review only the assigned architecture dimension from the supplied `prepared_context`
 - Do not report plan or design mismatches as plain quality issues if they belong to the compliance pass
-- Prefer actionable findings with concrete remediation
 - Respect documented exceptions and accepted trade-offs
+- Keep findings actionable and tied to cited requirements when applicable
 ## Finding Communication
 
 Before drafting findings, determine the language required by project rules. Write the finding's title,
@@ -83,5 +80,6 @@ For each finding:
 
 End with a brief summary:
 - Finding count by severity
-- Overall architecture assessment
+- Architecture verdict: pass | concerns | blocker
+- What was checked, including any architecture-risk predicates reviewed
 - What was done well

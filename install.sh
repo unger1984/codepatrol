@@ -213,8 +213,12 @@ validate_generated_markdown() {
         echo "Error: missing requires_deep_compliance marker in $platform cp-review/SKILL.md"
         exit 1
     }
-    grep -Fq 'minimal prepared context' "$output_dir/cp-review/SKILL.md" || {
-        echo "Error: missing minimal prepared context marker in $platform cp-review/SKILL.md"
+    grep -Fq 'prepared_context' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing prepared_context marker in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'architecture_risk' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing architecture_risk marker in $platform cp-review/SKILL.md"
         exit 1
     }
     grep -Fq 'compare every extracted requirement locally' "$output_dir/cp-review/SKILL.md" || {
@@ -225,8 +229,28 @@ validate_generated_markdown() {
         echo "Error: missing compliance gate marker in $platform cp-review/SKILL.md"
         exit 1
     }
-    grep -Fq 'minimal prepared context' "$output_dir/using-codepatrol/SKILL.md" || {
-        echo "Error: missing minimal prepared context marker in $platform using-codepatrol/SKILL.md"
+    grep -Fq 'explicit verdict for every dimension' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing grouped verdict coverage in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'independent security review' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing independent security routing in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Fix Decision Brief' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing Fix Decision Brief in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Manual Per Item Gate' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing Manual Per Item Gate in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'auto safe fixes' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing safe-auto policy in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'prepared planning context' "$output_dir/using-codepatrol/SKILL.md" || {
+        echo "Error: missing prepared planning context in $platform using-codepatrol/SKILL.md"
         exit 1
     }
 }

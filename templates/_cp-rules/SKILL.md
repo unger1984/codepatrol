@@ -12,6 +12,8 @@ Analyze evidence and improve project rules.
 Before starting work, you MUST create {{PROGRESS_TOOL}} items for each runtime step.
 Mark each as `in_progress` when working on it and `completed` when done.
 
+Batch {{PROGRESS_TOOL}} updates with the first real read, dispatch, edit, or validation action when the platform supports batching. Otherwise update them with the nearest real action; never spend a separate turn only on tracking.
+
 Default mode items:
 - [ ] Parse intent
 - [ ] Read existing rules and docs
@@ -173,10 +175,7 @@ Only when the user explicitly asks to derive rules from code patterns (e.g. "loo
 
 {{@include:_shared/researcher.md}}
 
-**Query construction:** include the topic or focus area, and request the researcher to:
-- read current project rules from `{{RULES_SOURCE}}` and understand what is already covered
-- analyze relevant codebase areas for patterns, conventions, inconsistencies
-- return: current rules summary, observed patterns, gaps, conflicts, and recommendations with evidence
+**Query construction:** include the topic or focus area and require the researcher to return only draft-relevant claims with a cited source map: `path:line`, exact supporting excerpt, and relevance. Re-read only changed rules, disputed claims, and final-validation sources.
 
 ## Subagent Model Policy
 
