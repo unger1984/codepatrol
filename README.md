@@ -45,6 +45,7 @@ writing-plans                        executing-plans / subagent-driven
 - Project rules and documentation are read **before** design and planning
 - Planning self-checks use a cited prepared context: artifact path/type, explicit requirements, only applicable rule/doc excerpts, approved-design excerpts for plans, and missing-context blockers
 - Plans include documentation update steps only when existing docs actually need them
+- Plans keep task-local verification scoped: no blanket "run full lint/typecheck/test after every task"; broad suites stay at milestones or final verification
 - `/cp-review` keeps compliance first, uses adaptive quality routing for large low-risk scope, and preserves independent security and architecture-risk review
 - `/cp-fix` uses a Manual Per Item Gate plus `auto safe fixes` for one isolated safe option only
 - Research-heavy docs/rules workflows use source maps (`path:line`, exact excerpt, relevance), and progress tracking is batched with the nearest real action when the platform supports it

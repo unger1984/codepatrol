@@ -15,8 +15,9 @@
 ## Purpose
 
 Enhances Superpowers brainstorming and writing-plans with mandatory project rules, relevant existing
-documentation, cited prepared planning context, delegated self-checks, a single task-artifact location, and a
-direct route for non-engineering creative ideation that must not spawn engineering artifacts.
+documentation, cited prepared planning context, delegated self-checks, task-scoped verification boundaries, a
+single task-artifact location, and a direct route for non-engineering creative ideation that must not spawn
+engineering artifacts.
 
 ## When to read
 
@@ -63,8 +64,10 @@ Absent `.ai/docs` is a no-op. The skill does not ask to initialize docs or add s
 1. Reads project rules, relevant existing docs, and the approved current-task design.
 2. Includes a documentation update step only when existing docs cover changed architecture, APIs, data structures, or conventions.
 3. Reuses the same cited prepared planning context pattern for artifact integrity, plan completeness/dependencies/verification, and rules/docs/design compliance checks.
-4. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design decision is presented to the user instead.
-5. Saves the only plan artifact beside its design at `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
+4. Forces plan verification boundaries: task-local checks stay scoped to the changed contract, while broad repo-wide suites belong only to milestones or final verification.
+5. Rejects plan steps that make an early task depend on checks expected to fail until later tasks are implemented.
+6. Corrects non-material findings through the matching fixer tier; a correction that changes an approved design decision is presented to the user instead.
+7. Saves the only plan artifact beside its design at `.ai/tasks/YYYY-MM-DD-HHMM-slug/plan.md`.
 
 A design is current only if it was approved in the same session or its path was explicitly supplied. The skill never searches for the most recent design lacking a plan.
 

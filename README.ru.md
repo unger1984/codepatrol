@@ -45,6 +45,7 @@ writing-plans                        executing-plans / subagent-driven
 - Правила и документация проекта читаются **до** дизайна и планирования
 - Planning self-check использует цитируемый prepared context: путь и тип артефакта, явные требования, только применимые выдержки из правил и доков, выдержки из утверждённого дизайна для планов и blockers по недостающему контексту
 - Шаг обновления документации попадает в план только когда существующие доки действительно надо менять
+- В планах верификация остаётся scoped на уровень задачи: без blanket-инструкций "после каждой задачи гонять полный lint/typecheck/test"; широкие прогоны остаются на milestone или финальную проверку
 - `/cp-review` сохраняет приоритет compliance, использует adaptive quality routing для большого low-risk scope и не сливает independent security review с architecture-risk review
 - `/cp-fix` использует Manual Per Item Gate и `auto safe fixes` только для одного изолированного безопасного варианта
 - Для docs/rules-исследований используются source maps (`path:line`, точная цитата, relevance), а progress tracking батчится с ближайшим реальным действием, если платформа это умеет

@@ -170,6 +170,24 @@ Planning produces `plan.md`, not production code.
   production modules in `plan.md`. If a step needs that much detail, split the task or make the interface
   explicit instead.
 
+### Plan verification boundaries
+
+- Task- and step-level verification MUST be the smallest relevant check that proves the changed contract:
+  focused test, targeted typecheck, route smoke, or other narrow validation tied to that task.
+- Repo-wide checks (`lint`, full `test`, full `typecheck`, full `build`, end-to-end suites) belong only at
+  explicit milestones or the final verification phase, unless a project rule explicitly requires broader
+  validation for that exact task.
+- Do not write blanket instructions such as "after each task run lint/typecheck/test" or any equivalent that
+  rechecks unchanged areas after every small step. That pattern causes execution loops and hides the real task
+  boundary.
+- In TDD-style tasks, prefer a focused failing check before implementation and the matching focused passing check
+  after implementation; broaden verification only when the task changes a shared contract or the final phase
+  requires it.
+- Do not make an early task's acceptance depend on code scheduled for later tasks. If a broader suite is expected to
+  fail until later tasks land, keep that suite in a later milestone or final verification step instead of bouncing
+  execution back to Task 1.
+
+
 ### CodePatrol plan self-check
 
 After the standard Superpowers plan review, run independent read-only checks for:
