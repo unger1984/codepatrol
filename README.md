@@ -219,7 +219,7 @@ Local generation commands are for repository development only. End users install
 ./install.sh validate   # Generate every platform in temporary directories and validate contracts
 ```
 
-`install.ps1` is maintained for remote Windows installation; local development validation runs through the POSIX build script.
+`install.ps1` now exposes the same `validate` contract for Windows/PowerShell paths; local examples below use the POSIX script.
 
 ### Template rules
 

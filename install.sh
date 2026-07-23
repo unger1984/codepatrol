@@ -261,6 +261,14 @@ validate_generated_markdown() {
         echo "Error: missing optional-input discovery rule in $platform using-codepatrol/SKILL.md"
         exit 1
     }
+    grep -Fq 'Creative ideation is not engineering planning.' "$output_dir/using-codepatrol/SKILL.md" || {
+        echo "Error: missing creative-work routing boundary in $platform using-codepatrol/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Temporary working notes, task' "$output_dir/cp-docs/SKILL.md" || {
+        echo "Error: missing non-documentation scope boundary in $platform cp-docs/SKILL.md"
+        exit 1
+    }
     grep -Fq 'Discover optional project-rule files, `.ai/docs/README.md`, and `.ai/tasks/` artifacts with `Glob` before' "$output_dir/cp-review/SKILL.md" || {
         echo "Error: missing optional-input discovery rule in $platform cp-review/SKILL.md"
         exit 1

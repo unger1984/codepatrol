@@ -22,6 +22,24 @@ Use `/cp-review`, `/cp-fix`, and `/cp-docs` only for their explicit workflows. T
 Superpowers planning.
 
 ## Planning Threshold
+## Non-Engineering Creative Work
+
+Writing or ideation that does not change a software system is not an engineering feature, implementation plan,
+or project documentation merely because it is stored in Markdown.
+
+**Creative ideation is not engineering planning.** When the user asks to generate, choose, or compare ideas for
+non-engineering content, invoke `superpowers:brainstorming` for the ideation conversation only. Ask only
+questions needed to choose an idea, then present options and a recommendation. Do not apply the engineering
+parts of that skill: do not create design or plan artifacts, task lists, approval gates, implementation plans,
+or invoke `writing-plans`. Read only task-specific instructions and the minimum relevant materials; research
+facts only when the requested content will make factual claims.
+
+This exception takes precedence over all other sections of this skill. Do not read `.ai/docs`, project
+implementation files, or global planning context unless the user specifically asks about them.
+
+For a specified non-engineering deliverable, create or edit it directly. Do not invoke `brainstorming` unless
+the user asks to generate or choose ideas.
+
 
 ## Optional Project Inputs
 

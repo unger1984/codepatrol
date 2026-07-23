@@ -99,19 +99,21 @@ flowchart LR
     SUB --> O["skills/*.md"]
 ```
 
-### `install.sh` Commands
+### Build Commands
+
+Both build scripts expose the same command surface for generation and validation:
 
 | Command | Action |
 |---------|--------|
-| `./install.sh build` | Regenerate `skills/` from templates using Claude env |
-| `./install.sh validate` | Generate all five platforms in isolated temporary output, validate resolved Markdown and routing contracts; does not mutate `skills/` or installation directories |
-| `./install.sh claude` | Generate and install to `~/.claude/skills/` |
-| `./install.sh codex` | Generate and install to `~/.codex/skills/`; also removes legacy CodePatrol skills from `~/.agents/skills/` |
-| `./install.sh cursor` | Generate and install to `~/.cursor/skills/` |
+| `./install.sh build` / `.\install.ps1 build` | Regenerate `skills/` from templates using Claude env |
+| `./install.sh validate` / `.\install.ps1 validate` | Generate all five platforms in isolated temporary output, validate resolved Markdown and routing contracts; does not mutate `skills/` or installation directories |
+| `./install.sh claude` / `.\install.ps1 claude` | Generate and install to `~/.claude/skills/` |
+| `./install.sh codex` / `.\install.ps1 codex` | Generate and install to `~/.codex/skills/`; also removes legacy CodePatrol skills from the compatibility target |
+| `./install.sh cursor` / `.\install.ps1 cursor` | Generate and install to `~/.cursor/skills/` |
 
 ### Build Steps
 
-1. **resolve_includes(file, base_dir)** — finds `{{@include:...}}` directives, replaces with file content (portable awk)
+1. **resolve_includes(file, base_dir)** — finds `{{@include:...}}` directives, replaces with file content (portable awk / PowerShell string replacement)
 2. **substitute(template, env_file, output)** — copies template, resolves includes, replaces `{{KEY}}` with env values. Empty values → entire line removed
 3. **generate(platform, output_dir)** — iterates `templates/` subdirs (excluding `_shared`), processes all `.md` files
 4. **validate()** — generates Claude, Codex, Cursor, OMP, and OpenCode in a temporary directory; rejects unresolved template markers and missing generated routing contracts without installing or mutating `skills/`
@@ -119,8 +121,7 @@ flowchart LR
 
 ### Portability
 
-Script uses POSIX-compatible awk and sed. Works on macOS (BSD) and Linux (GNU).
-
+`install.sh` uses POSIX-compatible awk and sed. `install.ps1` mirrors the same contract for Windows/PowerShell users.
 ## Plugin System
 
 ### plugin.json

@@ -14,7 +14,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('build', 'claude', 'codex', 'cursor', 'opencode', 'omp')]
+    [ValidateSet('build', 'validate', 'claude', 'codex', 'cursor', 'opencode', 'omp')]
     [string]$Command
 )
 
@@ -53,6 +53,7 @@ function Show-Usage {
     Write-Host ""
     Write-Host "Commands:"
     Write-Host "  build    Generate skills/ from templates using Claude platform values"
+    Write-Host "  validate Generate all supported platforms to temp output and verify generated markdown"
     Write-Host "  claude   Generate and install skills to ~/.claude/skills/"
     Write-Host "  codex    Generate and install skills to ~/.codex/skills/"
     Write-Host "  cursor   Generate and install skills to ~/.cursor/skills/"
@@ -216,6 +217,69 @@ function Invoke-Generate {
     Write-Host "Generated to: $OutputDir"
 }
 
+function Test-GeneratedMarkdown {
+    param(
+        [string]$Platform,
+        [string]$OutputDir
+    )
+
+    foreach ($file in Get-ChildItem -Path $OutputDir -Recurse -File -Filter '*.md') {
+        $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
+        if ($content -match '\{\{@include:|\{\{@platform-include:|\{\{[A-Z][A-Z0-9_]*\}\}') {
+            throw "Error: unresolved template markers in $Platform output: $($file.FullName)"
+        }
+    }
+
+    $requiredMarkers = @(
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'requires_deep_compliance'; Error = 'missing requires_deep_compliance marker' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'prepared_context'; Error = 'missing prepared_context marker' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'architecture_risk'; Error = 'missing architecture_risk marker' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'compare every extracted requirement locally'; Error = 'missing local comparison marker' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'stop before quality with `NEEDS_CHANGES`'; Error = 'missing compliance gate marker' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'explicit verdict for every dimension'; Error = 'missing grouped verdict coverage' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'independent security review'; Error = 'missing independent security routing' },
+        @{ Path = 'cp-fix/SKILL.md'; Marker = 'Fix Decision Brief'; Error = 'missing Fix Decision Brief' },
+        @{ Path = 'cp-fix/SKILL.md'; Marker = 'Manual Per Item Gate'; Error = 'missing Manual Per Item Gate' },
+        @{ Path = 'cp-fix/SKILL.md'; Marker = 'auto safe fixes'; Error = 'missing safe-auto policy' },
+        @{ Path = 'using-codepatrol/SKILL.md'; Marker = 'prepared planning context'; Error = 'missing prepared planning context' },
+        @{ Path = 'using-codepatrol/SKILL.md'; Marker = 'Planning check: classify the request before loading `brainstorming`.'; Error = 'missing direct-request planning gate' },
+        @{ Path = 'using-codepatrol/SKILL.md'; Marker = 'Discover optional project inputs with `Glob` before reading.'; Error = 'missing optional-input discovery rule' },
+        @{ Path = 'using-codepatrol/SKILL.md'; Marker = 'Creative ideation is not engineering planning.'; Error = 'missing creative-work routing boundary' },
+        @{ Path = 'cp-docs/SKILL.md'; Marker = 'Temporary working notes, task'; Error = 'missing non-documentation scope boundary' },
+        @{ Path = 'cp-review/SKILL.md'; Marker = 'Discover optional project-rule files, `.ai/docs/README.md`, and `.ai/tasks/` artifacts with `Glob` before'; Error = 'missing optional-input discovery rule' },
+        @{ Path = 'cp-fix/SKILL.md'; Marker = 'Discover project-rule files with `Glob` before reading.'; Error = 'missing rule discovery guard' }
+    )
+
+    foreach ($check in $requiredMarkers) {
+        $file = Join-Path $OutputDir $check.Path
+        $content = Get-Content -Path $file -Raw -Encoding UTF8
+        if (-not $content.Contains($check.Marker)) {
+            throw "Error: $($check.Error) in $Platform $($check.Path)"
+        }
+    }
+}
+
+function Invoke-Validate {
+    $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "codepatrol-validate-$(Get-Random)"
+    New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
+
+    try {
+        foreach ($platform in @('claude', 'codex', 'cursor', 'omp', 'opencode')) {
+            $outputDir = Join-Path $tmpDir $platform
+            Invoke-Generate -Platform $platform -OutputDir $outputDir
+            Test-GeneratedMarkdown -Platform $platform -OutputDir $outputDir
+        }
+
+        Write-Host 'Validation passed.'
+    }
+    finally {
+        if (Test-Path $tmpDir) {
+            Remove-Item -Recurse -Force $tmpDir
+        }
+    }
+}
+
+
 # --- Main ---
 
 if (-not $Command) {
@@ -228,6 +292,9 @@ switch ($Command) {
             Remove-Item -Recurse -Force $SkillsDir
         }
         Invoke-Generate -Platform 'claude' -OutputDir $SkillsDir
+    }
+    'validate' {
+        Invoke-Validate
     }
     'claude' {
         $localDir = Join-Path $HOME '.claude\skills'

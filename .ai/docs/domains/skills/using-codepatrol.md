@@ -15,13 +15,14 @@
 ## Purpose
 
 Enhances Superpowers brainstorming and writing-plans with mandatory project rules, relevant existing
-documentation, cited prepared planning context, delegated self-checks, and a single task-artifact location.
-It does not route ordinary requests or replace Superpowers.
+documentation, cited prepared planning context, delegated self-checks, a single task-artifact location, and a
+direct route for non-engineering creative ideation that must not spawn engineering artifacts.
 
 ## When to read
 
 - Changing planning enhancements or artifact storage
 - Understanding when Superpowers planning should start
+- Handling non-engineering creative ideation requests without loading engineering planning context
 - Diagnosing design or plan artifact placement
 
 ## Related docs
@@ -38,6 +39,10 @@ requests brainstorming, design, or a plan, or when a pre-edit decision requires 
 It must not activate for clear direct work: localized changes, known-cause bug fixes, mechanical refactors,
 review, documentation, investigation, or execution of an approved plan. Uncertainty is resolved in favor of
 direct implementation; planning starts later only if a real design fork emerges.
+
+For non-engineering creative ideation, the skill still routes through `superpowers:brainstorming`, but only for
+the idea conversation itself: no design.md, no plan.md, no `.ai/tasks/` artifact, no `.ai/docs` sweep, and no
+engineering implementation checklist unless the request later becomes a software-system change.
 
 ## Enhancements
 

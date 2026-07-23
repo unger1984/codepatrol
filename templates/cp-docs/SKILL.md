@@ -7,6 +7,11 @@ description: Use to create or update project documentation, add diagrams, or des
 
 Create and maintain AI-facing project documentation from natural language requests.
 
+**Scope boundary:** Use this skill only for AI-facing project documentation in `.ai/docs/` or documentation of
+stable project architecture, APIs, data flow, configuration, or conventions. Temporary working notes, task
+artifacts, user-facing content, and arbitrary Markdown are not project documentation. Do not invoke this skill
+for them.
+
 ## Progress Tracking (mandatory)
 
 Before starting work, you MUST create {{PROGRESS_TOOL}} items for each runtime flow step.
