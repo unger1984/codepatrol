@@ -1,0 +1,22 @@
+{
+  "name": "codepatrol",
+  "version": "0.6.0",
+  "description": "Project-aware AI skills and OMP bootstrap package for coding agents",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "omp",
+    "skills",
+    "code-review",
+    "planning",
+    "superpowers"
+  ],
+  "pi": {
+    "extensions": [
+      "./.pi/extensions/codepatrol.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
+}

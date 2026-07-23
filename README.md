@@ -129,20 +129,22 @@ irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -Out
 
 ### Oh My Pi
 
-**From latest release (Unix/macOS):**
+**Primary install path:**
+```bash
+omp install github:unger1984/codepatrol
+```
+
+**Fallback path (Unix/macOS):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- omp
 ```
 
-**From latest release (Windows):**
+**Fallback path (Windows):**
 ```powershell
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
 ```
 
-
-The installer adds skills to `~/.omp/agent/skills` and eight CodePatrol agents to
-`~/.omp/agent/agents`: three reviewers, three fixers, and two planning self-checkers. They resolve
-`@slow`, `@task`, and `@smol` through your `modelRoles`; OMP output schemas remain duplicated on purpose because CodePatrol does not add a YAML frontmatter include/preprocessor for them.
+Both paths rely on OMP package installation, which requires `omp` on `PATH`.
 
 ## Usage
 

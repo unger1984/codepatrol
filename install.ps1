@@ -284,24 +284,10 @@ switch ($Command) {
         Remove-Item -Recurse -Force $tmpDir
     }
     'omp' {
-        $localDir = Join-Path $HOME '.omp\agent\skills'
-        $agentsDir = Join-Path $HOME '.omp\agent\agents'
-        $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "codepatrol-$(Get-Random)"
-        New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
-        Invoke-Generate -Platform 'omp' -OutputDir $tmpDir
-        Remove-InstalledSkills -TargetDir $localDir
-        foreach ($skillDir in Get-ChildItem -Path $tmpDir -Directory) {
-            $target = Join-Path $localDir $skillDir.Name
-            Copy-Item -Recurse -Force -Path $skillDir.FullName -Destination $target
-            Write-Host "Installed: $target"
+        if (-not (Get-Command omp -ErrorAction SilentlyContinue)) {
+            throw 'omp is required for OMP installation'
         }
-        New-Item -ItemType Directory -Path $agentsDir -Force | Out-Null
-        foreach ($agentFile in Get-ChildItem -Path (Join-Path $PlatformsDir 'omp-agents') -Filter '*.md') {
-            $target = Join-Path $agentsDir $agentFile.Name
-            Copy-Item -Force -Path $agentFile.FullName -Destination $target
-            Write-Host "Installed: $target"
-        }
-        Remove-Item -Recurse -Force $tmpDir
+        & omp install $ScriptDir
     }
 }
 

@@ -129,20 +129,22 @@ irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -Out
 
 ### Oh My Pi
 
-**Из последнего релиза (Unix/macOS):**
+**Основной путь установки:**
+```bash
+omp install github:unger1984/codepatrol
+```
+
+**Запасной путь (Unix/macOS):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.sh | bash -s -- omp
 ```
 
-**Из последнего релиза (Windows):**
+**Запасной путь (Windows):**
 ```powershell
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
 ```
 
-
-Установщик добавляет скиллы в `~/.omp/agent/skills` и восемь агентов CodePatrol в
-`~/.omp/agent/agents`: три для ревью, три для исправлений и два для self-check планирования. Они разрешают
-`@slow`, `@task` и `@smol` через ваши `modelRoles`; дублирование OMP output schema сохранено намеренно, потому что CodePatrol не добавляет YAML frontmatter include/preprocessor для них.
+Оба пути опираются на package-установку OMP, поэтому требуют `omp` в `PATH`.
 
 ## Использование
 

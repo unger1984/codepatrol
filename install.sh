@@ -336,25 +336,11 @@ case "${1:-}" in
         rm -rf "$tmp_dir"
         ;;
     omp)
-        local_dir="$HOME/.omp/agent/skills"
-        agents_dir="$HOME/.omp/agent/agents"
-        tmp_dir=$(mktemp -d)
-        generate "omp" "$tmp_dir"
-        clean_installed_skills "$local_dir"
-        for skill_dir in "$tmp_dir"/*/; do
-            skill_name=$(basename "$skill_dir")
-            target="$local_dir/$skill_name"
-            cp -r "$skill_dir" "$target"
-            echo "Installed: $target"
-        done
-        mkdir -p "$agents_dir"
-        for agent_file in "$PLATFORMS_DIR/omp-agents/"*.md; do
-            [ -f "$agent_file" ] || continue
-            target="$agents_dir/$(basename "$agent_file")"
-            cp "$agent_file" "$target"
-            echo "Installed: $target"
-        done
-        rm -rf "$tmp_dir"
+        if ! command -v omp >/dev/null 2>&1; then
+            echo "Error: omp is required for OMP installation"
+            exit 1
+        fi
+        omp install "$SCRIPT_DIR"
         ;;
     *)
         usage
