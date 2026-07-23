@@ -2,7 +2,7 @@
 
 # CodePatrol
 
-Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com), and [OpenCode](https://opencode.ai). Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
+Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com), [OpenCode](https://opencode.ai), and Oh My Pi / Pi. Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
 
 ## Table of Contents
 
@@ -129,7 +129,12 @@ irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -Out
 
 ### Oh My Pi
 
-**Primary install path:**
+**Primary install path (Pi):**
+```bash
+pi install git:github.com/unger1984/codepatrol
+```
+
+**Primary install path (OMP):**
 ```bash
 omp install github:unger1984/codepatrol
 ```
@@ -144,7 +149,7 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
 ```
 
-Both paths rely on OMP package installation, which requires `omp` on `PATH`.
+Pi/OMP package installation relies on `pi` or `omp` being available on `PATH`, and the fallback OMP installer delegates to OMP package installation.
 
 ## Usage
 

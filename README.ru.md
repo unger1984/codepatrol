@@ -2,7 +2,7 @@
 
 # CodePatrol
 
-AI-скиллы с осведомлённостью о проекте для [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com) и [OpenCode](https://opencode.ai). Расширяет стандартный воркфлоу [Superpowers](https://github.com/obra/superpowers) знанием правил и документации проекта.
+AI-скиллы с осведомлённостью о проекте для [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com), [OpenCode](https://opencode.ai) и Oh My Pi / Pi. Расширяет стандартный воркфлоу [Superpowers](https://github.com/obra/superpowers) знанием правил и документации проекта.
 
 ## Содержание
 
@@ -129,7 +129,12 @@ irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -Out
 
 ### Oh My Pi
 
-**Основной путь установки:**
+**Основной путь установки (Pi):**
+```bash
+pi install git:github.com/unger1984/codepatrol
+```
+
+**Основной путь установки (OMP):**
 ```bash
 omp install github:unger1984/codepatrol
 ```
@@ -144,7 +149,7 @@ curl -fsSL https://raw.githubusercontent.com/unger1984/codepatrol/main/install.s
 irm https://raw.githubusercontent.com/unger1984/codepatrol/main/install.ps1 -OutFile install.ps1; .\install.ps1 omp
 ```
 
-Оба пути опираются на package-установку OMP, поэтому требуют `omp` в `PATH`.
+Package-установка для Pi/OMP требует доступного `pi` или `omp` в `PATH`, а запасной OMP-инсталлятор делегирует в OMP package installation.
 
 ## Использование
 
