@@ -29,6 +29,13 @@ Superpowers planning.
 
 ## Planning Threshold
 
+**Planning check: classify the request before loading `brainstorming`.**
+
+Use `brainstorming` only after this check returns **plan**. A request is **direct** when its requested outcome,
+target files, and safe implementation path are clear from the request and repository context. Direct requests
+MUST NOT load `brainstorming`, create a design or plan artifact, request design approval, or add design/plan
+tasks. Investigate first; if a material decision emerges, reclassify to **plan** at that point.
+
 Start the Superpowers `brainstorming → writing-plans` flow only when:
 
 1. the user explicitly asks to brainstorm, design, or write an implementation plan; or

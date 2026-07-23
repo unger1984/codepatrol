@@ -253,6 +253,10 @@ validate_generated_markdown() {
         echo "Error: missing prepared planning context in $platform using-codepatrol/SKILL.md"
         exit 1
     }
+    grep -Fq 'Planning check: classify the request before loading `brainstorming`.' "$output_dir/using-codepatrol/SKILL.md" || {
+        echo "Error: missing direct-request planning gate in $platform using-codepatrol/SKILL.md"
+        exit 1
+    }
 }
 
 validate() {
