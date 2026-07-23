@@ -75,9 +75,10 @@ Reference the relevant project rules and constraints that shaped the design.
 ### CodePatrol design self-check
 
 Before the standard Superpowers user-review gate, run independent read-only checks for the design's artifact
-integrity and its compliance with project rules, documentation, and explicit user requirements. Normalize the
-findings, then correct them before presenting the design unless a correction changes a material design choice.
-Present material choices to the user instead of silently choosing one.
+integrity and its compliance with project rules, documentation, and explicit user requirements. Normalize and
+deduplicate findings, then correct only clear, local issues before presenting the design unless a correction
+changes a material design choice. Run at most one targeted follow-up check for the changed sections or review
+dimensions; otherwise present the remaining findings to the user instead of looping.
 ### Prepared planning context
 
 Prepare one cited context package before self-check dispatch: artifact path and type, explicit requirements,
@@ -90,7 +91,10 @@ broad discovery or an assumption.
 
 - Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
 - Pass the prepared planning context: artifact path/type, explicit requirements, cited applicable rule/documentation excerpts, approved-design excerpts for plans, and missing-context blockers. Give artifact integrity only structure/link/placeholder inputs; give plan and compliance checks only their relevant cited subsets. Missing context blocks the check; no check performs broad discovery.
-- Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
+- Prefer inline repairs when they are mechanical and obviously local. If fixer agents are needed, dispatch at
+  most one fixer wave, grouping related findings by dimension instead of sending a per-finding cascade. After
+  applying fixes, run at most one targeted recheck for the touched sections or review dimensions. If unresolved
+  findings remain, stop and present them instead of looping. Do not silently change material design decisions.
 
 ### Save design
 
@@ -120,6 +124,19 @@ If existing `.ai/docs` documents architecture, APIs, data structures, or convent
 include an explicit update step naming the affected document and required update. Do not add an initialization
 step when `.ai/docs` is absent.
 
+### Keep planning separate from implementation
+
+Planning produces `plan.md`, not production code.
+
+- Never modify repository source files while brainstorming or writing plans. During these workflows, write only
+  the task artifacts (`design.md`, `plan.md`) and any explicitly requested planning document.
+- Override the standard Superpowers "complete code in every step" rule when CodePatrol is active. A plan MUST
+  specify exact files, interfaces, tests, commands, and acceptance checks, but code blocks are illustrative
+  only: use signatures, schemas, pseudocode, focused diffs, or short snippets for tricky edges.
+- Never embed file-complete implementations, routine full function/class bodies, or copy-paste-ready
+  production modules in `plan.md`. If a step needs that much detail, split the task or make the interface
+  explicit instead.
+
 ### CodePatrol plan self-check
 
 After the standard Superpowers plan review, run independent read-only checks for:
@@ -128,13 +145,18 @@ After the standard Superpowers plan review, run independent read-only checks for
 - plan completeness, dependency order, verification, and scope;
 - compliance with project rules, relevant documentation, and the approved design.
 
-Normalize findings and correct them before presenting the plan. A correction that changes an approved design
-decision is a blocker: present the conflict to the user instead of silently changing the design. Use the prepared
-planning context described above for every self-check.
+Normalize and deduplicate findings, then correct only clear, local issues before presenting the plan. Batch
+related mechanical fixes together. Run at most one targeted follow-up check for the changed sections or review
+dimensions; otherwise present the remaining findings instead of looping. A correction that changes an approved
+design decision is a blocker: present the conflict to the user instead of silently changing the design. Use the
+prepared planning context described above for every self-check.
 
 - Dispatch planning checks as separate read-only Agent calls. For a design: artifact integrity → fast; rules, docs, and requirement compliance → powerful. For a plan: artifact integrity → fast; completeness, dependencies, scope, and verification → default; rules/docs/design compliance → powerful.
 - Pass the prepared planning context: artifact path/type, explicit requirements, cited applicable rule/documentation excerpts, approved-design excerpts for plans, and missing-context blockers. Give artifact integrity only structure/link/placeholder inputs; give plan and compliance checks only their relevant cited subsets. Missing context blocks the check; no check performs broad discovery.
-- Dispatch fixes one finding at a time with the configured tier: simple artifact repair → fast; standard plan repair → default; complex design or compliance repair → powerful. Keep the artifact's user-review gate and do not silently change material design decisions.
+- Prefer inline repairs when they are mechanical and obviously local. If fixer agents are needed, dispatch at
+  most one fixer wave, grouping related findings by dimension instead of sending a per-finding cascade. After
+  applying fixes, run at most one targeted recheck for the touched sections or review dimensions. If unresolved
+  findings remain, stop and present them instead of looping. Do not silently change material design decisions.
 
 ### Save plan
 

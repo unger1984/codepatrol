@@ -1,6 +1,6 @@
 {
   "name": "codepatrol",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Project-aware AI skills and OMP bootstrap package for coding agents",
   "type": "module",
   "keywords": [
