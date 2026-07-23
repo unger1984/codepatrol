@@ -31,6 +31,10 @@ Do NOT go to web for questions answerable from the project. Do NOT dig through t
 
 ## Research Protocol
 
+Before project research, discover optional project-rule files and `.ai/docs/README.md` with `Glob`. Read only
+paths returned by `Glob`; if no path matches, report that source as absent. Never pass an optional path or a
+glob to `Read`.
+
 1. Read the query and scope hints (if provided)
 2. Select source(s) per the table above
 3. For project research:

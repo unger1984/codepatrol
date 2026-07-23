@@ -257,6 +257,18 @@ validate_generated_markdown() {
         echo "Error: missing direct-request planning gate in $platform using-codepatrol/SKILL.md"
         exit 1
     }
+    grep -Fq 'Discover optional project inputs with `Glob` before reading.' "$output_dir/using-codepatrol/SKILL.md" || {
+        echo "Error: missing optional-input discovery rule in $platform using-codepatrol/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Discover optional project-rule files, `.ai/docs/README.md`, and `.ai/tasks/` artifacts with `Glob` before' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing optional-input discovery rule in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Discover project-rule files with `Glob` before reading.' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing rule discovery guard in $platform cp-fix/SKILL.md"
+        exit 1
+    }
 }
 
 validate() {

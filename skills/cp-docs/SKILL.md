@@ -56,6 +56,9 @@ If the phrase is unclear, ask the user to clarify. Offer concrete interpretation
 
 ### Step 2 — Read docs structure
 
+Discover `.ai/docs/README.md` and project-rule files with `Glob` before reading. Read only paths returned by
+`Glob`; if no path matches, treat that input as absent. Never pass an optional path or a glob to `Read`.
+
 Read `.ai/docs/README.md` to understand existing documentation and navigation structure. This is mandatory when `.ai/docs/` exists, even for narrow-scope requests — the skill must know where the new content fits. If `.ai/docs/` does not exist, skip this step and note that initialization is needed before writing.
 
 ### Step 3 — Scope decomposition
@@ -166,6 +169,10 @@ Determine the right source from the query:
 Do NOT go to web for questions answerable from the project. Do NOT dig through the codebase for questions about external tools/APIs.
 
 ## Research Protocol
+
+Before project research, discover optional project-rule files and `.ai/docs/README.md` with `Glob`. Read only
+paths returned by `Glob`; if no path matches, report that source as absent. Never pass an optional path or a
+glob to `Read`.
 
 1. Read the query and scope hints (if provided)
 2. Select source(s) per the table above

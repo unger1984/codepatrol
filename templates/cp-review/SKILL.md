@@ -60,6 +60,10 @@ Do not run diffs, merge branches, or take any destructive action unless explicit
 
 ## Research Before Review
 
+Discover optional project-rule files, `.ai/docs/README.md`, and `.ai/tasks/` artifacts with `Glob` before
+reading. Read only paths returned by `Glob`; if no path matches, treat that input as absent. Never pass an
+optional path or a glob to `Read`.
+
 Before starting review:
 - read project rules from `{{RULES_SOURCE}}`
 - if `.ai/docs/README.md` exists, read it and only relevant domain/shared docs

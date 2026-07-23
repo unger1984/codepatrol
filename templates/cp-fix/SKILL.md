@@ -52,6 +52,9 @@ Sequential processing is the default. Parallel processing requires user confirma
 
 ## Context Gathering
 
+Discover project-rule files with `Glob` before reading. Read only paths returned by `Glob`; if none match,
+there are no project-rule excerpts to pass to the fixer. Never pass `{{RULES_SOURCE}}` or any glob to `Read`.
+
 Before dispatching fix agents, read project rules from `{{RULES_SOURCE}}`. Extract only the rule excerpts that apply to the current finding and pass them as cited `{APPLICABLE_RULES}` so the fixer receives the relevant constraints without the full project-rules payload.
 
 ## Subagent Model Policy

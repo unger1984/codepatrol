@@ -56,6 +56,9 @@ If the phrase is unclear, ask the user to clarify. Offer concrete interpretation
 
 ### Step 2 — Read docs structure
 
+Discover `.ai/docs/README.md` and project-rule files with `Glob` before reading. Read only paths returned by
+`Glob`; if no path matches, treat that input as absent. Never pass an optional path or a glob to `Read`.
+
 Read `.ai/docs/README.md` to understand existing documentation and navigation structure. This is mandatory when `.ai/docs/` exists, even for narrow-scope requests — the skill must know where the new content fits. If `.ai/docs/` does not exist, skip this step and note that initialization is needed before writing.
 
 ### Step 3 — Scope decomposition

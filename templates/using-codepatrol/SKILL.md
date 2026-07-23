@@ -23,6 +23,14 @@ Superpowers planning.
 
 ## Planning Threshold
 
+## Optional Project Inputs
+
+Discover optional project inputs with `Glob` before reading. For each requested optional path or glob, read only
+the paths returned by `Glob`; no matches means the input is absent and work continues without it. Never call
+`Read` on an optional path or pass a glob to `Read`.
+
+This applies to project-rule files, `.ai/docs/README.md`, task artifacts, and any path described as “if exists”.
+
 **Planning check: classify the request before loading `brainstorming`.**
 
 Use `brainstorming` only after this check returns **plan**. A request is **direct** when its requested outcome,
