@@ -27,11 +27,11 @@ Covers `cp-review` mechanics, reviewer agents, report structure, and `cp-fix` tr
 flowchart TD
     CODE[Code changes] --> P1["Pass 1: Compliance"]
     P1 --> P2["Pass 2: Quality"]
-    P2 --> REPORT[Review Report]
-    REPORT --> DECIDE{Findings?}
-    DECIDE -->|NEEDS_CHANGES| FIX["/cp-fix"]
-    DECIDE -->|APPROVED| DONE[Done]
-    DECIDE -->|APPROVED_WITH_NOTES| DONE
+    P2 --> REPORT[Unified Review Report]
+    REPORT --> HANDOFF{User handoff}
+    HANDOFF -->|Save| SAVE[Save report]
+    HANDOFF -->|Fix| FIX["/cp-fix intake"]
+    HANDOFF -->|Finish| DONE[Done]
 ```
 
 ### Pass 1 — Compliance (mandatory first)
@@ -49,7 +49,8 @@ Each excerpt carries a concrete citation and exact text. Reviewers get only the 
 
 For normal scope the orchestrator prepares `prepared_context` inline. A single fast read-only context preparer is allowed only for review scope above 20 files or when the relevant rules, design, and docs come from multiple sources.
 
-When deep routing is not required, the orchestrator checks extracted requirements locally and stops before quality on any compliance violation.
+When deep routing is not required, the orchestrator checks extracted requirements locally. Open compliance findings
+set `NEEDS_CHANGES`, but independent quality checks still complete before report handoff.
 
 ### Pass 2 — Quality
 
@@ -67,7 +68,8 @@ For large low-risk scope, one grouped `quality-reviewer` may cover architecture,
 
 ## Execution Models
 
-Quality begins only after clean compliance.
+Compliance runs first. Quality still completes before report handoff, even when compliance findings keep the verdict
+at `NEEDS_CHANGES`.
 
 | Scope | Quality strategy |
 |-------|------------------|

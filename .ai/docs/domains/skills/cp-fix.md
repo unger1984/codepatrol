@@ -47,6 +47,10 @@ For each finding, `/cp-fix` prepares a Fix Decision Brief: plain-language proble
 
 `manual per item` is a hard gate. After preparing the brief, the workflow must not dispatch a fixer, edit files, run a fix command, or mutate finding status until the user chooses an option, skips, or stops for that finding.
 
+Before any mutation, Fix Intake reports the number of open findings and requires an explicit severity scope and
+processing style. `/cp-fix`, “fix it”, and “do it” start intake only; they are not policy choices. If an interactive
+question tool is unavailable, the agent asks the same numbered question in normal conversation and waits.
+
 `auto safe fixes` apply only when there is one isolated simple repair, one safe option, no observable behavior/public API/schema/config change, and trivial rollback. Standard, complex, ambiguous, unclear-root-cause, unclear-verification, or otherwise high-risk findings require the full brief and explicit user choice.
 
 ## Incremental Report Mutation (mandatory)
