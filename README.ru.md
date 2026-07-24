@@ -4,6 +4,8 @@
 
 AI-скиллы с осведомлённостью о проекте для [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com), [OpenCode](https://opencode.ai) и Oh My Pi / Pi. Расширяет стандартный воркфлоу [Superpowers](https://github.com/obra/superpowers) знанием правил и документации проекта.
 
+История релизов: [CHANGELOG.md](CHANGELOG.md).
+
 ## Содержание
 
 - [Как это работает](#как-это-работает)
@@ -68,6 +70,7 @@ writing-plans                        executing-plans / subagent-driven
 │   └── YYYY-MM-DD-HHMM-slug/
 │       ├── design.md               # Утверждённый дизайн
 │       ├── plan.md                  # План реализации
+│       ├── handoff.md              # Принятые изменения реализации (при необходимости)
 │       └── review.md               # Отчёт code review
 ├── docs/                           # AI-документация проекта
 │   └── README.md                   # Навигационный хаб

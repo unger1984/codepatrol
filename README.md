@@ -4,6 +4,8 @@
 
 Project-aware AI skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex), [Cursor](https://cursor.com), [OpenCode](https://opencode.ai), and Oh My Pi / Pi. Enhances the standard [Superpowers](https://github.com/obra/superpowers) workflow with project rules and documentation awareness.
 
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## Table of Contents
 
 - [How It Works](#how-it-works)
@@ -68,6 +70,7 @@ writing-plans                        executing-plans / subagent-driven
 │   └── YYYY-MM-DD-HHMM-slug/
 │       ├── design.md               # Approved design
 │       ├── plan.md                  # Implementation plan
+│       ├── handoff.md               # Accepted implementation adaptations (when needed)
 │       └── review.md               # Code review report
 ├── docs/                           # AI-facing project documentation
 │   └── README.md                   # Navigation hub
