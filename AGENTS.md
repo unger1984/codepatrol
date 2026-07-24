@@ -63,7 +63,6 @@ test -f skills/cp-review/codestyle-reviewer.md
 
 ### Content Style
 - **Language:** English in all skill files; LLM adapts to user's language at runtime
-- **Changelog:** Write all `CHANGELOG.md` entries in English.
 - **Markdown:** Concise, clear section headers; use bullet lists over paragraphs
 - **Scope:** Platform-agnostic templates; differences only in `platforms/*.env`
 - **No hardcoding:** Avoid language/framework specifics unless necessary
