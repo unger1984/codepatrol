@@ -225,8 +225,8 @@ validate_generated_markdown() {
         echo "Error: missing local comparison marker in $platform cp-review/SKILL.md"
         exit 1
     }
-    grep -Fq 'stop before quality with `NEEDS_CHANGES`' "$output_dir/cp-review/SKILL.md" || {
-        echo "Error: missing compliance gate marker in $platform cp-review/SKILL.md"
+    grep -Fq 'does not cancel independent quality review' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing full-review compliance marker in $platform cp-review/SKILL.md"
         exit 1
     }
     grep -Fq 'explicit verdict for every dimension' "$output_dir/cp-review/SKILL.md" || {
@@ -247,6 +247,18 @@ validate_generated_markdown() {
     }
     grep -Fq 'auto safe fixes' "$output_dir/cp-fix/SKILL.md" || {
         echo "Error: missing safe-auto policy in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Fix Intake Gate' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing fix intake gate in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'generic request to start fixing is not a selected policy' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing explicit-policy gate in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Tool unavailability never authorizes' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing review question fallback in $platform cp-review/SKILL.md"
         exit 1
     }
     grep -Fq 'prepared planning context' "$output_dir/using-codepatrol/SKILL.md" || {

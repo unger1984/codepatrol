@@ -22,6 +22,22 @@ When invoked without arguments:
 
 Do not guess which report to use when multiple candidates exist.
 
+## Fix Intake Gate
+
+`/cp-fix`, “fix it”, “do it”, or an equivalent request authorizes intake only. It does not select a fix policy.
+
+Before any code edit, fixer dispatch, fix command, report-status mutation, or progress update, state the count of
+open findings and ask the user to choose:
+
+1. **Severity scope:** critical only / critical + important / all.
+2. **Processing style:** manual per item / auto safe fixes with approval for consequential or ambiguous work / custom policy.
+
+Treat a policy as selected only when the current conversation contains an explicit option choice or an applicable
+project rule states one. A generic request to start fixing is not a selected policy.
+
+Use `AskUserQuestion` when available. Otherwise ask the same numbered question in a normal user-facing message and
+wait for an explicit reply. Tool unavailability never authorizes a policy assumption or workflow continuation.
+
 ## Processing Order
 
 Only process `open` findings. Process them **strictly in report order** — do not reorder by type, severity, or your own judgment. The review already places findings in the correct processing order.
@@ -49,6 +65,8 @@ After creating the full task list, if some findings are independent and can be f
 3. If not approved, process all findings sequentially in report order.
 
 Sequential processing is the default. Parallel processing requires user confirmation.
+When `AskUserQuestion` is unavailable, present the proposed groups as a numbered normal user-facing question and wait
+for an explicit reply.
 
 ## Context Gathering
 
@@ -235,6 +253,7 @@ Do NOT:
 - **Skip bounded revalidation** — every fix must be verified before being marked resolved
 - **Save ad hoc reports without user permission** — offer to save, do not auto-save
 - **Parallelize without user approval** — sequential processing is the default
+- **Bypass the Fix Intake Gate** — never treat a generic request to start as a selected policy or mutate anything before explicit choices
 - **Skip documentation check** — always check if `.ai/docs/` needs updating after fixes
 
 ## Completion Criteria

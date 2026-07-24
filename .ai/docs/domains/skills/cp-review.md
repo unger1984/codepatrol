@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Two-pass code review: build cited `prepared_context`, run compliance first, then quality after clean compliance.
+Two-pass code review: build cited `prepared_context`, run compliance first, then complete independent quality checks before one report handoff.
 
 ## When to read
 
@@ -43,7 +43,7 @@ Triage builds one cited `prepared_context` package with the exact reviewed files
 
 For normal scope the orchestrator prepares this package inline. One fast read-only context preparer is allowed only for review scope above 20 files or when relevant rules, design, and docs come from multiple sources. Missing required context blocks the review instead of widening discovery or guessing.
 
-If deep routing is required, the powerful compliance reviewer receives only the relevant `prepared_context` excerpts, scope manifest, and blockers. Otherwise the orchestrator compares extracted requirements locally and stops before quality with `NEEDS_CHANGES` on any violation.
+If deep routing is required, the powerful compliance reviewer receives only the relevant `prepared_context` excerpts, scope manifest, and blockers. Open compliance findings set `NEEDS_CHANGES`, but do not cancel independent quality verdicts.
 
 ### Pass 2 — Quality
 
@@ -57,7 +57,7 @@ If `architecture_risk` is true, route architecture to a separate powerful archit
 
 | Context | Path | Condition |
 |---------|------|-----------|
-| Task folder exists | `.ai/tasks/<task>/review.md` | Automatic |
+| Task folder exists | `.ai/tasks/<task>/review.md` | Save automatically, state path, then ask before `/cp-fix` |
 | Ad hoc | `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.md` | Only after Save Gate |
 
 ## Ad Hoc Save Gate
@@ -65,7 +65,8 @@ If `architecture_risk` is true, route architecture to a separate powerful archit
 When no task folder exists:
 1. Report generated **in conversation only**
 2. Cannot write to file until user explicitly chooses
-3. Offer: "Save to file" or "Run /cp-fix now"
+3. Offer: "Save to file", "Run /cp-fix now", or "Finish"
+4. Use a numbered normal message when an interactive question tool is unavailable.
 
 ## Handoff
 

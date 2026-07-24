@@ -112,11 +112,12 @@ The order is mandatory:
 ### Compliance Pass
 
 - If `requires_deep_compliance` is true, dispatch the powerful compliance reviewer before quality.
-- If false, compare every extracted requirement locally against the reviewed scope, record each checked requirement and finding in the unified report, and stop before quality with `NEEDS_CHANGES` for any compliance violation.
+- If false, compare every extracted requirement locally against the reviewed scope and record each checked requirement and finding in the unified report.
+- An open compliance finding sets the final assessment to `NEEDS_CHANGES`; it does not cancel independent quality review.
 
 ### Quality Pass
 
-Review engineering quality after compliance is acceptable. Preserve all five dimensions and record an explicit verdict for each one:
+Complete independent engineering quality review before report handoff. Preserve all five dimensions and record an explicit verdict for each one:
 - architecture and maintainability
 - security and reliability risks
 - testing and verification adequacy
@@ -127,9 +128,9 @@ For every dispatched reviewer, pass only the assigned `prepared_context` excerpt
 
 ## Execution Model
 
-- **simple scope** (≤5 reviewable files) — the orchestrator runs compliance directly after triage and may run quality directly when compliance is clean
-- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch quality subagents at its discretion after compliance is clean
-- **large scope** (>20 reviewable files) — the orchestrator must dispatch quality-oriented reviewer agents after compliance is clean
+- **simple scope** (≤5 reviewable files) — the orchestrator runs compliance and quality directly after triage
+- **medium scope** (6–20 reviewable files) — the orchestrator may dispatch quality subagents at its discretion
+- **large scope** (>20 reviewable files) — the orchestrator must dispatch quality-oriented reviewer agents
   - for large low-risk scope (`architecture_risk` false and `security_sensitive_scope` false), use adaptive grouping: one `quality-reviewer` assignment may cover architecture, security/reliability, and testing together, and one `quick-reviewer` assignment may cover conventions and compatibility together
   - if `architecture_risk` is true, dispatch a separate powerful architecture reviewer for the architecture dimension
   - if `security_sensitive_scope` is true, dispatch an independent security review; do not treat deep compliance as a substitute for quality security review
@@ -200,7 +201,6 @@ The orchestrator must not:
 - treat every deviation from plan/design as an error without evaluating context
 - skip local compliance when deep routing is false
 - send unrelated discovery work to a deep reviewer
-- dispatch quality review after an open compliance violation
 - invent missing context instead of returning a blocker
 - conflate quality security review with deep compliance
 
@@ -211,7 +211,8 @@ The orchestrator must not:
 If a task folder exists in `.ai/tasks/` for the current work, save the report there:
 - `.ai/tasks/<task-folder>/review.md`
 
-No need to ask — save automatically.
+Save automatically, state the exact saved path, then ask whether to start `/cp-fix` or finish. An offer to use
+`/cp-fix` does not start it; wait for an explicit choice.
 
 ### Ad hoc reports
 
@@ -224,10 +225,14 @@ In ad hoc mode you MUST NOT write, create, or save any report file until the use
 Flow:
 1. Generate the report content **in conversation only** (do not call Write/Edit/create file).
 2. Present the report to the user inline.
-3. Ask the user (use `AskUserQuestion` if available) which action to take:
+3. Ask the user which action to take:
    - **Save report to file** — only then write to `.ai/reports/YYYY-MM-DD-HHMM-<scope>.review.md`
    - **Run /cp-fix now** — pass results through conversation context, no file
+   - **Finish** — leave the report in conversation only
 4. Wait for the user's explicit choice before any file I/O.
+
+Use `AskUserQuestion` when available. Otherwise ask the same numbered question in a normal user-facing message and
+wait for an explicit reply. Tool unavailability never authorizes saving, starting `/cp-fix`, or another assumption.
 
 Violating this gate (saving before asking) is a critical workflow error.
 
@@ -303,7 +308,8 @@ the direct fix instead.
 
 ## Handoff
 
-After presenting the report, offer `/cp-fix` to fix findings. Do not invoke it automatically — the user decides.
+After every required review dimension has an explicit verdict, complete the applicable report handoff above. Do not
+invoke `/cp-fix` automatically.
 
 ## Scope Detection Commands
 
