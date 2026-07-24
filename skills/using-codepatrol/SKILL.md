@@ -218,16 +218,6 @@ user asks for a plan based on an existing design but its path is not known, ask 
 a new task folder with the current timestamp. Never search `.ai/tasks/` for the most recent design without a
 plan.
 
-## Implementation Handoff
-
-Create `handoff.md` beside a task's design and plan only when repository or runtime evidence requires a consequential,
-non-material adaptation to a named plan step. Append one concise entry containing: plan/design reference, evidence,
-decision and rationale, affected files/contracts/tests/docs, authority, verification, and review focus.
-
-`handoff.md` is not a second plan and does not authorize a material design change. Stop for user approval and revise
-design or plan when the adaptation changes public API, security, data or migration behavior, architecture, scope, or
-acceptance criteria.
-
 ---
 
 ## Task Folder Structure
@@ -236,7 +226,6 @@ acceptance criteria.
 .ai/tasks/YYYY-MM-DD-HHMM-slug/
 ├── design.md    — approved design
 ├── plan.md      — implementation plan
-├── handoff.md   — consequential implementation adaptations, when applicable
 └── review.md    — code review report, created by /cp-review when applicable
 ```
 

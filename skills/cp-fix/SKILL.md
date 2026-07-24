@@ -27,20 +27,16 @@ Do not guess which report to use when multiple candidates exist.
 `/cp-fix`, “fix it”, “do it”, or an equivalent request authorizes intake only. It does not select a fix policy.
 
 Before any code edit, fixer dispatch, fix command, report-status mutation, or progress update, state the count of
-open findings and ask one plain-language question at a time about:
+open findings and ask the user to choose:
 
 1. **Severity scope:** critical only / critical + important / all.
 2. **Processing style:** manual per item / auto safe fixes with approval for consequential or ambiguous work / custom policy.
 
-Numbered options are examples, not a required response format. Accept a number, free text, or a mixed policy that
-names individual findings. Restate the parsed policy and wait for confirmation before the first mutation. Ask one
-focused clarification when any part is ambiguous.
-
-Treat a policy as selected only when the current conversation contains a confirmed explicit choice or an applicable
+Treat a policy as selected only when the current conversation contains an explicit option choice or an applicable
 project rule states one. A generic request to start fixing is not a selected policy.
 
-Use `AskUserQuestion` when available. Otherwise ask the same plain-language question in a normal user-facing message
-and wait for an explicit reply. Tool unavailability never authorizes a policy assumption or workflow continuation.
+Use `AskUserQuestion` when available. Otherwise ask the same numbered question in a normal user-facing message and
+wait for an explicit reply. Tool unavailability never authorizes a policy assumption or workflow continuation.
 
 ## Processing Order
 
@@ -69,8 +65,8 @@ After creating the full task list, if some findings are independent and can be f
 3. If not approved, process all findings sequentially in report order.
 
 Sequential processing is the default. Parallel processing requires user confirmation.
-When `AskUserQuestion` is unavailable, present the proposed groups in a normal user-facing question and wait for an
-explicit reply.
+When `AskUserQuestion` is unavailable, present the proposed groups as a numbered normal user-facing question and wait
+for an explicit reply.
 
 ## Context Gathering
 

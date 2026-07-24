@@ -76,7 +76,6 @@ For the compliance pass, mandatory sources are:
 - approved design (if exists in `.ai/tasks/`)
 - current plan (if exists in `.ai/tasks/`)
 - documented constraints and accepted trade-offs
-- `handoff.md` beside the current task artifacts, when present
 
 ### Prepared Context
 
@@ -86,7 +85,6 @@ Before the compliance pass or any quality dispatch, prepare one cited `prepared_
 - `review_scope`: exact reviewed files, grouped scope manifest, changed public surfaces, and the routing predicates evaluated for this review
 - `applicable_rules`: only relevant rule excerpts with source citations
 - `applicable_constraints`: only relevant design, plan, and documentation excerpts plus accepted trade-offs, each with source citations
-- `applicable_handoffs`: only relevant cited handoff entries, including their authority and verification
 - `missing_context_blockers`: required context that could not be located or cited
 
 Each excerpt must carry a concrete source citation (`path:line` or the platform's equivalent). Reviewers receive only the scope manifest, excerpts, and blockers relevant to their assigned pass. If required context is missing, return a blocker instead of assuming.
@@ -158,7 +156,6 @@ to a platform's `default` model role.
 
 The orchestrator must not:
 - report as a defect something already documented as an accepted constraint
-- report an authorized, evidenced non-material handoff adaptation as an automatic plan violation
 - run a broad noisy review without proper scoping
 - treat every deviation from plan/design as an error without evaluating context
 - skip local compliance when deep routing is false

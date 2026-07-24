@@ -65,7 +65,6 @@ All task artifacts are stored in `.ai/tasks/`:
 .ai/tasks/YYYY-MM-DD-HHMM-slug/
 ├── design.md    — approved design (saved by brainstorming)
 ├── plan.md      — implementation plan (saved by writing-plans)
-├── handoff.md   — accepted implementation adaptations (when applicable)
 └── review.md    — code review report (saved by /cp-review)
 ```
 
