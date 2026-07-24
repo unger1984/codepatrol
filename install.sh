@@ -261,6 +261,18 @@ validate_generated_markdown() {
         echo "Error: missing review question fallback in $platform cp-review/SKILL.md"
         exit 1
     }
+    grep -Fq 'applicable_handoffs' "$output_dir/cp-review/SKILL.md" || {
+        echo "Error: missing handoff review context in $platform cp-review/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Numbered options are examples, not a required response format' "$output_dir/cp-fix/SKILL.md" || {
+        echo "Error: missing flexible fix-policy input in $platform cp-fix/SKILL.md"
+        exit 1
+    }
+    grep -Fq 'Implementation Handoff' "$output_dir/using-codepatrol/SKILL.md" || {
+        echo "Error: missing implementation handoff contract in $platform using-codepatrol/SKILL.md"
+        exit 1
+    }
     grep -Fq 'prepared planning context' "$output_dir/using-codepatrol/SKILL.md" || {
         echo "Error: missing prepared planning context in $platform using-codepatrol/SKILL.md"
         exit 1
