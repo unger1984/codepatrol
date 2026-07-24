@@ -1,3 +1,8 @@
+# 24.07.2026 v0.6.8
+
+- Добавлен `handoff.md` рядом с планом: он сохраняет существенные, подтверждённые изменения пути реализации, чтобы ревью отличало их от самовольных отступлений.
+- Вопросы о стратегии исправлений теперь принимают свободный текст и смешанные правила для отдельных находок; агент пересказывает, как понял выбор, и ждёт подтверждения перед правками.
+
 # 24.07.2026 v0.6.7
 
 - Reviews now collect the full result set: compliance remains first, but its findings no longer cancel architecture, security, testing, convention, or compatibility checks.
