@@ -1,7 +1,7 @@
 # 24.07.2026 v0.6.8
 
-- Добавлен `handoff.md` рядом с планом: он сохраняет существенные, подтверждённые изменения пути реализации, чтобы ревью отличало их от самовольных отступлений.
-- Вопросы о стратегии исправлений теперь принимают свободный текст и смешанные правила для отдельных находок; агент пересказывает, как понял выбор, и ждёт подтверждения перед правками.
+- Added `handoff.md` beside a task plan to record consequential, approved implementation adaptations so review can distinguish them from unauthorized deviations.
+- Fix-policy questions now accept free-text and mixed per-finding rules; the agent restates its interpretation and waits for confirmation before making changes.
 
 # 24.07.2026 v0.6.7
 
